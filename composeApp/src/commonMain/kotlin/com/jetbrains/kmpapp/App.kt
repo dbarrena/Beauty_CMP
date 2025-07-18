@@ -1,5 +1,7 @@
 package com.jetbrains.kmpapp
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -30,6 +33,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.jetbrains.kmpapp.screens.configuration.ConfigurationScreen
 import com.jetbrains.kmpapp.screens.detail.DetailScreen
 import com.jetbrains.kmpapp.screens.list.ListScreen
 import com.jetbrains.kmpapp.screens.pos.PosScreen
@@ -60,6 +64,10 @@ fun App() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         val title = remember { mutableStateOf("Inicio") }
+
+        val showBottomNav = isRootDestination(currentDestination)
+        val showMainTopBar = isRootDestination(currentDestination)
+        val showSecondaryTopBar = !showMainTopBar
 
         Scaffold(
             topBar = {
@@ -99,7 +107,10 @@ fun App() {
                         icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                         //label = { Text("Configuracion") },
                         selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
-                        onClick = { navController.navigate(ConfigurationDestination) }
+                        onClick = {
+                            navController.navigate(ConfigurationDestination)
+                            title.value = "Configuración"
+                        }
                     )
                 }
             },
@@ -108,7 +119,13 @@ fun App() {
             NavHost(
                 navController = navController,
                 startDestination = PosDestination,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                enterTransition = {
+                    EnterTransition.None
+                },
+                exitTransition = {
+                    ExitTransition.None
+                }
             ) {
                 composable<HomeDestination> {
                     ListScreen(navigateToDetails = { objectId ->
@@ -130,9 +147,17 @@ fun App() {
                     Text("Sales Screen - Coming Soon")
                 }
                 composable<ConfigurationDestination> {
-                    Text("Configuration Screen - Coming Soon")
+                    ConfigurationScreen()
                 }
             }
         }
     }
+}
+
+fun isRootDestination(destination: NavDestination?): Boolean {
+    val route = destination?.route
+    return route == HomeDestination::class.qualifiedName ||
+            route == PosDestination::class.qualifiedName ||
+            route == SalesDestination::class.qualifiedName ||
+            route == ConfigurationDestination::class.qualifiedName
 }

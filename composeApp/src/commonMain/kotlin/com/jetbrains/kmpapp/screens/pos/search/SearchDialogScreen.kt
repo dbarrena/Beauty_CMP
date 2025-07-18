@@ -73,7 +73,7 @@ private fun SearchBar() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        placeholder = { Text("Buscar servicio...") },
+        placeholder = { Text("Buscar...") },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Search,

@@ -87,8 +87,8 @@ private fun CheckOutButton(totalPrice: String, onCheckOutClicked: () -> Unit = {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.LightGray.copy(alpha = 0.5f)) // Light gray background
-            .padding(horizontal = 16.dp, vertical = 12.dp), // Padding inside the search bar
+            .background(Color.LightGray.copy(alpha = 0.5f))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
@@ -103,7 +103,7 @@ private fun CheckOutButton(totalPrice: String, onCheckOutClicked: () -> Unit = {
                     imageVector = Icons.Filled.ShoppingCart,
                     contentDescription = "Buscar Servicios"
                 )
-                Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text in button
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Cobrar $$totalPrice")
             }
         }
@@ -115,22 +115,22 @@ private fun SearchBar(onSearchClicked: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp) // Add some padding around the search bar
-            .clip(RoundedCornerShape(12.dp)) // Rounded corners
-            .clickable { onSearchClicked() } // Add clickable with ripple effect
-            .background(Color.LightGray.copy(alpha = 0.5f)) // Light gray background
-            .padding(horizontal = 16.dp, vertical = 12.dp), // Padding inside the search bar
+            .padding(16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onSearchClicked() }
+            .background(Color.LightGray.copy(alpha = 0.5f))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Filled.Search,
             contentDescription = "Search Icon",
-            tint = Color.Gray // Optional: Set icon color
+            tint = Color.Gray
         )
-        Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Buscar servicio...",
-            color = Color.Gray // Optional: Set text color
+            text = "Buscar servicio o producto...",
+            color = Color.Gray
         )
     }
 }
@@ -140,11 +140,11 @@ private fun EmptyScreen(modifier: Modifier, onSearchClicked: () -> Unit = {}) {
     Box(
         modifier = modifier
             .fillMaxSize(),
-        contentAlignment = Alignment.Center // 1. Center the Column within the Box
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally, // 2. Center Text and Button horizontally
-            verticalArrangement = Arrangement.spacedBy(16.dp) // 3. Add space BETWEEN items in the Column
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = "Esta venta está vacía",
@@ -168,7 +168,7 @@ private fun EmptyScreen(modifier: Modifier, onSearchClicked: () -> Unit = {}) {
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Buscar Servicios"
                     )
-                    Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text in button
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Buscar Servicios")
                 }
             }
