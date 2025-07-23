@@ -10,13 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.jetbrains.kmpapp.model.Service
+import com.jetbrains.kmpapp.model.BeautyItem
 
 @Composable
-fun PosServiceItem(service: Service, onServiceClicked: (Service) -> Unit){
+fun PosBeautyItem(service: BeautyItem, onBeautyItemClicked: (BeautyItem) -> Unit){
     Card(
         modifier = Modifier.padding(12.dp),
-        onClick = { onServiceClicked(service) }
+        onClick = { onBeautyItemClicked(service) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

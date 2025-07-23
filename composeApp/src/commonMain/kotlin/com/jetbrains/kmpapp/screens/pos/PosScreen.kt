@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,20 +33,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jetbrains.kmpapp.model.Service
-import com.jetbrains.kmpapp.screens.list.ListViewModel
+import com.jetbrains.kmpapp.model.Product
 import com.jetbrains.kmpapp.screens.pos.search.SearchDialogScreen
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PosScreen() {
-    PosScreenContent()
+fun PosScreen(newProduct: Product?, onNewProductClicked: () -> Unit,) {
+    val viewModel = koinViewModel<PosViewModel>()
+
+    LaunchedEffect(newProduct) {
+        newProduct?.let {
+            viewModel.updateItemsList(it)
+        }
+    }
+
+    PosScreenContent(viewModel, onNewProductClicked)
 }
 
 @Composable
-private fun PosScreenContent() {
-    val viewModel = koinViewModel<PosViewModel>()
+private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () -> Unit,) {
     val isDialogDisplayed = remember { mutableStateOf(false) }
 
     val state = viewModel.state.collectAsState()
@@ -55,27 +61,30 @@ private fun PosScreenContent() {
             isDialogDisplayed.value = true
         }
 
-        if (state.value.selectedServices.isEmpty()) {
+        if (state.value.selectedItems.isEmpty()) {
             EmptyScreen(modifier = Modifier.weight(1f, true)) {
                 isDialogDisplayed.value = true
             }
         } else {
             LazyColumn(modifier = Modifier.weight(1f, true)) {
-                items(state.value.selectedServices) { service ->
-                    PosServiceItem(service, onServiceClicked = {})
+                items(state.value.selectedItems) { service ->
+                    PosBeautyItem(service, onBeautyItemClicked = {})
                 }
             }
         }
 
         CheckOutButton(state.value.totalPrice.toString()) {
-            viewModel.getAvailableServices()
+            viewModel.getAvailableItems()
         }
     }
 
     if (isDialogDisplayed.value) {
-        SearchDialogScreen(services = state.value.availableServices) { service ->
+        SearchDialogScreen(
+            beautyItems = state.value.availableItems,
+            onNewProductClicked = onNewProductClicked
+        ) { service ->
             service?.let {
-                viewModel.updateServicesList(service)
+                viewModel.updateItemsList(service)
             }
             isDialogDisplayed.value = false
         }
