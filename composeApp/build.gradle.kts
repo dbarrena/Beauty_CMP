@@ -33,6 +33,7 @@ kotlin {
             implementation(libs.androidx.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -62,11 +63,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.jetbrains.kmpapp"
+    namespace = "com.beauty.beautyapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.jetbrains.kmpapp"
+        applicationId = "com.beauty.beautyapp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
