@@ -1,12 +1,16 @@
 package com.beauty.beautyapp.di
 
-import com.beauty.beautyapp.data.BeautyApi
+import com.beauty.beautyapp.config.BeautyDatabase
+import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.data.InMemoryMuseumStorage
-import com.beauty.beautyapp.data.KtorBeautyApi
+import com.beauty.beautyapp.data.remote.KtorBeautyApi
 import com.beauty.beautyapp.data.KtorMuseumApi
 import com.beauty.beautyapp.data.MuseumApi
 import com.beauty.beautyapp.data.MuseumRepository
 import com.beauty.beautyapp.data.MuseumStorage
+import com.beauty.beautyapp.data.local.dao.SessionDao
+import com.beauty.beautyapp.data.local.session.SessionRepository
+import com.beauty.beautyapp.screens.configuration.ConfigurationViewModel
 import com.beauty.beautyapp.screens.detail.DetailViewModel
 import com.beauty.beautyapp.screens.list.ListViewModel
 import com.beauty.beautyapp.screens.pos.PosViewModel
@@ -20,6 +24,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.factoryOf
+import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 val dataModule = module {
@@ -33,14 +38,18 @@ val dataModule = module {
         }
     }
 
+    single<SessionRepository> { SessionRepository(get()) }
+
     single<MuseumApi> { KtorMuseumApi(get()) }
     single<MuseumStorage> { InMemoryMuseumStorage() }
-    single<BeautyApi> { KtorBeautyApi(get()) }
+    single<BeautyApi> { KtorBeautyApi(get(), get()) }
     single {
         MuseumRepository(get(), get()).apply {
             initialize()
         }
     }
+
+
 }
 
 val viewModelModule = module {
@@ -50,13 +59,23 @@ val viewModelModule = module {
     factoryOf(::ProductDialogViewModel)
     factoryOf(::CheckoutDialogViewModel)
     factoryOf(::SalesScreenViewModel)
+    factoryOf(::ConfigurationViewModel)
 }
 
-fun initKoin() {
+fun daoModule() = module {
+    single<SessionDao> { get<BeautyDatabase>().sessionDao() }
+}
+
+fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
     startKoin {
+        appDeclaration()
         modules(
+            platformModule(),
+            daoModule(),
             dataModule,
             viewModelModule,
         )
     }
 }
+
+fun initKoinIos() = initKoin(appDeclaration = {})

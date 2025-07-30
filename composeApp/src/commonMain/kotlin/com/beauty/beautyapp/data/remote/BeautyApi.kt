@@ -1,5 +1,7 @@
-package com.beauty.beautyapp.data
+package com.beauty.beautyapp.data.remote
 
+import com.beauty.beautyapp.data.local.session.SessionRepository
+import com.beauty.beautyapp.model.Employee
 import com.beauty.beautyapp.model.Service
 import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.model.Sale
@@ -20,9 +22,10 @@ interface BeautyApi {
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(product: Service): Service
     suspend fun registerSale(sale: Sale): Sale
+    suspend fun getEmployeeById(id: Int): Employee?
 }
 
-class KtorBeautyApi(private val client: HttpClient) : BeautyApi {
+class KtorBeautyApi(private val client: HttpClient, private val sessionRepository: SessionRepository) : BeautyApi {
     companion object {
         private const val API_URL =
             "http://192.168.68.105:3000/api/"
@@ -31,7 +34,8 @@ class KtorBeautyApi(private val client: HttpClient) : BeautyApi {
     override suspend fun getServices(): List<Service> {
         return try {
             println("KtorBeautyApi: getServices")
-            client.get(API_URL + "services/all").body()
+            val partnerId = sessionRepository.getSession()?.partnerId ?: 0
+            client.get(API_URL + "services/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -43,7 +47,8 @@ class KtorBeautyApi(private val client: HttpClient) : BeautyApi {
     override suspend fun getProducts(): List<Product> {
         return try {
             println("KtorBeautyApi: getProducts")
-            client.get(API_URL + "products/all").body()
+            val partnerId = sessionRepository.getSession()?.partnerId ?: 0
+            client.get(API_URL + "products/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -54,7 +59,8 @@ class KtorBeautyApi(private val client: HttpClient) : BeautyApi {
     override suspend fun getSales(): List<SaleApiResponse> {
         return try {
             println("KtorBeautyApi: getSales")
-            client.get(API_URL + "sales/all").body()
+            val partnerId = sessionRepository.getSession()?.partnerId ?: 0
+            client.get(API_URL + "sales/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -101,6 +107,17 @@ class KtorBeautyApi(private val client: HttpClient) : BeautyApi {
             if (e is CancellationException) throw e
             e.printStackTrace()
             throw e // or return a sensible default, but not emptyList()
+        }
+    }
+
+    override suspend fun getEmployeeById(id: Int): Employee? {
+        return try {
+            println("KtorBeautyApi: getEmployeeById")
+            client.get(API_URL + "employees/get/" + id).body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
         }
     }
 }

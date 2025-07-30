@@ -2,10 +2,10 @@ package com.beauty.beautyapp.screens.pos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.beauty.beautyapp.data.BeautyApi
-import com.beauty.beautyapp.model.Service
-import com.beauty.beautyapp.model.Product
+import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.BeautyItem
+import com.beauty.beautyapp.model.Product
+import com.beauty.beautyapp.model.Service
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -2,7 +2,7 @@ package com.beauty.beautyapp.screens.pos.checkout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.beauty.beautyapp.data.BeautyApi
+import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.BeautyItem
 import com.beauty.beautyapp.model.Sale
 import com.beauty.beautyapp.model.SaleDetail

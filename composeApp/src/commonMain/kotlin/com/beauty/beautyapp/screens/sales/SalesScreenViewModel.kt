@@ -2,7 +2,7 @@ package com.beauty.beautyapp.screens.sales
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.beauty.beautyapp.data.BeautyApi
+import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.SaleApiResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
