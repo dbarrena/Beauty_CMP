@@ -4,14 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.BeautyItem
-import com.beauty.beautyapp.model.Product
-import com.beauty.beautyapp.model.Service
-import com.beauty.beautyapp.screens.pos.PosModelState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.collections.plus
 
 class ProductServiceViewModel(private val beautyApi: BeautyApi) : ViewModel() {
     private val _state = MutableStateFlow(ProductServiceModelState())

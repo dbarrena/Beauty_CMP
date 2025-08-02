@@ -2,8 +2,6 @@ package com.beauty.beautyapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 sealed interface BeautyItem {
     val id: Int?

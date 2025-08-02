@@ -2,7 +2,6 @@ package com.beauty.beautyapp.screens.product_service.dialog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.beauty.beautyapp.data.local.session.SessionRepository
 import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.model.Service

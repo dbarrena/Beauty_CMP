@@ -1,6 +1,5 @@
 package com.beauty.beautyapp.screens.login
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beauty.beautyapp.data.local.session.SessionRepository

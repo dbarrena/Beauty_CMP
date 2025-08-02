@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.beauty.beautyapp.data.local.session.SessionRepository
 import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.model.Home
-import com.beauty.beautyapp.screens.product_service.dialog.ProductDialogState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
