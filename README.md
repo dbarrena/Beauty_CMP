@@ -1,1 +1,1 @@
-# Beauty Kotlin Multiplatform
+# Beauty Compose Multiplatform
