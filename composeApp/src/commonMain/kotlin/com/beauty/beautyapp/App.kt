@@ -38,7 +38,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.beauty.beautyapp.screens.configuration.ConfigurationScreen
-import com.beauty.beautyapp.screens.detail.DetailScreen
 import com.beauty.beautyapp.screens.home.HomeScreen
 import com.beauty.beautyapp.screens.login.LoginScreen
 import com.beauty.beautyapp.screens.pos.PosScreen
@@ -83,7 +82,6 @@ fun App() {
 
         val showBottomNav = isRootDestination(currentDestination)
         val showMainTopBar = isRootDestination(currentDestination)
-        val showSecondaryTopBar = !showMainTopBar
 
         var onBackNavigation: () -> Unit = { navController.popBackStack() }
 
@@ -104,7 +102,6 @@ fun App() {
             Scaffold(
                 topBar = {
                     AnimatedVisibility(visible = isLoggedIn) {
-                        //if(showMainTopBar) {
                         Surface(shadowElevation = 3.dp) {
                             TopAppBar(
                                 title = {
@@ -138,7 +135,6 @@ fun App() {
                                 ),
                             )
                         }
-                        //} else null
                     }
                 },
                 bottomBar = {
@@ -196,21 +192,7 @@ fun App() {
                     composable<HomeDestination> {
                         HomeScreen()
                     }
-                    composable<DetailDestination> { backStackEntry ->
-                        DetailScreen(
-                            objectId = backStackEntry.toRoute<DetailDestination>().objectId,
-                            navigateBack = {
-                                navController.popBackStack()
-                            }
-                        )
-                    }
                     composable<PosDestination> {
-                        /*val product = navController.currentBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<Product>("new_product")
-
-                        println("Producto: $product")*/
-
                         PosScreen()
                     }
                     composable<SalesDestination> {
@@ -230,20 +212,6 @@ fun App() {
                             navController.navigate(HomeDestination)
                         }
                     }
-                    /*composable<ProductDestination> { backStackEntry ->
-                        val editProduct = navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<Product>("editing_product")
-
-                        RegisterProductScreen(product = editProduct) { product ->
-                            onBackNavigation = {
-                                navController.previousBackStackEntry
-                                    ?.savedStateHandle
-                                    ?.set("new_product", product)
-                                navController.popBackStack()
-                            }
-                        }
-                    }*/
                 }
             }
         }

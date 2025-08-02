@@ -2,19 +2,16 @@ package com.beauty.beautyapp.di
 
 import com.beauty.beautyapp.AppViewModel
 import com.beauty.beautyapp.config.BeautyDatabase
-import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.data.InMemoryMuseumStorage
-import com.beauty.beautyapp.data.remote.KtorBeautyApi
 import com.beauty.beautyapp.data.KtorMuseumApi
 import com.beauty.beautyapp.data.MuseumApi
-import com.beauty.beautyapp.data.MuseumRepository
 import com.beauty.beautyapp.data.MuseumStorage
 import com.beauty.beautyapp.data.local.dao.SessionDao
 import com.beauty.beautyapp.data.local.session.SessionRepository
+import com.beauty.beautyapp.data.remote.BeautyApi
+import com.beauty.beautyapp.data.remote.KtorBeautyApi
 import com.beauty.beautyapp.screens.configuration.ConfigurationViewModel
-import com.beauty.beautyapp.screens.detail.DetailViewModel
 import com.beauty.beautyapp.screens.home.HomeScreenViewModel
-import com.beauty.beautyapp.screens.list.ListViewModel
 import com.beauty.beautyapp.screens.login.LoginScreenViewModel
 import com.beauty.beautyapp.screens.pos.PosViewModel
 import com.beauty.beautyapp.screens.pos.checkout.CheckoutDialogViewModel
@@ -47,18 +44,9 @@ val dataModule = module {
     single<MuseumApi> { KtorMuseumApi(get()) }
     single<MuseumStorage> { InMemoryMuseumStorage() }
     single<BeautyApi> { KtorBeautyApi(get(), get()) }
-    single {
-        MuseumRepository(get(), get()).apply {
-            initialize()
-        }
-    }
-
-
 }
 
 val viewModelModule = module {
-    factoryOf(::ListViewModel)
-    factoryOf(::DetailViewModel)
     factoryOf(::PosViewModel)
     factoryOf(::ProductServiceDialogViewModel)
     factoryOf(::CheckoutDialogViewModel)
