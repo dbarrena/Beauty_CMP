@@ -2,10 +2,6 @@ package com.beauty.beautyapp.di
 
 import com.beauty.beautyapp.AppViewModel
 import com.beauty.beautyapp.config.BeautyDatabase
-import com.beauty.beautyapp.data.InMemoryMuseumStorage
-import com.beauty.beautyapp.data.KtorMuseumApi
-import com.beauty.beautyapp.data.MuseumApi
-import com.beauty.beautyapp.data.MuseumStorage
 import com.beauty.beautyapp.data.local.dao.SessionDao
 import com.beauty.beautyapp.data.local.session.SessionRepository
 import com.beauty.beautyapp.data.remote.BeautyApi
@@ -33,16 +29,12 @@ val dataModule = module {
         val json = Json { ignoreUnknownKeys = true }
         HttpClient {
             install(ContentNegotiation) {
-                // TODO Fix API so it serves application/json
                 json(json, contentType = ContentType.Application.Json)
             }
         }
     }
 
     single<SessionRepository> { SessionRepository(get()) }
-
-    single<MuseumApi> { KtorMuseumApi(get()) }
-    single<MuseumStorage> { InMemoryMuseumStorage() }
     single<BeautyApi> { KtorBeautyApi(get(), get()) }
 }
 
