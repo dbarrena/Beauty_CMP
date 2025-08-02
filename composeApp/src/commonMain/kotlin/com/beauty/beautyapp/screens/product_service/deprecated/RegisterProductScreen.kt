@@ -1,4 +1,4 @@
-package com.beauty.beautyapp.screens.product
+package com.beauty.beautyapp.screens.product_service.deprecated
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,18 +22,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 import com.beauty.beautyapp.model.Product
 
 @Composable
-fun ProductScreen(product: Product?, onBackNavigation: (Product?) -> Unit) {
-    ProductScreenContent(product, onBackNavigation = { onBackNavigation(null) }) {
+fun RegisterProductScreen(product: Product?, onBackNavigation: (Product?) -> Unit) {
+    RegisterProductScreenContent(product, onBackNavigation = { onBackNavigation(null) }) {
         onBackNavigation(it)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductScreenContent(
+fun RegisterProductScreenContent(
     product: Product?,
     onBackNavigation: () -> Unit,
     onProductSubmit: (Product) -> Unit
@@ -83,7 +84,7 @@ fun ProductScreenContent(
                 ) {
                     Text(
                         "Guardar Cambios",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }

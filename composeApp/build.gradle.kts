@@ -41,6 +41,8 @@ kotlin {
             implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
+            implementation("io.insert-koin:koin-androidx-compose:3.5.0") // or latest
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -50,7 +52,7 @@ kotlin {
 
             implementation(libs.navigation.compose)
             implementation(libs.lifecycle.runtime.compose)
-            implementation(libs.material.icons.core)
+            implementation(libs.material.icons.extended)
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

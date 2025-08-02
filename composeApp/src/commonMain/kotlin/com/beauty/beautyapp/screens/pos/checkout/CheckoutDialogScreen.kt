@@ -1,5 +1,6 @@
 package com.beauty.beautyapp.screens.pos.checkout
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -21,14 +23,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.beauty.beautyapp.model.BeautyItem
+import com.beauty.beautyapp.screens.pos.SelectedPosItem
+import com.beauty.beautyapp.screens.utils.DropdownMenuPaymentType
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CheckoutDialogScreen(
     totalPrice: Double,
-    beautyItems: List<BeautyItem>,
-    onDismiss: (isSuccess: Boolean) -> Unit
+    beautyItems: List<SelectedPosItem>,
+    onDismiss: (Boolean) -> Unit
 ) {
     val viewModel = koinViewModel<CheckoutDialogViewModel>()
 
@@ -40,8 +43,8 @@ fun CheckoutDialogScreen(
 fun CheckoutDialogContent(
     viewModel: CheckoutDialogViewModel,
     totalPrice: Double,
-    items: List<BeautyItem>,
-    onDismiss: (isSuccess: Boolean) -> Unit
+    items: List<SelectedPosItem>,
+    onDismiss: (Boolean) -> Unit
 ) {
     val state = viewModel.state.collectAsState()
 
@@ -67,26 +70,38 @@ fun CheckoutDialogContent(
     ) {
         Column(
             modifier = Modifier
-                .padding(24.dp)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
                 text = "Nueva Venta",
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
                 value = "$$totalPrice",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Total") },
+                label = {
+                    Text(
+                        text = "Total",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                },
                 enabled = false,
-                textStyle = MaterialTheme.typography.titleMedium.copy(
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onSurface
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledBorderColor = MaterialTheme.colorScheme.primary,
+                    disabledLabelColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp)
             )
+            DropdownMenuPaymentType { paymentType ->
+                viewModel.updatePaymentType(paymentType)
+            }
             CheckoutButton(state.value.isLoading) {
                 viewModel.registerSale(items)
             }

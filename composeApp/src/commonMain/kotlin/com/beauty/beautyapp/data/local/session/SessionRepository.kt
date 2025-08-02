@@ -25,4 +25,15 @@ class SessionRepository(
         return session
     }
 
+    suspend fun getPartnerId(): Int? {
+        return sessionDao.getSession()?.partnerId
+    }
+
+    suspend fun isLoggedIn(): Boolean {
+        sessionDao.getSession()?.let {
+            return true
+        } ?: run {
+            return false
+        }
+    }
 }

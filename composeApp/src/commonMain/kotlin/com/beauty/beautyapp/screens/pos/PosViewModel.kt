@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-class PosViewModel(private val beautyApi: BeautyApi): ViewModel() {
+class PosViewModel(private val beautyApi: BeautyApi) : ViewModel() {
     private val _state = MutableStateFlow(PosModelState())
     val state: StateFlow<PosModelState> = _state.asStateFlow()
 
@@ -30,7 +32,7 @@ class PosViewModel(private val beautyApi: BeautyApi): ViewModel() {
 
     fun updateItemsList(item: BeautyItem) {
         _state.value = state.value.copy(
-            selectedItems = state.value.selectedItems + item,
+            selectedPosItems = state.value.selectedPosItems + SelectedPosItem(beautyItem = item),
             totalPrice = state.value.totalPrice + (when (item) {
                 is Service -> item.price.toDoubleOrNull() ?: 0.0
                 is Product -> item.price.toDoubleOrNull() ?: 0.0
@@ -40,14 +42,32 @@ class PosViewModel(private val beautyApi: BeautyApi): ViewModel() {
 
     fun restartPos() {
         _state.value = state.value.copy(
-            selectedItems = emptyList(),
+            selectedPosItems = emptyList(),
             totalPrice = 0.0
+        )
+    }
+
+    fun removeItem(beautyItem: SelectedPosItem) {
+        println("Removing item: $beautyItem")
+        val updatedItems = state.value.selectedPosItems.filter {
+            it.instanceId != beautyItem.instanceId
+        }
+
+        _state.value = state.value.copy(
+            selectedPosItems = updatedItems,
+            totalPrice = updatedItems.sumOf { it.beautyItem.price.toDoubleOrNull() ?: 0.0 }
         )
     }
 }
 
 data class PosModelState(
     val availableItems: List<BeautyItem> = emptyList(),
-    val selectedItems: List<BeautyItem> = emptyList(),
+    val selectedPosItems: List<SelectedPosItem> = emptyList(),
     val totalPrice: Double = 0.0
+)
+
+@OptIn(ExperimentalUuidApi::class)
+data class SelectedPosItem(
+    val instanceId: String = Uuid.random().toString(),
+    val beautyItem: BeautyItem
 )

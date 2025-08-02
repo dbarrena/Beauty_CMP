@@ -14,6 +14,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -26,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.SaleApiResponse
 import com.beauty.beautyapp.screens.sales.detail.SaleDetailsDialogScreen
+import com.beauty.beautyapp.screens.utils.FullScreenLoading
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -47,50 +50,70 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
         )
     )
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
-        sheetSwipeEnabled = false,
-        sheetDragHandle = null,
-        sheetContainerColor = Color.White,
-        sheetContentColor = Color.White,
-        sheetContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(500.dp) // ✅ max height here
-            ) {
-                viewModel.state.collectAsState().value.selectedSale?.let {
-                    SaleDetailsDialogScreen(it) {
-                        scope.launch { scaffoldState.bottomSheetState.hide() }
+    if (state.value.isLoading) {
+        FullScreenLoading()
+    } else {
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = 0.dp,
+            sheetSwipeEnabled = false,
+            sheetDragHandle = null,
+            sheetContainerColor = Color.White,
+            sheetTonalElevation = 8.dp, // subtle tonal overlay
+            sheetShadowElevation = 16.dp, // noticeable shadow
+            sheetContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 0.dp)
+                        .height(500.dp) // ✅ max height here
+                ) {
+                    viewModel.state.collectAsState().value.selectedSale?.let {
+                        SaleDetailsDialogScreen(it) {
+                            scope.launch { scaffoldState.bottomSheetState.hide() }
+                        }
                     }
                 }
-            }
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier.padding(8.dp).fillMaxSize()
+            ) {
+                OutlinedTextField(
+                    value = "$${state.value.total}",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = {
+                        Text(
+                            text = "Total",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    enabled = false,
+                    textStyle = MaterialTheme.typography.titleLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledBorderColor = MaterialTheme.colorScheme.primary,
+                        disabledLabelColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                )
 
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier.padding(8.dp).background(Color.White).fillMaxSize()
-        ) {
-            Text(
-                text = "Total: $${state.value.total}",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            LazyColumn {
-                items(state.value.sales) { sale ->
-                    SaleItem(sale) { selectedSale ->
-                        println("SaleItem clicked: ${selectedSale.id}")
-                        viewModel.setSelectedSale(selectedSale)
-                        scope.launch { scaffoldState.bottomSheetState.expand() }
+                LazyColumn {
+                    items(state.value.sales) { sale ->
+                        SaleItem(sale) { selectedSale ->
+                            println("SaleItem clicked: ${selectedSale.id}")
+                            viewModel.setSelectedSale(selectedSale)
+                            scope.launch { scaffoldState.bottomSheetState.expand() }
+                        }
                     }
                 }
             }
         }
     }
-
-
 
     /*SaleDetailsDialogScreen(
         scaffoldState = saleDetailsScaffoldState,
@@ -105,8 +128,6 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
     )*/
 
 
-
-
 }
 
 @Composable
@@ -115,23 +136,26 @@ private fun SaleItem(sale: SaleApiResponse, onSaleClick: (SaleApiResponse) -> Un
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         onClick = { onSaleClick(sale) }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            Text(text = "Total: ${sale.total}", style = MaterialTheme.typography.titleMedium)
             Text(text = "ID: ${sale.id}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Total: ${sale.total}", style = MaterialTheme.typography.bodyMedium)
             sale.clientId?.let { clientId ->
-                Text(text = "Client ID: $clientId", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Cliente: $clientId", style = MaterialTheme.typography.bodyMedium)
             }
             Text(
-                text = "Partner ID: ${sale.partnerId}",
+                text = "Tipo de pago: ${if (sale.paymentType == "cash") "Efectivo" else "Tarjeta"}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "Created At: ${sale.createdAt}",
+                text = "Fecha: ${sale.createdAt}",
                 style = MaterialTheme.typography.bodyMedium
             )
             sale.updatedAt?.let { updatedAt ->

@@ -2,6 +2,8 @@ package com.beauty.beautyapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 sealed interface BeautyItem {
     val id: Int?
@@ -13,10 +15,13 @@ sealed interface BeautyItem {
 @Serializable
 data class Service(
     override val name: String,
-    override val id: Int,
+    override val id: Int? = null,
     override val type: String = "service",
-    val description: String,
+    val description: String? = null,
     override val price: String,
     @SerialName("duration_minutes")
-    val durationMinutes: Int
+    val durationMinutes: Int? = null,
+    @SerialName("partner_id") val partnerId: Int? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
 ) : BeautyItem

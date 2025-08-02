@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,28 +43,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.screens.pos.checkout.CheckoutDialogScreen
 import com.beauty.beautyapp.screens.pos.search.SearchDialogScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PosScreen(newProduct: Product?, onNewProductClicked: () -> Unit) {
+fun PosScreen() {
     val viewModel = koinViewModel<PosViewModel>()
 
-    LaunchedEffect(newProduct) {
-        newProduct?.let {
-            viewModel.updateItemsList(it)
-        }
-    }
-
-    PosScreenContent(viewModel, onNewProductClicked)
+    PosScreenContent(viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () -> Unit) {
+private fun PosScreenContent(viewModel: PosViewModel) {
     val isSearchDialogDisplayed = remember { mutableStateOf(false) }
     val isCheckoutDialogDisplayed = remember { mutableStateOf(false) }
     val isSaleRegisteredDisplayed = remember { mutableStateOf(false) }
@@ -83,7 +77,6 @@ private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () ->
         sheetSwipeEnabled = false,
         sheetDragHandle = null,
         sheetContainerColor = Color.White,
-        sheetContentColor = Color.White,
         sheetTonalElevation = 8.dp, // subtle tonal overlay
         sheetShadowElevation = 16.dp, // noticeable shadow
         sheetContent = {
@@ -95,8 +88,7 @@ private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () ->
                     .height(500.dp) // ✅ max height here
             ) {
                 SearchDialogScreen(
-                    beautyItems = state.value.availableItems,
-                    onNewProductClicked = onNewProductClicked
+                    beautyItems = state.value.availableItems
                 ) { service ->
                     service?.let {
                         viewModel.updateItemsList(service)
@@ -113,7 +105,7 @@ private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () ->
                 scope.launch { scaffoldState.bottomSheetState.expand() }
             }
 
-            if (state.value.selectedItems.isEmpty() && isSaleRegisteredDisplayed.value == false) {
+            if (state.value.selectedPosItems.isEmpty() && isSaleRegisteredDisplayed.value == false) {
                 EmptyScreen(modifier = Modifier.weight(1f, true)) {
                     isSearchDialogDisplayed.value = true
                 }
@@ -121,8 +113,16 @@ private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () ->
                 LazyColumn(
                     modifier = Modifier.weight(1f, true),
                 ) {
-                    items(state.value.selectedItems) { service ->
-                        PosBeautyItem(service, onBeautyItemClicked = {})
+                    items(
+                        state.value.selectedPosItems,
+                        key = { it.instanceId }
+                    ) { item ->
+                        PosBeautyItem(
+                            modifier = Modifier.animateItem(),
+                            item = item,
+                            onBeautyItemDeleted = { viewModel.removeItem(it) },
+                            onBeautyItemClicked = {}
+                        )
                     }
                 }
             }
@@ -135,7 +135,7 @@ private fun PosScreenContent(viewModel: PosViewModel, onNewProductClicked: () ->
 
     if (isCheckoutDialogDisplayed.value) {
         CheckoutDialogScreen(
-            beautyItems = state.value.selectedItems,
+            beautyItems = state.value.selectedPosItems,
             totalPrice = state.value.totalPrice,
             onDismiss = { isSuccess ->
                 isCheckoutDialogDisplayed.value = false
@@ -205,14 +205,15 @@ private fun CheckOutButton(totalPrice: String, onCheckOutClicked: () -> Unit = {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.LightGray.copy(alpha = 0.5f))
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier.fillMaxWidth().height(55.dp),
             shape = RoundedCornerShape(4.dp),
-            onClick = onCheckOutClicked
+            onClick = onCheckOutClicked,
+            elevation = ButtonDefaults.buttonElevation(6.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -222,7 +223,10 @@ private fun CheckOutButton(totalPrice: String, onCheckOutClicked: () -> Unit = {
                     contentDescription = "Buscar Servicios"
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Cobrar $$totalPrice")
+                Text(
+                    text = "Cobrar $$totalPrice",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }

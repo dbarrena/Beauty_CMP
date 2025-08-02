@@ -29,23 +29,21 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.BeautyItem
-import com.beauty.beautyapp.screens.product.dialog.ProductDialogScreen
+import com.beauty.beautyapp.screens.product_service.dialog.ProductDialogScreen
+import com.beauty.beautyapp.screens.utils.SearchBar
 
 @Composable
 fun SearchDialogScreen(
     beautyItems: List<BeautyItem>,
-    onNewProductClicked: () -> Unit,
     onDismiss: (beautyItem: BeautyItem?) -> Unit
 ) {
-    SearchDialogContentNoDialog(beautyItems, onNewProductClicked, onDismiss)
+    SearchDialogContentNoDialog(beautyItems, onDismiss)
 }
-
 
 
 @Composable
 private fun SearchDialogContentNoDialog(
     beautyItems: List<BeautyItem>,
-    onNewItemClicked: () -> Unit,
     onDismiss: (beautyItem: BeautyItem?) -> Unit
 ) {
     val isNewProductDialogDisplayed = remember { mutableStateOf(false) }
@@ -72,8 +70,10 @@ private fun SearchDialogContentNoDialog(
             .padding(horizontal = 16.dp)
     ) {
         IconButton(
-            onClick = { onDismiss(null) },
-            //modifier = Modifier.align(Alignment.Start)
+            onClick = {
+                keyboardController?.hide()
+                onDismiss(null)
+            },
         ) {
             Icon(
                 imageVector = Icons.Default.Close, // or use Icons.Filled.Close
@@ -88,7 +88,7 @@ private fun SearchDialogContentNoDialog(
         Button(
             onClick = { /*onNewItemClicked() */ isNewProductDialogDisplayed.value = true },
             modifier = Modifier
-                .width(500.dp)
+                .fillMaxWidth()
                 .padding(start = 8.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -117,116 +117,4 @@ private fun SearchDialogContentNoDialog(
             onDismiss(product)
         }
     }
-}
-
-/*@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchDialogContent(
-    beautyItems: List<BeautyItem>,
-    onNewItemClicked: () -> Unit,
-    onDismiss: (beautyItem: BeautyItem?) -> Unit
-) {
-    val isNewProductDialogDisplayed = remember { mutableStateOf(false) }
-    val filteredBeautyItems = remember { mutableStateOf(beautyItems) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-
-    ModalBottomSheet(
-        sheetState = sheetState,
-        onDismissRequest = { onDismiss(null) },
-        dragHandle = { BottomSheetDefaults.DragHandle() }
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            SearchBar(searchText) { searchText ->
-                filteredBeautyItems.value = if (searchText.isEmpty()) {
-                    beautyItems
-                } else {
-                    beautyItems.filter {
-                        it.name.contains(searchText, ignoreCase = true)
-                    }
-                }
-            }
-            Button(
-                onClick = { /*onNewItemClicked() */ isNewProductDialogDisplayed.value = true },
-                modifier = Modifier
-                    .width(500.dp)
-                    .padding(start = 8.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "Nuevo")
-            }
-
-            LazyColumn(
-                modifier = Modifier.height(400.dp)
-            ) {
-                items(filteredBeautyItems.value) { item ->
-                    SearchDialogItem(item) {
-                        onDismiss(it)
-                    }
-                }
-            }
-        }
-    }
-
-    if (isNewProductDialogDisplayed.value) {
-        ProductDialogScreen(
-            beautyItem = null,
-            onDismiss = { isNewProductDialogDisplayed.value = false }
-        ) { product ->
-            isNewProductDialogDisplayed.value = false
-            onDismiss(product)
-        }
-    }
-}*/
-
-@Composable
-private fun SearchBar(
-    searchText: String,
-    keyboardController: SoftwareKeyboardController?,
-    onSearch: (query: String) -> Unit
-) {
-    OutlinedTextField(
-        value = searchText,
-        onValueChange = {
-            onSearch(it)
-        },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = {
-                keyboardController?.hide()
-            }
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        placeholder = { Text("Buscar...") },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search Icon"
-            )
-        },
-        shape = RoundedCornerShape(12.dp)
-    )
-}
-
-private fun getSampleItems(): List<BeautyItem> {
-    return listOf(
-        /*BeautyItem("Corte de Cabello", 25.00),
-        BeautyItem("Manicure y Pedicure", 35.50),
-        BeautyItem("Limpieza Facial", 45.00),
-        BeautyItem("Masaje Relajante", 60.00),
-        BeautyItem("Tinte de Cabello", 80.00),
-        BeautyItem("Depilación con Cera", 30.00),
-        BeautyItem("Tratamiento Capilar", 55.00),
-        BeautyItem("Maquillaje Profesional", 40.00),
-        BeautyItem("Peinado para Evento", 70.00),
-        BeautyItem("Extensiones de Pestañas", 90.00)*/
-    )
 }

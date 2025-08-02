@@ -7,8 +7,9 @@ import kotlinx.serialization.Serializable
 data class Sale(
     val id: Int? = null,
     @SerialName("client_id") val clientId: Int? = null,
-    @SerialName("partner_id") val partnerId: Int,
-    @SerialName("sale_details") val saleDetails: List<SaleDetail>
+    @SerialName("partner_id") val partnerId: Int? = null,
+    @SerialName("sale_details") val saleDetails: List<SaleDetail>,
+    @SerialName("payment_type") val paymentType: String
 )
 
 @Serializable
@@ -28,7 +29,8 @@ data class SaleApiResponse(
     @SerialName("partner_id") val partnerId: Int,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String?,
-    @SerialName("sale_details") val saleDetails: List<SaleDetailApiResponse>
+    @SerialName("sale_details") val saleDetails: List<SaleDetailApiResponse>,
+    @SerialName("payment_type") val paymentType: String
 )
 
 @Serializable

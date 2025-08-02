@@ -10,11 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.roundToLong
 
-class SalesScreenViewModel(private val beautyApi: BeautyApi): ViewModel() {
+class SalesScreenViewModel(private val beautyApi: BeautyApi) : ViewModel() {
     private val _state = MutableStateFlow(SalesScreenState())
     val state: StateFlow<SalesScreenState> = _state.asStateFlow()
 
     init {
+        _state.value = _state.value.copy(isLoading = true)
         getSales()
     }
 
@@ -23,7 +24,11 @@ class SalesScreenViewModel(private val beautyApi: BeautyApi): ViewModel() {
             val sales = beautyApi.getSales().sortedByDescending { it.id }
             val total = sales.sumOf { it.total.replace("$", "").toDoubleOrNull() ?: 0.0 }
 
-            _state.value = _state.value.copy(sales = sales, total = total.roundTo2Decimals())
+            _state.value = _state.value.copy(
+                sales = sales,
+                total = total.roundTo2Decimals(),
+                isLoading = false
+            )
         }
     }
 
@@ -39,5 +44,6 @@ class SalesScreenViewModel(private val beautyApi: BeautyApi): ViewModel() {
 data class SalesScreenState(
     val total: Double = 0.0,
     val sales: List<SaleApiResponse> = emptyList(),
-    val selectedSale: SaleApiResponse? = null
+    val selectedSale: SaleApiResponse? = null,
+    val isLoading: Boolean = false,
 )
