@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.SaleApiResponse
 import com.beauty.beautyapp.screens.sales.detail.SaleDetailsDialogScreen
@@ -57,15 +56,14 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
             sheetPeekHeight = 0.dp,
             sheetSwipeEnabled = false,
             sheetDragHandle = null,
-            sheetContainerColor = Color.White,
-            sheetTonalElevation = 8.dp, // subtle tonal overlay
-            sheetShadowElevation = 16.dp, // noticeable shadow
+            sheetTonalElevation = 8.dp,
+            sheetShadowElevation = 16.dp,
             sheetContent = {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 0.dp)
-                        .height(500.dp) // ✅ max height here
+                        .height(500.dp)
                 ) {
                     viewModel.state.collectAsState().value.selectedSale?.let {
                         SaleDetailsDialogScreen(it) {
@@ -113,20 +111,6 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
             }
         }
     }
-
-    /*SaleDetailsDialogScreen(
-        scaffoldState = saleDetailsScaffoldState,
-        saleDetails = state.value.selectedSale?.saleDetails ?: emptyList(),
-        onDismiss = { needsRefresh ->
-            scope.launch { saleDetailsScaffoldState.bottomSheetState.hide() }
-
-            if (needsRefresh) {
-                viewModel.getSales()
-            }
-        }
-    )*/
-
-
 }
 
 @Composable
