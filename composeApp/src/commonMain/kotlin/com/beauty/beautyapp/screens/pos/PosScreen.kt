@@ -88,6 +88,7 @@ private fun PosScreenContent(viewModel: PosViewModel) {
                     .height(500.dp) // ✅ max height here
             ) {
                 SearchDialogScreen(
+                    isAvailableItemsLoading = state.value.isAvailableItemsLoading,
                     beautyItems = state.value.availableItems
                 ) { service ->
                     service?.let {
@@ -102,13 +103,12 @@ private fun PosScreenContent(viewModel: PosViewModel) {
         Column {
             SearchBar {
                 isSearchDialogDisplayed.value = true
+                viewModel.getAvailableItems()
                 scope.launch { scaffoldState.bottomSheetState.expand() }
             }
 
             if (state.value.selectedPosItems.isEmpty() && isSaleRegisteredDisplayed.value == false) {
-                EmptyScreen(modifier = Modifier.weight(1f, true)) {
-                    isSearchDialogDisplayed.value = true
-                }
+                EmptyScreen(modifier = Modifier.weight(1f, true))
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f, true),
@@ -258,7 +258,7 @@ private fun SearchBar(onSearchClicked: () -> Unit = {}) {
 }
 
 @Composable
-private fun EmptyScreen(modifier: Modifier, onSearchClicked: () -> Unit = {}) {
+private fun EmptyScreen(modifier: Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize(),
@@ -280,20 +280,6 @@ private fun EmptyScreen(modifier: Modifier, onSearchClicked: () -> Unit = {}) {
                 textAlign = TextAlign.Center,
                 color = Color.Gray
             )
-            /*Button(
-                onClick = onSearchClicked
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Buscar Servicios"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Buscar Servicios")
-                }
-            }*/
         }
     }
 }

@@ -23,10 +23,11 @@ class PosViewModel(private val beautyApi: BeautyApi) : ViewModel() {
 
     fun getAvailableItems() {
         viewModelScope.launch {
+            _state.value = _state.value.copy(isAvailableItemsLoading = true)
             val products = beautyApi.getProducts()
             val services = beautyApi.getServices()
             val items: List<BeautyItem> = products + services
-            _state.value = _state.value.copy(availableItems = items)
+            _state.value = _state.value.copy(availableItems = items, isAvailableItemsLoading = false)
         }
     }
 
@@ -61,6 +62,7 @@ class PosViewModel(private val beautyApi: BeautyApi) : ViewModel() {
 }
 
 data class PosModelState(
+    val isAvailableItemsLoading: Boolean = false,
     val availableItems: List<BeautyItem> = emptyList(),
     val selectedPosItems: List<SelectedPosItem> = emptyList(),
     val totalPrice: Double = 0.0

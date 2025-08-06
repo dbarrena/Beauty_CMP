@@ -23,19 +23,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.BeautyItem
 import com.beauty.beautyapp.screens.product_service.dialog.ProductDialogScreen
+import com.beauty.beautyapp.screens.utils.FullScreenLoading
 import com.beauty.beautyapp.screens.utils.SearchBar
 
 @Composable
 fun SearchDialogScreen(
+    isAvailableItemsLoading: Boolean,
     beautyItems: List<BeautyItem>,
     onDismiss: (beautyItem: BeautyItem?) -> Unit
 ) {
-    SearchDialogContentNoDialog(beautyItems, onDismiss)
+    SearchDialogContentNoDialog(isAvailableItemsLoading, beautyItems, onDismiss)
 }
 
 
 @Composable
 private fun SearchDialogContentNoDialog(
+    isAvailableItemsLoading: Boolean,
     beautyItems: List<BeautyItem>,
     onDismiss: (beautyItem: BeautyItem?) -> Unit
 ) {
@@ -88,14 +91,18 @@ private fun SearchDialogContentNoDialog(
             Text(text = "Nuevo")
         }
 
-        LazyColumn(
-            modifier = Modifier.height(400.dp).padding(top = 8.dp)
-        ) {
-            items(filteredBeautyItems.value) { item ->
-                SearchDialogItem(item) {
-                    searchText.value = ""
-                    keyboardController?.hide()
-                    onDismiss(it)
+        if (isAvailableItemsLoading) {
+            FullScreenLoading()
+        } else {
+            LazyColumn(
+                modifier = Modifier.height(400.dp).padding(top = 8.dp)
+            ) {
+                items(filteredBeautyItems.value) { item ->
+                    SearchDialogItem(item) {
+                        searchText.value = ""
+                        keyboardController?.hide()
+                        onDismiss(it)
+                    }
                 }
             }
         }
@@ -107,6 +114,7 @@ private fun SearchDialogContentNoDialog(
             onDismiss = { isNewProductDialogDisplayed.value = false }
         ) { product ->
             isNewProductDialogDisplayed.value = false
+            keyboardController?.hide()
             onDismiss(product)
         }
     }

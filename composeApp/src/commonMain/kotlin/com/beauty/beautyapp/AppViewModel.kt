@@ -23,6 +23,10 @@ class AppViewModel(
     fun setLoggedIn() {
         _state.value = AppState(isLoggedIn = true)
     }
+
+    fun setLoggedOut() {
+        _state.value = AppState(isLoggedIn = false)
+    }
 }
 
 data class AppState(

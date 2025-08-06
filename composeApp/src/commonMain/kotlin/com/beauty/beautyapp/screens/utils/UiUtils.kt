@@ -97,7 +97,9 @@ fun StylizedTextField(
     body: String = "",
     readOnly: Boolean = true,
     enabled: Boolean = false,
-    onValueChange: (String) -> Unit = {}
+    onValueChange: (String) -> Unit = {},
+    keyboardActions: KeyboardActions? = null,
+    keyboardOptions: KeyboardOptions? = null
 ) {
     OutlinedTextField(
         value = body,
@@ -117,6 +119,8 @@ fun StylizedTextField(
             disabledBorderColor = MaterialTheme.colorScheme.primary,
             disabledLabelColor = MaterialTheme.colorScheme.primary
         ),
+        keyboardActions = keyboardActions ?: KeyboardActions.Default,
+        keyboardOptions = keyboardOptions ?: KeyboardOptions.Default,
         modifier = Modifier.fillMaxWidth()
     )
 }

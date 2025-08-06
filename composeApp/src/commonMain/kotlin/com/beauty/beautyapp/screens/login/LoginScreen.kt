@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -19,6 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.screens.utils.StylizedTextField
 import org.koin.compose.viewmodel.koinViewModel
@@ -33,13 +41,16 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 @Composable
 private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: () -> Unit) {
     val state = viewModel.state.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .imePadding(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -51,7 +62,11 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: 
                 body = email.value,
                 readOnly = false,
                 enabled = true,
-                onValueChange = { email.value = it }
+                onValueChange = { email.value = it },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
             )
 
             StylizedTextField(
@@ -59,7 +74,15 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: 
                 body = password.value,
                 readOnly = false,
                 enabled = true,
-                onValueChange = { password.value = it }
+                onValueChange = { password.value = it },
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                )
             )
 
             Button(
@@ -79,7 +102,8 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: 
                 if (state.value.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.height(24.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = Color.White
                     )
                 } else {
                     Text(

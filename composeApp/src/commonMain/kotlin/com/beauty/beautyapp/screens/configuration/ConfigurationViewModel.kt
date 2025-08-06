@@ -26,6 +26,13 @@ class ConfigurationViewModel(private val beautyApi: BeautyApi, private val sessi
         }
     }
 
+    fun logout() {
+        viewModelScope.launch {
+            sessionRepository.removeSession()
+            _state.value = _state.value.copy(logoutEventCompleted = true)
+        }
+    }
+
     fun getSessionByEmployeeId(employeeId: Int) {
         viewModelScope.launch {
             beautyApi.getEmployeeById(employeeId)?.let {
@@ -37,6 +44,7 @@ class ConfigurationViewModel(private val beautyApi: BeautyApi, private val sessi
     }
 
     data class ConfigurationScreenState(
-        val session: Session? = null
+        val session: Session? = null,
+        val logoutEventCompleted: Boolean = false
     )
 }

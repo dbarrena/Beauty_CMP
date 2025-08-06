@@ -103,7 +103,7 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
 fun MyBusinessGrid(home: Home) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth().height(350.dp),
+        modifier = Modifier.fillMaxWidth().height(400.dp),
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)

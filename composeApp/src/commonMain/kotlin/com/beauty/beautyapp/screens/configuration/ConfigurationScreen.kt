@@ -12,24 +12,33 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.beauty.beautyapp.screens.utils.StylizedTextField
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ConfigurationScreen(
+    onLoggedOut: () -> Unit,
     onConfigurationNavigation: (configurationScreenRoutes: ConfigurationScreenRoutes) -> Unit
 ) {
     val viewModel = koinViewModel<ConfigurationViewModel>()
-    ConfigurationScreenContent(viewModel, onConfigurationNavigation)
+    ConfigurationScreenContent(viewModel, onLoggedOut, onConfigurationNavigation)
 }
 
 @Composable
 fun ConfigurationScreenContent(
     viewModel: ConfigurationViewModel,
+    onLoggedOut: () -> Unit,
     onConfigurationNavigation: (ConfigurationScreenRoutes) -> Unit
 ) {
     val state = viewModel.state.collectAsState()
+
+    LaunchedEffect(state.value.logoutEventCompleted) {
+        if (state.value.logoutEventCompleted) {
+            onLoggedOut()
+        }
+    }
 
     state.value.session?.let {
         Column(
@@ -49,6 +58,22 @@ fun ConfigurationScreenContent(
             ) {
                 Text(
                     text = "Editar Productos y Servicios",
+                    modifier = Modifier.padding(24.dp),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.logout() },
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+            ) {
+                Text(
+                    text = "Cerrar Sesión",
                     modifier = Modifier.padding(24.dp),
                     style = MaterialTheme.typography.titleMedium
                 )

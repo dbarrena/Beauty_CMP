@@ -25,6 +25,10 @@ class SessionRepository(
         return session
     }
 
+    suspend fun removeSession() {
+        sessionDao.deleteAll()
+    }
+
     suspend fun getPartnerId(): Int? {
         return sessionDao.getSession()?.partnerId
     }

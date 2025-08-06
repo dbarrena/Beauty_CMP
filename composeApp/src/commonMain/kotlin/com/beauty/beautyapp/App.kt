@@ -198,7 +198,12 @@ fun App() {
                         SalesScreen()
                     }
                     composable<ConfigurationDestination> {
-                        ConfigurationScreen {
+                        ConfigurationScreen(
+                            onLoggedOut = {
+                                viewModel.setLoggedOut()
+                                navController.navigate(LoginDestination)
+                            }
+                        ) {
                             navController.navigate(ProductServiceDestination)
                         }
                     }
