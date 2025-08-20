@@ -16,14 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.beauty.beautyapp.model.BeautyItem
 
 @Composable
 fun PosBeautyItem(
     modifier: Modifier = Modifier,
     item: SelectedPosItem,
     onBeautyItemDeleted: (SelectedPosItem) -> Unit,
-    onBeautyItemClicked: (BeautyItem) -> Unit
+    onBeautyItemClicked: (SelectedPosItem) -> Unit
 ) {
     Card(
         modifier = modifier
@@ -37,16 +36,18 @@ fun PosBeautyItem(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        //onClick = { onBeautyItemClicked(item) }
+        onClick = { onBeautyItemClicked(item) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(item.beautyItem.name, style = MaterialTheme.typography.bodyLarge)
+            val quantity = if (item.quantity > 1) "(${item.quantity})" else ""
+
+            Text("${item.beautyItem.name} $quantity", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "$${item.beautyItem.price}", style = MaterialTheme.typography.titleMedium
+                text = "$${item.price * item.quantity}", style = MaterialTheme.typography.titleMedium
             )
 
             IconButton(

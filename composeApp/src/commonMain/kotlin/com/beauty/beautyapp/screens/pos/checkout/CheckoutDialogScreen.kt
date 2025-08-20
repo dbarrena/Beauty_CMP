@@ -63,6 +63,10 @@ fun CheckoutDialogContent(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.setTotal(totalPrice)
+    }
+
     ModalBottomSheet(
         sheetState = sheetState,
         onDismissRequest = { onDismiss(false) },

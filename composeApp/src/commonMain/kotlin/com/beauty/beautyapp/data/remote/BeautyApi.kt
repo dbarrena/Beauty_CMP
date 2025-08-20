@@ -1,6 +1,7 @@
 package com.beauty.beautyapp.data.remote
 
 import com.beauty.beautyapp.data.local.session.SessionRepository
+import com.beauty.beautyapp.model.CashClosure
 import com.beauty.beautyapp.model.Employee
 import com.beauty.beautyapp.model.Home
 import com.beauty.beautyapp.model.Login
@@ -22,12 +23,15 @@ interface BeautyApi {
     suspend fun getServices(): List<Service>
     suspend fun getProducts(): List<Product>
     suspend fun getSales(): List<SaleApiResponse>
+    suspend fun getThisMonthSales(): List<SaleApiResponse>
+    suspend fun getSalesBetweenDates(start: Long, end: Long): List<SaleApiResponse>
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(product: Service): Service
     suspend fun registerSale(sale: Sale): Sale
     suspend fun getEmployeeById(id: Int): Employee?
     suspend fun getHome(): Home?
     suspend fun login(login: Login): LoginResponse
+    suspend fun getOpenCashClosure(): CashClosure?
 }
 
 class KtorBeautyApi(private val client: HttpClient, private val sessionRepository: SessionRepository) : BeautyApi {
@@ -66,6 +70,34 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
             println("KtorBeautyApi: getSales")
             val partnerId = sessionRepository.getPartnerId() ?: 0
             client.get(API_URL + "sales/all?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    override suspend fun getThisMonthSales(): List<SaleApiResponse> {
+        return try {
+            println("KtorBeautyApi: getServices")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "sales/current-month?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+
+            emptyList()
+        }
+    }
+
+    override suspend fun getSalesBetweenDates(
+        start: Long,
+        end: Long
+    ): List<SaleApiResponse> {
+        return try {
+            println("KtorBeautyApi: getSales")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "sales/sales-between?partnerId=$partnerId&startEpoch=$start&endEpoch=$end").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -157,6 +189,18 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
             if (e is CancellationException) throw e
             e.printStackTrace()
             throw e // or return a sensible default, but not emptyList()
+        }
+    }
+
+    override suspend fun getOpenCashClosure(): CashClosure? {
+        return try {
+            println("KtorBeautyApi: getCashClosure")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "cash_closure/open?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
         }
     }
 }

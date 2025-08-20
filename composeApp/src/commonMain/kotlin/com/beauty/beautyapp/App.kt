@@ -1,7 +1,6 @@
 package com.beauty.beautyapp
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.height
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -36,6 +36,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.beauty.beautyapp.screens.calendar.CalendarScreen
+import com.beauty.beautyapp.screens.cash_closure.CashClosureScreen
 import com.beauty.beautyapp.screens.configuration.ConfigurationScreen
 import com.beauty.beautyapp.screens.home.HomeScreen
 import com.beauty.beautyapp.screens.login.LoginScreen
@@ -66,6 +68,12 @@ object ProductServiceDestination
 @Serializable
 object LoginDestination
 
+@Serializable
+object CalendarDestination
+
+@Serializable
+object CashClosureDestination
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
@@ -91,6 +99,8 @@ fun App() {
             ConfigurationDestination::class.qualifiedName -> "Configuración"
             ProductServiceDestination::class.qualifiedName -> "Productos y Servicios"
             DetailDestination::class.qualifiedName -> "Detalle"
+            CalendarDestination::class.qualifiedName -> "Calendario de citas"
+            CashClosureDestination::class.qualifiedName -> "Corte de caja"
             else -> ""
         }
 
@@ -113,9 +123,9 @@ fun App() {
                                         Text(text = targetTitle)
                                     }*/
 
-                                    Crossfade(targetState = titleText) { targetTitle ->
-                                        Text(text = targetTitle)
-                                    }
+                                    //Crossfade(targetState = titleText) { targetTitle ->
+                                        Text(text = titleText)
+                                    //}
                                 },
                                 navigationIcon = {
                                     if (!showMainTopBar) {
@@ -148,6 +158,14 @@ fun App() {
                                 selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
                                 onClick = {
                                     navController.navigate(HomeDestination)
+                                }
+                            )
+                            NavigationBarItem(
+                                icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+                                //label = { Text("POS") },
+                                selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
+                                onClick = {
+                                    navController.navigate(CalendarDestination)
                                 }
                             )
                             NavigationBarItem(
@@ -204,7 +222,7 @@ fun App() {
                                 navController.navigate(LoginDestination)
                             }
                         ) {
-                            navController.navigate(ProductServiceDestination)
+                            navController.navigate(CashClosureDestination)
                         }
                     }
                     composable<ProductServiceDestination> {
@@ -215,6 +233,12 @@ fun App() {
                             viewModel.setLoggedIn()
                             navController.navigate(HomeDestination)
                         }
+                    }
+                    composable<CalendarDestination> {
+                        CalendarScreen()
+                    }
+                    composable<CashClosureDestination> {
+                        CashClosureScreen()
                     }
                 }
             }
@@ -227,5 +251,6 @@ fun isRootDestination(destination: NavDestination?): Boolean {
     return route == HomeDestination::class.qualifiedName ||
             route == PosDestination::class.qualifiedName ||
             route == SalesDestination::class.qualifiedName ||
-            route == ConfigurationDestination::class.qualifiedName
+            route == ConfigurationDestination::class.qualifiedName ||
+            route == CalendarDestination::class.qualifiedName
 }

@@ -15,10 +15,10 @@ data class Employee(
     val partnerId: Int,
 
     @SerialName("created_at")
-    val createdAt: String,
+    val createdAt: Long,
 
     @SerialName("updated_at")
-    val updatedAt: String?,
+    val updatedAt: Long?,
 
     val partners: Partner
 )

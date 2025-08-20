@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.screens.pos.checkout.CheckoutDialogScreen
+import com.beauty.beautyapp.screens.pos.edit_dialog.PosEditDialogScreen
 import com.beauty.beautyapp.screens.pos.search.SearchDialogScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,6 +62,7 @@ private fun PosScreenContent(viewModel: PosViewModel) {
     val isSearchDialogDisplayed = remember { mutableStateOf(false) }
     val isCheckoutDialogDisplayed = remember { mutableStateOf(false) }
     val isSaleRegisteredDisplayed = remember { mutableStateOf(false) }
+
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
@@ -92,7 +94,7 @@ private fun PosScreenContent(viewModel: PosViewModel) {
                     beautyItems = state.value.availableItems
                 ) { service ->
                     service?.let {
-                        viewModel.updateItemsList(service)
+                        viewModel.addSelectedItem(service)
                     }
                     scope.launch { scaffoldState.bottomSheetState.hide() }
                     isSearchDialogDisplayed.value = false
@@ -121,7 +123,9 @@ private fun PosScreenContent(viewModel: PosViewModel) {
                             modifier = Modifier.animateItem(),
                             item = item,
                             onBeautyItemDeleted = { viewModel.removeItem(it) },
-                            onBeautyItemClicked = {}
+                            onBeautyItemClicked = {
+                                viewModel.selectItemToEdit(it)
+                            }
                         )
                     }
                 }
@@ -151,6 +155,16 @@ private fun PosScreenContent(viewModel: PosViewModel) {
     if (isSaleRegisteredDisplayed.value) {
         DisplaySaleAnimation {
             isSaleRegisteredDisplayed.value = false
+        }
+    }
+
+    state.value.selectedItemToEdit?.let {
+        PosEditDialogScreen(it) { updatedItem ->
+            updatedItem?.let {
+                viewModel.updateSelectedItem(updatedItem)
+            }
+
+            viewModel.restartSelectedItemToEdit()
         }
     }
 }

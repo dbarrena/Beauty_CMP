@@ -6,6 +6,8 @@ import com.beauty.beautyapp.data.local.dao.SessionDao
 import com.beauty.beautyapp.data.local.session.SessionRepository
 import com.beauty.beautyapp.data.remote.BeautyApi
 import com.beauty.beautyapp.data.remote.KtorBeautyApi
+import com.beauty.beautyapp.screens.calendar.CalendarScreenViewModel
+import com.beauty.beautyapp.screens.cash_closure.CashClosureViewModel
 import com.beauty.beautyapp.screens.configuration.ConfigurationViewModel
 import com.beauty.beautyapp.screens.home.HomeScreenViewModel
 import com.beauty.beautyapp.screens.login.LoginScreenViewModel
@@ -48,6 +50,8 @@ val viewModelModule = module {
     factoryOf(::HomeScreenViewModel)
     factoryOf(::AppViewModel)
     factoryOf(::LoginScreenViewModel)
+    factoryOf(::CalendarScreenViewModel)
+    factoryOf(::CashClosureViewModel)
 }
 
 fun daoModule() = module {
