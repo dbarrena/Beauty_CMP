@@ -18,20 +18,23 @@ class ProductServiceDialogViewModel(
 
     fun registerProduct(product: Product) {
         viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
             val registeredProduct = beautyApi.registerProduct(product)
-            _state.value = _state.value.copy(registeredProduct = registeredProduct)
+            _state.value = _state.value.copy(registeredProduct = registeredProduct, isLoading = false)
         }
     }
 
     fun registerService(service: Service) {
         viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
             val registeredService = beautyApi.registerService(service)
-            _state.value = _state.value.copy(registeredService = registeredService)
+            _state.value = _state.value.copy(registeredService = registeredService, isLoading = false)
         }
     }
 
     fun resetState() {
         _state.value = _state.value.copy(
+            isLoading = false,
             registeredProduct = null,
             registeredService = null,
             dialogType = DialogType.SERVICE
@@ -46,6 +49,7 @@ class ProductServiceDialogViewModel(
 }
 
 data class ProductDialogState(
+    val isLoading: Boolean = false,
     val registeredProduct: Product? = null,
     val registeredService: Service? = null,
     val dialogType: DialogType = DialogType.SERVICE

@@ -16,6 +16,7 @@ import com.beauty.beautyapp.screens.pos.checkout.CheckoutDialogViewModel
 import com.beauty.beautyapp.screens.product_service.ProductServiceViewModel
 import com.beauty.beautyapp.screens.product_service.dialog.ProductServiceDialogViewModel
 import com.beauty.beautyapp.screens.sales.SalesScreenViewModel
+import com.beauty.beautyapp.screens.sales.detail.SaleDetailsDialogScreenViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -52,6 +53,7 @@ val viewModelModule = module {
     factoryOf(::LoginScreenViewModel)
     factoryOf(::CalendarScreenViewModel)
     factoryOf(::CashClosureViewModel)
+    factoryOf(::SaleDetailsDialogScreenViewModel)
 }
 
 fun daoModule() = module {

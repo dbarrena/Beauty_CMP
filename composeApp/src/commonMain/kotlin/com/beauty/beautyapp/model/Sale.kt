@@ -47,3 +47,10 @@ data class SaleDetailApiResponse(
     val product: Product? = null,
     val service: Service? = null
 )
+
+@Serializable
+data class SaleDetailEditApiRequest(
+    val id: Int,
+    val quantity: Int,
+    val price: Double,
+)

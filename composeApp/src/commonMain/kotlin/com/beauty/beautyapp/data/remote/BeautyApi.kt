@@ -10,8 +10,11 @@ import com.beauty.beautyapp.model.Service
 import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.model.Sale
 import com.beauty.beautyapp.model.SaleApiResponse
+import com.beauty.beautyapp.model.SaleDetailApiResponse
+import com.beauty.beautyapp.model.SaleDetailEditApiRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -28,10 +31,18 @@ interface BeautyApi {
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(product: Service): Service
     suspend fun registerSale(sale: Sale): Sale
+
+    suspend fun getSale(id: Int): SaleApiResponse?
     suspend fun getEmployeeById(id: Int): Employee?
     suspend fun getHome(): Home?
     suspend fun login(login: Login): LoginResponse
     suspend fun getOpenCashClosure(): CashClosure?
+
+    suspend fun deleteSale(saleId: Int): String?
+
+    suspend fun deleteSaleDetail(saleDetailId: Int): String?
+
+    suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
 }
 
 class KtorBeautyApi(private val client: HttpClient, private val sessionRepository: SessionRepository) : BeautyApi {
@@ -153,6 +164,17 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
         }
     }
 
+    override suspend fun getSale(id: Int): SaleApiResponse? {
+        return try {
+            println("KtorBeautyApi: getSale $id")
+            client.get(API_URL + "sales/get/$id").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
     override suspend fun getEmployeeById(id: Int): Employee? {
         return try {
             println("KtorBeautyApi: getEmployeeById")
@@ -201,6 +223,43 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
             if (e is CancellationException) throw e
             e.printStackTrace()
             null
+        }
+    }
+
+    override suspend fun deleteSale(saleId: Int): String? {
+        return try {
+            println("KtorBeautyApi: deleteSaleDetail")
+            client.delete(API_URL + "sales/delete/$saleId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun deleteSaleDetail(saleDetailId: Int): String? {
+        return try {
+            println("KtorBeautyApi: deleteSaleDetail")
+            client.delete(API_URL + "sales/delete/detail/$saleDetailId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String? {
+        return try {
+            println("KtorBeautyApi: editSaleDetail")
+
+            client.post(API_URL + "sales/edit/detail") {
+                contentType(ContentType.Application.Json)
+                setBody(saleDetailEditApiRequest)
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e
         }
     }
 }

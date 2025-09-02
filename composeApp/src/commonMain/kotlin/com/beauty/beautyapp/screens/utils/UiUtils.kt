@@ -16,7 +16,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
@@ -116,13 +120,15 @@ fun DropdownMenuPaymentType(onSelectionChange: (String) -> Unit) {
 }
 
 @Composable
-fun FullScreenLoading() {
+fun FullScreenLoading(color: Color = ProgressIndicatorDefaults.circularColor) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            color = color
+        )
     }
 }
 
@@ -323,6 +329,42 @@ fun ElevatedInfoCard(
                     tint = color,
                     modifier = Modifier.size(36.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteButton(modifier: Modifier = Modifier, text: String, isLoading: Boolean = false, onCheckOutClicked: () -> Unit = {}) {
+    Row(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            modifier = Modifier.fillMaxWidth().height(55.dp),
+            shape = RoundedCornerShape(4.dp),
+            onClick = onCheckOutClicked,
+            elevation = ButtonDefaults.buttonElevation(6.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isLoading) {
+                    FullScreenLoading(color = Color.White)
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = text
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }

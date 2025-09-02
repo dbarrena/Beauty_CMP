@@ -25,12 +25,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.BeautyItem
 import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.model.Service
+import com.beauty.beautyapp.screens.utils.FullScreenLoading
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -123,7 +125,7 @@ private fun ProductDialogContent(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.padding(vertical = 12.dp))
-            ProductDialogButton {
+            ProductDialogButton(state.value.isLoading) {
                 if (state.value.dialogType == DialogType.SERVICE) {
                     val newService = Service(
                         name = nameState.value,
@@ -158,7 +160,7 @@ private fun ProductDialogContent(
 }
 
 @Composable
-private fun ProductDialogButton(onClick: () -> Unit) {
+private fun ProductDialogButton(isLoading: Boolean, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
@@ -171,10 +173,14 @@ private fun ProductDialogButton(onClick: () -> Unit) {
             .height(56.dp),
         elevation = ButtonDefaults.buttonElevation(6.dp)
     ) {
-        Text(
-            "Registrar",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-        )
+        if (isLoading) {
+            FullScreenLoading(Color.White)
+        } else{
+            Text(
+                "Registrar",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            )
+        }
     }
 }
 

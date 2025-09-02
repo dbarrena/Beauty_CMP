@@ -57,7 +57,7 @@ fun ConfigurationScreenContent(
                 ),
             ) {
                 Text(
-                    text = "Editar Productos y Servicios",
+                    text = "Corte de caja",
                     modifier = Modifier.padding(24.dp),
                     style = MaterialTheme.typography.titleMedium
                 )

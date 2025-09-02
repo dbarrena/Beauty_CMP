@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.screens.pos.SelectedPosItem
 import com.beauty.beautyapp.screens.utils.DropdownMenuPaymentType
@@ -129,6 +130,7 @@ private fun CheckoutButton(isLoading: Boolean, onClick: () -> Unit) {
     ) {
         if (isLoading) {
             CircularProgressIndicator(
+                color = Color.White,
                 modifier = Modifier.height(24.dp),
                 strokeWidth = 2.dp
             )

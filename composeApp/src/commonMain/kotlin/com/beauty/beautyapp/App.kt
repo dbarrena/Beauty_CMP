@@ -3,10 +3,15 @@ package com.beauty.beautyapp
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
@@ -96,7 +101,7 @@ fun App() {
             HomeDestination::class.qualifiedName -> "Inicio"
             PosDestination::class.qualifiedName -> "Punto de Venta"
             SalesDestination::class.qualifiedName -> "Ventas"
-            ConfigurationDestination::class.qualifiedName -> "Configuración"
+            ConfigurationDestination::class.qualifiedName -> "Herramientas"
             ProductServiceDestination::class.qualifiedName -> "Productos y Servicios"
             DetailDestination::class.qualifiedName -> "Detalle"
             CalendarDestination::class.qualifiedName -> "Calendario de citas"
@@ -124,7 +129,7 @@ fun App() {
                                     }*/
 
                                     //Crossfade(targetState = titleText) { targetTitle ->
-                                        Text(text = titleText)
+                                    Text(text = titleText)
                                     //}
                                 },
                                 navigationIcon = {
@@ -161,7 +166,12 @@ fun App() {
                                 }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+                                icon = {
+                                    Icon(
+                                        Icons.Default.CalendarMonth,
+                                        contentDescription = null
+                                    )
+                                },
                                 //label = { Text("POS") },
                                 selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
                                 onClick = {
@@ -169,7 +179,12 @@ fun App() {
                                 }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
+                                icon = {
+                                    Icon(
+                                        Icons.Default.ShoppingCart,
+                                        contentDescription = null
+                                    )
+                                },
                                 //label = { Text("POS") },
                                 selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
                                 onClick = {
@@ -177,13 +192,18 @@ fun App() {
                                 }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Filled.AttachMoney, contentDescription = null) },
+                                icon = {
+                                    Icon(
+                                        Icons.Filled.AttachMoney,
+                                        contentDescription = null
+                                    )
+                                },
                                 //label = { Text("Ventas") },
                                 selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
                                 onClick = { navController.navigate(SalesDestination) }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                                icon = { Icon(Icons.Default.Apps, contentDescription = null) },
                                 //label = { Text("Configuracion") },
                                 selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
                                 onClick = {
@@ -200,10 +220,10 @@ fun App() {
                     startDestination = startDestination,
                     modifier = Modifier.padding(innerPadding),
                     enterTransition = {
-                        EnterTransition.None
+                        fadeIn()
                     },
                     exitTransition = {
-                        ExitTransition.None
+                        fadeOut()
                     }
                 ) {
                     composable<HomeDestination> {

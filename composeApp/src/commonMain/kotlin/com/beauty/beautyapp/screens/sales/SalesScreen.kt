@@ -72,7 +72,9 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
                         .height(500.dp)
                 ) {
                     viewModel.state.collectAsState().value.selectedSale?.let {
-                        SaleDetailsDialogScreen(it) {
+                        SaleDetailsDialogScreen(it) { shouldReload ->
+                            if (shouldReload) viewModel.getSales()
+
                             scope.launch { scaffoldState.bottomSheetState.hide() }
                         }
                     }
