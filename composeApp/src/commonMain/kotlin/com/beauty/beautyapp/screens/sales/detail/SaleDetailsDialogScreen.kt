@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,7 +75,7 @@ fun SaleDetailsDialogScreenContent(
             }
 
             Text(
-                text = "Venta No.${state.value.sale?.id}",
+                text = "Detalle de venta",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp)
             )
@@ -82,52 +83,131 @@ fun SaleDetailsDialogScreenContent(
 
         //Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Total: ${state.value.sale?.total}",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = "Total:\n${state.value.sale?.total}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .padding(8.dp)
+            )
+
+            Text(
+                text = "Fecha: ${state.value.sale?.formattedDate}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .padding(8.dp)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = "Articulos: ${state.value.sale?.saleDetails?.size}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .padding(8.dp)
+            )
+
+            Text(
+                text = "ID: ${state.value.sale?.id}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .padding(8.dp)
+            )
+        }
+
+
 
         state.value.sale?.saleDetails?.let { saleDetails ->
             LazyColumn(
-                modifier = Modifier.height(300.dp).padding(16.dp),
+                modifier = Modifier.height(250.dp).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(saleDetails) {
                     Card(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Column(modifier = Modifier.padding(8.dp)) {
-                            it.product?.let {
-                                Text(
-                                    text = it.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Text(text = "Tipo: Producto")
-                            }
-
-                            it.service?.let {
-                                Text(
-                                    text = it.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Text(text = "Tipo: Servicio")
-                            }
-                            Text(text = "Cantidad: ${it.quantity}")
-                            Row {
-                                Text(text = "Precio: ${it.price}")
-                                IconButton(
-                                    onClick = {
-                                        viewModel.setSaleDetail(it)
-                                        isEditSaleDetailDialogDisplayed.value = true
-                                    },
-                                    modifier = Modifier.padding(start = 0.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Left side: All information
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Editar Detalle"
+                                    it.product?.let {
+                                        Text(
+                                            text = it.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color.Black,
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                    }
+
+                                    it.service?.let {
+                                        Text(
+                                            text = it.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color.Black,
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(end = 8.dp),
+                                        text = "Cantidad: ${it.quantity}",
+                                        color = Color.Black
+                                    )
+
+                                    Text(
+                                        text = "Precio: ${it.price}",
+                                        color = Color.Black
                                     )
                                 }
+                            }
+
+                            // Right side: Edit button
+                            IconButton(
+                                onClick = {
+                                    viewModel.setSaleDetail(it)
+                                    isEditSaleDetailDialogDisplayed.value = true
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar Detalle",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                     }

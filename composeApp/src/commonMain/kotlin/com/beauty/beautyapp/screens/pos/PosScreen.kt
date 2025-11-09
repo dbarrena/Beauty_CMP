@@ -79,7 +79,7 @@ private fun PosScreenContent(viewModel: PosViewModel) {
         sheetSwipeEnabled = false,
         sheetDragHandle = null,
         sheetContainerColor = Color.White,
-        sheetTonalElevation = 8.dp, // subtle tonal overlay
+        sheetTonalElevation = 0.dp, // subtle tonal overlay
         sheetShadowElevation = 16.dp, // noticeable shadow
         sheetContent = {
             println("DIEGO bottom sheet ${state.value.availableItems.size}")

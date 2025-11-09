@@ -1,4 +1,4 @@
-package com.beauty.beautyapp.screens.cash_closure
+package com.beauty.beautyapp.screens.cash_closure.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +22,14 @@ class CashClosureViewModel(private val beautyApi: BeautyApi) : ViewModel() {
         viewModelScope.launch {
             val cashClosure = beautyApi.getOpenCashClosure()
             _state.value = _state.value.copy(openCashClosure = cashClosure, isLoading = false)
+        }
+    }
+
+    fun createCashClosure() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+            beautyApi.createCashClosure()
+            getCashClosure()
         }
     }
 }

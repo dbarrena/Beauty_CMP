@@ -57,7 +57,7 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Column(
+        /*Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.secondaryContainer)
@@ -78,7 +78,7 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
                     fontWeight = FontWeight.W300
                 ),
             )
-        }
+        }*/
 
         Text(
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 0.dp),

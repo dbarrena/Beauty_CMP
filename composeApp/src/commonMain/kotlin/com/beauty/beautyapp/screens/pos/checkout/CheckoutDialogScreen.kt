@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.screens.pos.SelectedPosItem
-import com.beauty.beautyapp.screens.utils.DropdownMenuPaymentType
+import com.beauty.beautyapp.screens.utils.StylizedTextField
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -83,30 +83,27 @@ fun CheckoutDialogContent(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            OutlinedTextField(
-                value = "$$totalPrice",
-                onValueChange = {},
-                readOnly = true,
-                label = {
-                    Text(
-                        text = "Total",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                },
-                enabled = false,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledBorderColor = MaterialTheme.colorScheme.primary,
-                    disabledLabelColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
+            StylizedTextField(
+                label = "Restante",
+                body = "$${state.value.remainingTotal}",
+                readOnly = true
             )
-            DropdownMenuPaymentType { paymentType ->
-                viewModel.updatePaymentType(paymentType)
+
+            viewModel.state.value.payments.forEach {
+                CheckoutPaymentComponent(
+                    paymentOptions = viewModel.getPaymentTypes(),
+                    selectedPosPayment = it
+                ) { updatedPosPayment ->
+                    viewModel.updatePayment(it.paymentType, updatedPosPayment)
+                }
             }
+
+            if (viewModel.getPaymentTypes().isNotEmpty()) {
+                AddPaymentButton {
+                    viewModel.addPayment()
+                }
+            }
+
             CheckoutButton(state.value.isLoading) {
                 viewModel.registerSale(items)
             }
@@ -140,5 +137,26 @@ private fun CheckoutButton(isLoading: Boolean, onClick: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             )
         }
+    }
+}
+
+@Composable
+private fun AddPaymentButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ),
+        shape = RoundedCornerShape(28.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        elevation = ButtonDefaults.buttonElevation(6.dp)
+    ) {
+        Text(
+            "Agregar Pago",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        )
     }
 }

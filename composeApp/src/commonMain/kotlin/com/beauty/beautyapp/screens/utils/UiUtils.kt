@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -57,67 +58,8 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import com.beauty.beautyapp.screens.utils.toPickerDateString
 import kotlin.random.Random
-
-@Composable
-fun DropdownMenuPaymentType(onSelectionChange: (String) -> Unit) {
-    val options = listOf("Tarjeta", "Efectivo", "Transferencia")
-    val expanded = remember { mutableStateOf(false) }
-    val selectedOptionText = remember { mutableStateOf(options[0]) }
-
-    Box(
-        contentAlignment = Alignment.CenterStart,
-        modifier = Modifier
-            .clickable { expanded.value = !expanded.value }
-    ) {
-        OutlinedTextField(
-            value = selectedOptionText.value,
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text(
-                    text = "Tipo de pago",
-                    style = MaterialTheme.typography.titleSmall
-                )
-            },
-            enabled = false,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = MaterialTheme.colorScheme.primary,
-                disabledLabelColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
-        DropdownMenu(
-            expanded = expanded.value,
-            onDismissRequest = { expanded.value = false }
-        ) {
-            options.forEach { selectionOption ->
-                DropdownMenuItem(
-                    text = {
-                        Text(text = selectionOption)
-                    },
-                    onClick = {
-                        selectedOptionText.value = selectionOption
-                        expanded.value = false
-                        onSelectionChange(
-                            when (selectionOption) {
-                                "Tarjeta" -> "card"
-                                "Efectivo" -> "cash"
-                                "Transferencia" -> "transfer"
-                                else -> "card"
-                            }
-                        )
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun FullScreenLoading(color: Color = ProgressIndicatorDefaults.circularColor) {
@@ -251,17 +193,29 @@ fun CurrentMonthDateRangePicker(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog = false }) { Text("Cancelar") }
-                }
+                },
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                ),
             ) {
                 DateRangePicker(
                     state = state,
-                    title = { Text("Selecciona el rango de fechas") },
+                    title = { /*Text("Selecciona el rango de fechas")*/ },
                     dateFormatter = DatePickerDefaults.dateFormatter(),
                     showModeToggle = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                    //.padding(8.dp)
+                    colors = DatePickerDefaults.colors(
+                        containerColor = Color.White,
+                        //selectedDayContainerColor = Color.White,
+                        selectedDayContentColor = Color.White,
+                        todayDateBorderColor = Color.Gray,
+                        todayContentColor = Color.Black,
+                        //dayInSelectionRangeContainerColor = Color.White,
+                        dayInSelectionRangeContentColor = Color.Black
+                    ),
+                    /*modifier = Modifier
+                        .padding(8.dp)
+                        .height(380.dp)*/
                 )
             }
         }
@@ -281,7 +235,7 @@ fun ElevatedInfoCard(
     title: String,
     description: String,
     icon: ImageVector? = null,
-    color: Color = Color(Random.nextFloat(), Random.nextFloat(), Random.nextFloat(), 1f)
+    //color: Color = Color(Random.nextFloat(), Random.nextFloat(), Random.nextFloat(), 1f)
 ) {
     Card(
         elevation = CardDefaults.cardElevation(8.dp),
@@ -296,7 +250,7 @@ fun ElevatedInfoCard(
                 .padding(vertical = 16.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+            /*Box(
                 modifier = Modifier
                     .width(6.dp)
                     .height(48.dp)
@@ -305,7 +259,7 @@ fun ElevatedInfoCard(
                         shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
                     )
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))*/
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -326,7 +280,7 @@ fun ElevatedInfoCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = color,
+                    //tint = color,
                     modifier = Modifier.size(36.dp)
                 )
             }

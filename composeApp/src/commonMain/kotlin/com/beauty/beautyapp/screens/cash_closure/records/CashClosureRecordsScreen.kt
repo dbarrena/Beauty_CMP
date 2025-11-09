@@ -1,4 +1,4 @@
-package com.beauty.beautyapp.screens.sales
+package com.beauty.beautyapp.screens.cash_closure.records
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,21 +30,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.SaleApiResponse
-import com.beauty.beautyapp.screens.sales.detail.SaleDetailsDialogScreen
 import com.beauty.beautyapp.screens.utils.CurrentMonthDateRangePicker
 import com.beauty.beautyapp.screens.utils.FullScreenLoading
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-@Composable
-fun SalesScreen() {
-    val viewModel = koinViewModel<SalesScreenViewModel>()
-    SalesScreenContent(viewModel)
+/*@Composable
+fun CashClosureRecordsScreen() {
+    val viewModel = koinViewModel<CashClosureRecordsScreenViewModel>()
+    CashClosureRecordsScreenContent(viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
+private fun CashClosureRecordsScreenContent(viewModel: CashClosureRecordsScreenViewModel) {
     val state = viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -69,22 +68,11 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 0.dp)
-                        //.height(500.dp)
+                        .height(500.dp)
                 ) {
                     viewModel.state.collectAsState().value.selectedSale?.let {
                         SaleDetailsDialogScreen(it) { shouldReload ->
-                            if (shouldReload){
-                                val startDate = state.value.selectedDateStart
-                                val endDate = state.value.selectedDateEnd
-
-                                if (startDate != null && endDate != null){
-                                    println("DIEGO: Reloading sales with dates: $startDate - $endDate")
-                                    viewModel.getSalesBetweenDates(startDate, endDate)
-                                } else {
-                                    println("DIEGO: Reloading sales without dates")
-                                    viewModel.getThisMonthSales()
-                                }
-                            }
+                            if (shouldReload) viewModel.getCashClosureRecords()
 
                             scope.launch { scaffoldState.bottomSheetState.hide() }
                         }
@@ -96,16 +84,15 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.onTertiary),
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
                 ) {
                     CurrentMonthDateRangePicker { start, end ->
-                        viewModel.setSelectedDateRange(start, end)
-                        if (start != null && end != null) viewModel.getSalesBetweenDates(start, end)
+                        if (start != null && end != null) viewModel.getCashClosureRecordsBetweenDates(start, end)
                     }
                 }
 
                 Column(
-                    modifier = Modifier.padding(horizontal = 8.dp).fillMaxSize()
+                    modifier = Modifier.padding(8.dp).fillMaxSize()
                 ) {
                     OutlinedTextField(
                         value = "$${state.value.total}",
@@ -127,15 +114,15 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 8.dp, top = 0.dp, end = 8.dp, bottom = 8.dp),
+                            .padding(8.dp),
                     )
 
-                    if (state.value.sales.isEmpty()) {
+                    if (state.value.CashClosureRecords.isEmpty()) {
                         EmptyScreen()
                     }
 
                     LazyColumn {
-                        items(state.value.sales) { sale ->
+                        items(state.value.CashClosureRecords) { sale ->
                             SaleItem(sale) { selectedSale ->
                                 println("SaleItem clicked: ${selectedSale.id}")
                                 viewModel.setSelectedSale(selectedSale)
@@ -215,3 +202,6 @@ private fun EmptyScreen(modifier: Modifier = Modifier) {
         }
     }
 }
+
+
+ */

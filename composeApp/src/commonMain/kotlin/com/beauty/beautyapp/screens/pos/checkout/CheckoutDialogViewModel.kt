@@ -30,12 +30,12 @@ class CheckoutDialogViewModel(private val beautyApi: BeautyApi) : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
             try {
-                val payments = listOf(
+                val payments = state.value.payments.map {
                     Payment(
-                        paymentType = state.value.paymentType,
-                        total = state.value.total
+                        paymentType = it.paymentType.value,
+                        total = it.total
                     )
-                )
+                }
                 beautyApi.registerSale(
                     Sale(
                         saleDetails = saleDetails,
@@ -53,19 +53,64 @@ class CheckoutDialogViewModel(private val beautyApi: BeautyApi) : ViewModel() {
         _state.value = CheckoutDialogState()
     }
 
-    fun updatePaymentType(paymentType: String) {
-        _state.value = _state.value.copy(paymentType = paymentType)
+    fun updatePayment(oldPaymentType: PaymentType, updatedPosPayment: PosPayment) {
+        val updatedPayments = _state.value.payments.map { payment ->
+            if (payment.paymentType.value == oldPaymentType.value) {
+                updatedPosPayment
+            } else payment
+        }
+        _state.value = _state.value.copy(payments = updatedPayments)
+
+        setRemainingTotal()
+    }
+
+    fun addPayment() {
+        val newPayment = PosPayment(
+            getPaymentTypes().first(),
+            state.value.remainingTotal
+        )
+        _state.value = _state.value.copy(payments = _state.value.payments + newPayment)
+        setRemainingTotal()
     }
 
     fun setTotal(total: Double) {
-        _state.value = _state.value.copy(total = total)
+        _state.value = _state.value.copy(total = total, remainingTotal = total)
+    }
+
+    fun setRemainingTotal() {
+        _state.value = _state.value.copy(
+            remainingTotal = _state.value.total - _state.value.payments.sumOf { it.total }
+        )
+    }
+
+    fun getPaymentTypes(): List<PaymentType> {
+        val availablePaymentTypes = listOf(
+            PaymentType("Efectivo", "cash"),
+            PaymentType("Tarjeta", "card"),
+            PaymentType("Transferencia", "transfer")
+        )
+
+        return availablePaymentTypes.filter {
+            state.value.payments.none { payment -> payment.paymentType.value == it.value }
+        }
     }
 }
 
 data class CheckoutDialogState(
     val total: Double = 0.0,
-    val paymentType: String = "card",
+    val remainingTotal: Double = 0.0,
+    val payments: List<PosPayment> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val success: Boolean = false
+)
+
+data class PosPayment(
+    val paymentType: PaymentType,
+    val total: Double
+)
+
+data class PaymentType(
+    val display: String,
+    val value: String
 )

@@ -2,6 +2,7 @@ package com.beauty.beautyapp.data.remote
 
 import com.beauty.beautyapp.data.local.session.SessionRepository
 import com.beauty.beautyapp.model.CashClosure
+import com.beauty.beautyapp.model.CreateCashClosureRequest
 import com.beauty.beautyapp.model.Employee
 import com.beauty.beautyapp.model.Home
 import com.beauty.beautyapp.model.Login
@@ -10,7 +11,6 @@ import com.beauty.beautyapp.model.Service
 import com.beauty.beautyapp.model.Product
 import com.beauty.beautyapp.model.Sale
 import com.beauty.beautyapp.model.SaleApiResponse
-import com.beauty.beautyapp.model.SaleDetailApiResponse
 import com.beauty.beautyapp.model.SaleDetailEditApiRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -43,9 +43,13 @@ interface BeautyApi {
     suspend fun deleteSaleDetail(saleDetailId: Int): String?
 
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
+    suspend fun createCashClosure(): String?
 }
 
-class KtorBeautyApi(private val client: HttpClient, private val sessionRepository: SessionRepository) : BeautyApi {
+class KtorBeautyApi(
+    private val client: HttpClient,
+    private val sessionRepository: SessionRepository
+) : BeautyApi {
     companion object {
         private const val API_URL =
             "http://157.230.63.57:3000/api/"
@@ -108,7 +112,8 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
         return try {
             println("KtorBeautyApi: getSales")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "sales/sales-between?partnerId=$partnerId&startEpoch=$start&endEpoch=$end").body()
+            client.get(API_URL + "sales/sales-between?partnerId=$partnerId&startEpoch=$start&endEpoch=$end")
+                .body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -260,6 +265,21 @@ class KtorBeautyApi(private val client: HttpClient, private val sessionRepositor
             if (e is CancellationException) throw e
             e.printStackTrace()
             throw e
+        }
+    }
+
+    override suspend fun createCashClosure(): String? {
+        return try {
+            println("KtorBeautyApi: getCashClosure")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.post(API_URL + "cash_closure/create") {
+                contentType(ContentType.Application.Json)
+                setBody(CreateCashClosureRequest(partnerId, ""))
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
         }
     }
 }

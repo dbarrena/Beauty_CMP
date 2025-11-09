@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.beauty.beautyapp.model.BeautyItem
 import com.beauty.beautyapp.model.Product
@@ -25,7 +26,11 @@ fun SearchDialogItem(beautyItem: BeautyItem, onClick: (beautyItem: BeautyItem) -
             onClick(beautyItem)
         },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            containerColor = Color.White
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary
         ),
     ) {
         Column(
@@ -37,29 +42,34 @@ fun SearchDialogItem(beautyItem: BeautyItem, onClick: (beautyItem: BeautyItem) -
             ) {
                 Text(
                     text = beautyItem.name,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF353D3C)
                 )
 
                 Text(
                     text = "$${beautyItem.price}",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF353D3C)
                 )
             }
             if (beautyItem is Product) {
                 beautyItem.category?.let {
                     Text(
                         text = "Categoria: ${beautyItem.category}",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF353D3C)
                     )
                 }
                 Text(
                     text = "Producto",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF353D3C)
                 )
             } else{
                 Text(
                     text = "Servicio",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF353D3C)
                 )
             }
         }

@@ -16,3 +16,9 @@ data class CashClosureItem(
     val total: String,
     val count: Int
 )
+
+@Serializable
+data class CreateCashClosureRequest(
+    val partnerId: Int,
+    val notes: String
+)

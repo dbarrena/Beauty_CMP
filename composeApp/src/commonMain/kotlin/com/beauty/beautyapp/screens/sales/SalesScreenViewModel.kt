@@ -22,11 +22,13 @@ class SalesScreenViewModel(private val beautyApi: BeautyApi) : ViewModel() {
 
     init {
         _state.value = _state.value.copy(isLoading = true)
-        getSales()
+        getThisMonthSales()
     }
 
     @OptIn(ExperimentalTime::class)
-    fun getSales() {
+    fun getThisMonthSales() {
+        _state.value = _state.value.copy(isLoading = true)
+
         viewModelScope.launch {
             val sales = beautyApi.getThisMonthSales()
                 .sortedByDescending { it.id }
@@ -43,6 +45,8 @@ class SalesScreenViewModel(private val beautyApi: BeautyApi) : ViewModel() {
                 total = total.roundTo2Decimals(),
                 isLoading = false
             )
+
+            _state.value = _state.value.copy(isLoading = false)
         }
     }
 
@@ -87,6 +91,10 @@ class SalesScreenViewModel(private val beautyApi: BeautyApi) : ViewModel() {
     fun Double.roundTo2Decimals(): Double {
         return (this * 100).roundToLong() / 100.0
     }
+
+    fun setSelectedDateRange(start: Long?, end: Long?) {
+        _state.value = _state.value.copy(selectedDateStart = start, selectedDateEnd = end)
+    }
 }
 
 data class SalesScreenState(
@@ -94,4 +102,6 @@ data class SalesScreenState(
     val sales: List<SaleApiResponse> = emptyList(),
     val selectedSale: SaleApiResponse? = null,
     val isLoading: Boolean = false,
+    val selectedDateStart: Long? = null,
+    val selectedDateEnd: Long? = null
 )

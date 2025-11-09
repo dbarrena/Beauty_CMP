@@ -1,28 +1,28 @@
 package com.beauty.beautyapp
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,7 +32,11 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -42,7 +46,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.beauty.beautyapp.screens.calendar.CalendarScreen
-import com.beauty.beautyapp.screens.cash_closure.CashClosureScreen
+import com.beauty.beautyapp.screens.cash_closure.create.CashClosureScreen
 import com.beauty.beautyapp.screens.configuration.ConfigurationScreen
 import com.beauty.beautyapp.screens.home.HomeScreen
 import com.beauty.beautyapp.screens.login.LoginScreen
@@ -51,6 +55,7 @@ import com.beauty.beautyapp.screens.product_service.ProductServiceScreen
 import com.beauty.beautyapp.screens.sales.SalesScreen
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
+import com.beauty.beautyapp.ui.theme.LightBeautyColorScheme
 
 @Serializable
 object HomeDestination
@@ -83,7 +88,7 @@ object CashClosureDestination
 @Composable
 fun App() {
     MaterialTheme(
-        colorScheme = lightColorScheme()
+        colorScheme = LightBeautyColorScheme
     ) {
         val navController: NavHostController = rememberNavController()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -143,6 +148,18 @@ fun App() {
                                         }
                                     }
                                 },
+                                actions = {
+                                    IconButton(
+                                        onClick = {
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.AccountCircle,
+                                            contentDescription = "Profile",
+                                            tint = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+                                },
                                 colors = TopAppBarDefaults.topAppBarColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -154,62 +171,115 @@ fun App() {
                 bottomBar = {
                     //AnimatedVisibility(visible = showBottomNav) {
                     if (showBottomNav && isLoggedIn) {
-                        NavigationBar(
-                            modifier = Modifier.height(105.dp),
-                        ) {
-                            NavigationBarItem(
-                                icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                                //label = { Text("Inicio") },
-                                selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
-                                onClick = {
-                                    navController.navigate(HomeDestination)
-                                }
+                        Column {
+                            Divider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant
                             )
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        Icons.Default.CalendarMonth,
-                                        contentDescription = null
+                            NavigationBar(
+                                modifier = Modifier.height(105.dp),
+                                containerColor = Color.White,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ) {
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.Home,
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    //label = { Text("Inicio") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
+                                    onClick = {
+                                        navController.navigate(HomeDestination)
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
                                     )
-                                },
-                                //label = { Text("POS") },
-                                selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
-                                onClick = {
-                                    navController.navigate(CalendarDestination)
-                                }
-                            )
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        Icons.Default.ShoppingCart,
-                                        contentDescription = null
+                                )
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.CalendarMonth,
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    //label = { Text("POS") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
+                                    onClick = {
+                                        navController.navigate(CalendarDestination)
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
                                     )
-                                },
-                                //label = { Text("POS") },
-                                selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
-                                onClick = {
-                                    navController.navigate(PosDestination)
-                                }
-                            )
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        Icons.Filled.AttachMoney,
-                                        contentDescription = null
+                                )
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.ShoppingCart,
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    //label = { Text("POS") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
+                                    onClick = {
+                                        navController.navigate(PosDestination)
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
                                     )
-                                },
-                                //label = { Text("Ventas") },
-                                selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
-                                onClick = { navController.navigate(SalesDestination) }
-                            )
-                            NavigationBarItem(
-                                icon = { Icon(Icons.Default.Apps, contentDescription = null) },
-                                //label = { Text("Configuracion") },
-                                selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
-                                onClick = {
-                                    navController.navigate(ConfigurationDestination)
-                                }
-                            )
+                                )
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            Icons.Filled.AttachMoney,
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    //label = { Text("Ventas") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
+                                    onClick = { navController.navigate(SalesDestination) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
+                                    )
+                                )
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.Apps,
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    //label = { Text("Configuracion") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
+                                    onClick = {
+                                        navController.navigate(ConfigurationDestination)
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
+                                    )
+                                )
+                            }
                         }
                     }
                 },
