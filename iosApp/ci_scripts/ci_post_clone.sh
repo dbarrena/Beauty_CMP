@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "=============================="
 echo " Xcode Cloud post-clone setup "
 echo "=============================="
-
 echo ""
+
 echo "📍 Environment info:"
 echo "CI_WORKSPACE_PATH=$CI_WORKSPACE_PATH"
 echo "CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
@@ -13,32 +13,33 @@ echo "CI_DERIVED_DATA_PATH=$CI_DERIVED_DATA_PATH"
 echo "Machine architecture: $(uname -m)"
 echo ""
 
-echo "🔎 Resolving Java 17..."
+############################################
+# Locate Java using macOS java_home
+############################################
+echo "🔎 Looking for Java using /usr/libexec/java_home ..."
 
-JAVA_HOME_PATH=""
+JAVA_HOME_PATH=$(/usr/libexec/java_home 2>/dev/null || true)
 
-if /usr/libexec/java_home -v 17 >/dev/null 2>&1; then
-  JAVA_HOME_PATH=$(/usr/libexec/java_home -v 17)
-  echo "✅ Java 17 already installed at:"
-  echo "   $JAVA_HOME_PATH"
-else
-  echo "⚠️ Java 17 not found — installing Temurin 17 via Homebrew"
-
-  brew update
-  brew install temurin@17
-
-  JAVA_HOME_PATH=$(/usr/libexec/java_home -v 17)
-  echo "✅ Installed Java at:"
-  echo "   $JAVA_HOME_PATH"
+if [ -z "$JAVA_HOME_PATH" ]; then
+  echo "❌ ERROR: No Java runtime found via /usr/libexec/java_home"
+  echo "Xcode Cloud image does not expose a JDK."
+  exit 1
 fi
+
+echo "✅ Java found at:"
+echo "$JAVA_HOME_PATH"
 
 export JAVA_HOME="$JAVA_HOME_PATH"
 export PATH="$JAVA_HOME/bin:$PATH"
 
+############################################
+# Verify Java
+############################################
 echo ""
-echo "🔍 Java verification:"
-"$JAVA_HOME/bin/java" -version
-
+echo "☕ Java version check:"
+java -version || {
+  echo "❌ Java exists but cannot be executed"
+  exit 1
+}
 echo ""
-echo "✅ Java environment ready"
-echo "=============================="
+echo "✅ Post-clone setup completed successfully"
