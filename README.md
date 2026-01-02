@@ -1,1 +1,1 @@
-# Beauty Compose Multiplatform
+# Lasso Compose Multiplatform

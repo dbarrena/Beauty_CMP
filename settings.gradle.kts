@@ -1,4 +1,4 @@
-rootProject.name = "BeautyApp"
+rootProject.name = "LassoApp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

@@ -73,11 +73,11 @@ room {
 }
 
 android {
-    namespace = "com.beauty.beautyapp"
+    namespace = "com.lasso.lassoapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.beauty.beautyapp"
+        applicationId = "com.lasso.lassoapp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

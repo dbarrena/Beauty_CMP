@@ -1,0 +1,25 @@
+package com.lasso.lassoapp.model
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+sealed interface LassoItem {
+    val id: Int?
+    val name: String
+    val price: String
+    val type: String
+}
+
+@Serializable
+data class Service(
+    override val name: String,
+    override val id: Int? = null,
+    override val type: String = "service",
+    val description: String? = null,
+    override val price: String,
+    @SerialName("duration_minutes")
+    val durationMinutes: Int? = null,
+    @SerialName("partner_id") val partnerId: Int? = null,
+    @SerialName("created_at") val createdAt: Long? = null,
+    @SerialName("updated_at") val updatedAt: Long? = null,
+) : LassoItem
