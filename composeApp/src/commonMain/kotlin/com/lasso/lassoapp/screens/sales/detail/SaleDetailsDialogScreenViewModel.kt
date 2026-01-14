@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
+import com.lasso.lassoapp.model.SaleEditDateApiRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,21 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
                 isLoading = false
             )
             onSaleDetailEdited()
+        }
+    }
+
+    fun editSaleDate(
+        saleEditDateApiRequest: SaleEditDateApiRequest,
+        onSaleDateEdited: () -> Unit
+    ) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+            lassoApi.editSaleDate(saleEditDateApiRequest)
+            _state.value = _state.value.copy(
+                dismissShouldReload = true,
+                isLoading = false
+            )
+            onSaleDateEdited()
         }
     }
 
@@ -89,7 +105,9 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
     }
 
     fun resetState() {
-        _state.value = SalesDetailScreenState()
+        _state.value = _state.value.copy(
+            dismissShouldReload = false
+        )
     }
 }
 

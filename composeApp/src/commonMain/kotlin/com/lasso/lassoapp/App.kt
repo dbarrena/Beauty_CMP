@@ -43,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import com.lasso.lassoapp.screens.calendar.CalendarScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
+import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.PosScreen
@@ -306,8 +307,16 @@ fun App() {
                                 viewModel.setLoggedOut()
                                 navController.navigate(LoginDestination)
                             }
-                        ) {
-                            navController.navigate(CashClosureDestination)
+                        ) { destination ->
+                            when (destination) {
+                                ConfigurationScreenRoutes.EDIT_PRODUCTS_SERVICES -> {
+                                    navController.navigate(ProductServiceDestination)
+                                }
+
+                                ConfigurationScreenRoutes.CASH_CLOSURE -> {
+                                    navController.navigate(CashClosureDestination)
+                                }
+                            }
                         }
                     }
                     composable<ProductServiceDestination> {

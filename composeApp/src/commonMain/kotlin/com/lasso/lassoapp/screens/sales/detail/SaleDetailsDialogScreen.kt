@@ -28,8 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.SaleApiResponse
+import com.lasso.lassoapp.model.SaleEditDateApiRequest
+import com.lasso.lassoapp.screens.sales.detail.edit_date.SaleDateEditDialogScreen
 import com.lasso.lassoapp.screens.sales.detail.edit_dialog.SaleDetailEditDialogScreen
 import com.lasso.lassoapp.screens.utils.DeleteButton
+import com.lasso.lassoapp.screens.utils.toEpochMillisToLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +67,7 @@ fun SaleDetailsDialogScreenContent(
         ) {
             IconButton(
                 onClick = {
+                    viewModel.resetState()
                     onDismiss(state.value.dismissShouldReload)
                 },
             ) {
@@ -96,13 +100,34 @@ fun SaleDetailsDialogScreenContent(
                     .padding(8.dp)
             )
 
-            Text(
-                text = "Fecha: ${state.value.sale?.formattedDate}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .weight(0.5f)
-                    .padding(8.dp)
-            )
+            /*Row {
+                Text(
+                    text = "Fecha: ${state.value.sale?.formattedDate}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .padding(8.dp)
+                        .clickable {
+
+                        }
+                )
+            }*/
+
+            state.value.sale?.let {
+                println("DIEGO *** ${it}")
+                SaleDateEditDialogScreen(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .padding(8.dp),
+                    saleDate = it.createdAt.toEpochMillisToLocalDateTime().date,
+                    onDateSelected = { selectedDate ->
+                        viewModel.editSaleDate(SaleEditDateApiRequest(selectedDate, it.id)) {
+                            isEditSaleDetailDialogDisplayed.value = false
+                            viewModel.refreshSale()
+                        }
+                    }
+                )
+            }
         }
 
         Row(

@@ -64,12 +64,14 @@ class CheckoutDialogViewModel(private val lassoApi: LassoApi) : ViewModel() {
         setRemainingTotal()
     }
 
-    fun addPayment() {
-        val newPayment = PosPayment(
-            getPaymentTypes().first(),
-            state.value.remainingTotal
-        )
-        _state.value = _state.value.copy(payments = _state.value.payments + newPayment)
+    fun addPayment(updatedPosPayment: PosPayment) {
+        _state.value = _state.value.copy(payments = _state.value.payments + updatedPosPayment)
+        setRemainingTotal()
+    }
+
+    fun removePayment(paymentType: PaymentType) {
+        val updatedPayments = _state.value.payments.filter { it.paymentType.value != paymentType.value }
+        _state.value = _state.value.copy(payments = updatedPayments)
         setRemainingTotal()
     }
 

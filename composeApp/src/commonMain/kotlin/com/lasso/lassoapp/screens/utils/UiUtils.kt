@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
@@ -78,7 +79,8 @@ fun StylizedTextField(
     onValueChange: (String) -> Unit = {},
     onClick: () -> Unit = {},
     keyboardActions: KeyboardActions? = null,
-    keyboardOptions: KeyboardOptions? = null
+    keyboardOptions: KeyboardOptions? = null,
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = body,
@@ -100,7 +102,7 @@ fun StylizedTextField(
         ),
         keyboardActions = keyboardActions ?: KeyboardActions.Default,
         keyboardOptions = keyboardOptions ?: KeyboardOptions.Default,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
     )

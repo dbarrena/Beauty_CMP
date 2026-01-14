@@ -150,10 +150,14 @@ private fun SalesScreenContent(viewModel: SalesScreenViewModel) {
 
 @Composable
 private fun SaleItem(sale: SaleApiResponse, onSaleClick: (SaleApiResponse) -> Unit = {}) {
-    val paymentType = when (sale.payments.first().paymentType) {
-        "cash" -> "Efectivo"
-        "transfer" -> "Transferencia"
-        else -> "Tarjeta"
+    val paymentType = sale.payments.joinToString(", ") { payment ->
+        val typeLabel = when (payment.paymentType) {
+            "cash" -> "Efectivo"
+            "transfer" -> "Transferencia"
+            else -> "Tarjeta"
+        }
+
+        "$typeLabel (${payment.total})"
     }
 
     Card(

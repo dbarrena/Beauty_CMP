@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 fun Long.toLocalDateTimeString(): String {
@@ -46,3 +47,7 @@ fun LocalDate.formatDdMmYyyy(): String {
     val year = year.toString()
     return "$day/$month/$year"
 }
+
+fun LocalDateTime.toEpochMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long =
+    this.toInstant(timeZone).toEpochMilliseconds()
+

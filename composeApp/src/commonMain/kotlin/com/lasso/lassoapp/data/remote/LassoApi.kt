@@ -12,6 +12,7 @@ import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
+import com.lasso.lassoapp.model.SaleEditDateApiRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -44,6 +45,8 @@ interface LassoApi {
 
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun createCashClosure(): String?
+
+    suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
 }
 
 class KtorLassoApi(
@@ -275,6 +278,20 @@ class KtorLassoApi(
             client.post(API_URL + "cash_closure/create") {
                 contentType(ContentType.Application.Json)
                 setBody(CreateCashClosureRequest(partnerId, ""))
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String? {
+        return try {
+            println("KtorBeautyApi: editSaleDate")
+            client.post(API_URL + "sales/edit/date/${saleEditDateRequest.saleId}") {
+                contentType(ContentType.Application.Json)
+                setBody(saleEditDateRequest)
             }.body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e

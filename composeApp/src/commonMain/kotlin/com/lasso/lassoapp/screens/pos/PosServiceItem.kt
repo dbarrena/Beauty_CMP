@@ -1,9 +1,11 @@
 package com.lasso.lassoapp.screens.pos
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -15,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -27,13 +30,13 @@ fun PosLassoItem(
     Card(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            /*.border(
+            .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShape(12.dp)
-            )*/,
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         onClick = { onItemClicked(item) }

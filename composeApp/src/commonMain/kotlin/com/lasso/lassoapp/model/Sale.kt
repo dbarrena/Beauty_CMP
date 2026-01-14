@@ -54,3 +54,9 @@ data class SaleDetailEditApiRequest(
     val quantity: Int,
     val price: Double,
 )
+
+@Serializable
+data class SaleEditDateApiRequest(
+    @SerialName("created_at") val createdAt: Long,
+    val saleId: Int
+)
