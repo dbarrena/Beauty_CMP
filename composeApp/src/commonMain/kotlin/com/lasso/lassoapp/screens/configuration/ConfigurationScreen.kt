@@ -82,6 +82,22 @@ fun ConfigurationScreenContent(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS) },
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+            ) {
+                Text(
+                    text = "Registro cortes de caja",
+                    modifier = Modifier.padding(24.dp),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable { viewModel.logout() },
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(
@@ -100,5 +116,6 @@ fun ConfigurationScreenContent(
 
 enum class ConfigurationScreenRoutes {
     EDIT_PRODUCTS_SERVICES,
-    CASH_CLOSURE
+    CASH_CLOSURE,
+    CASH_CLOSURE_RECORDS
 }

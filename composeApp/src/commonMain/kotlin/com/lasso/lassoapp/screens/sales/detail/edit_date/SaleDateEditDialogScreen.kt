@@ -22,8 +22,9 @@ import com.lasso.lassoapp.screens.utils.toEpochMillis
 import com.lasso.lassoapp.screens.utils.toEpochMillisToLocalDateTime
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun SaleDateEditDialogScreen(
     saleDate: LocalDate,

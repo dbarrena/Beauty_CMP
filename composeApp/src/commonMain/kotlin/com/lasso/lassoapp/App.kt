@@ -42,6 +42,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lasso.lassoapp.screens.calendar.CalendarScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
+import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
@@ -80,6 +81,9 @@ object CalendarDestination
 @Serializable
 object CashClosureDestination
 
+@Serializable
+object CashClosureRecordsDestination
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
@@ -107,6 +111,7 @@ fun App() {
             DetailDestination::class.qualifiedName -> "Detalle"
             CalendarDestination::class.qualifiedName -> "Calendario de citas"
             CashClosureDestination::class.qualifiedName -> "Corte de caja"
+            CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
             else -> ""
         }
 
@@ -316,6 +321,10 @@ fun App() {
                                 ConfigurationScreenRoutes.CASH_CLOSURE -> {
                                     navController.navigate(CashClosureDestination)
                                 }
+
+                                ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS -> {
+                                    navController.navigate(CashClosureRecordsDestination)
+                                }
                             }
                         }
                     }
@@ -333,6 +342,9 @@ fun App() {
                     }
                     composable<CashClosureDestination> {
                         CashClosureScreen()
+                    }
+                    composable< CashClosureRecordsDestination> {
+                        CashClosureRecordsScreen()
                     }
                 }
             }

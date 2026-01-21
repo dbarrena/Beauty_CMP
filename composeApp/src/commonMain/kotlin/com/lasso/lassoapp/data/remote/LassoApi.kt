@@ -2,6 +2,7 @@ package com.lasso.lassoapp.data.remote
 
 import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.model.CashClosure
+import com.lasso.lassoapp.model.CashClosureRecordsResponse
 import com.lasso.lassoapp.model.CreateCashClosureRequest
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Home
@@ -13,6 +14,7 @@ import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
 import com.lasso.lassoapp.model.SaleEditDateApiRequest
+import com.lasso.lassoapp.model.TopSellersResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -36,16 +38,17 @@ interface LassoApi {
     suspend fun getSale(id: Int): SaleApiResponse?
     suspend fun getEmployeeById(id: Int): Employee?
     suspend fun getHome(): Home?
+
+    suspend fun getHomeTopSellers(): TopSellersResponse?
     suspend fun login(login: Login): LoginResponse
     suspend fun getOpenCashClosure(): CashClosure?
-
     suspend fun deleteSale(saleId: Int): String?
 
     suspend fun deleteSaleDetail(saleDetailId: Int): String?
 
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun createCashClosure(): String?
-
+    suspend fun getCashClosureRecords(): List<CashClosureRecordsResponse>
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
 }
 
@@ -206,6 +209,18 @@ class KtorLassoApi(
         }
     }
 
+    override suspend fun getHomeTopSellers(): TopSellersResponse? {
+        return try {
+            println("KtorBeautyApi: getHomeTopSellers")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "home/top-sellers?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
     override suspend fun login(
         login: Login
     ): LoginResponse {
@@ -283,6 +298,18 @@ class KtorLassoApi(
             if (e is CancellationException) throw e
             e.printStackTrace()
             null
+        }
+    }
+
+    override suspend fun getCashClosureRecords(): List<CashClosureRecordsResponse> {
+        return try {
+            println("KtorBeautyApi: getCashClosure")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "cash_closure/all?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            listOf()
         }
     }
 

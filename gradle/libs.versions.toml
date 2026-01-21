@@ -13,6 +13,7 @@ lifecycleCompose = "2.9.1"
 ksp = "2.2.0-2.0.2"
 sqlite = "2.5.2"
 androidx-room = "2.7.2"
+vico = "2.4.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -33,6 +34,8 @@ navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-co
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+vico-multiplatform = { group = "com.patrykandpatrick.vico", name = "multiplatform", version.ref = "vico" }
+vico-multiplatform-m3 = { group = "com.patrykandpatrick.vico", name = "multiplatform-m3", version.ref = "vico" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

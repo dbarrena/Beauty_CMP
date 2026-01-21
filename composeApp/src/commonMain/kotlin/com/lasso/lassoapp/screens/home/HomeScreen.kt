@@ -1,5 +1,6 @@
 package com.lasso.lassoapp.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.analytics.TopProductsChart
+import com.lasso.lassoapp.analytics.TopServicesChart
 import com.lasso.lassoapp.model.Home
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,7 +59,7 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        /*Column(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.secondaryContainer)
@@ -77,7 +80,7 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
                     fontWeight = FontWeight.W300
                 ),
             )
-        }*/
+        }
 
         Text(
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 0.dp),
@@ -94,6 +97,30 @@ fun HomeScreenContent(viewModel: HomeScreenViewModel) {
 
         state.value.home?.let {
             MyBusinessGrid(it)
+        }
+
+        state.value.topSellers?.let {
+            Text(
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 0.dp),
+                text = "Servicios mas vendidos",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.W500
+                ),
+            )
+
+            TopServicesChart(it)
+
+            Text(
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 0.dp),
+                text = "Productos mas vendidos",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.W500
+                ),
+            )
+
+            TopProductsChart(it)
         }
     }
 }

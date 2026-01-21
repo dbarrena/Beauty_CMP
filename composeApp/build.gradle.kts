@@ -64,6 +64,9 @@ kotlin {
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
+
+            implementation(libs.vico.multiplatform)
+            implementation(libs.vico.multiplatform.m3)
         }
     }
 }

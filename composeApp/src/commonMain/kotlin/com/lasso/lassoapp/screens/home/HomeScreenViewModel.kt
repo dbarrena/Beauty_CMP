@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.Home
+import com.lasso.lassoapp.model.TopSellersResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,11 +27,12 @@ class HomeScreenViewModel(
                 )
             }
 
-            _state.value = _state.value.copy(isLoading = true)
+            _state.value = _state.value.copy(isLoading = true,)
 
             try {
                 val home = lassoApi.getHome()
-                _state.value = _state.value.copy(home = home)
+                val topSellers = lassoApi.getHomeTopSellers()
+                _state.value = _state.value.copy(home = home, topSellers = topSellers)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(error = e.message)
             } finally {
@@ -45,5 +47,6 @@ data class HomeScreenState(
     val partnerName: String = "",
     val employeeName: String = "",
     val home: Home? = null,
-    val error: String? = null
+    val error: String? = null,
+    val topSellers: TopSellersResponse? = null
 )
