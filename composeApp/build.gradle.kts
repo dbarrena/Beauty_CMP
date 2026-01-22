@@ -47,7 +47,8 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+            implementation(libs.jetbrains.kotlinx.datetime)
+            implementation("io.github.mejdi14:KMP-Searchable-Dropdown:1.1.0")
 
             implementation(libs.navigation.compose)
             implementation(libs.lifecycle.runtime.compose)
