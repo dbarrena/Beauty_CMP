@@ -3,8 +3,10 @@ package com.lasso.lassoapp.screens.configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -41,74 +43,124 @@ fun ConfigurationScreenContent(
     }
 
     state.value.session?.let {
-        Column(
+        LazyColumn(
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StylizedTextField("Empleado: ", it.employeeName)
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.EDIT_PRODUCTS_SERVICES) },
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-            ) {
-                Text(
-                    text = "Productos y Servicios",
-                    modifier = Modifier.padding(24.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
+            item {
+                StylizedTextField("Empleado: ", it.employeeName)
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE) },
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-            ) {
-                Text(
-                    text = "Corte de caja",
-                    modifier = Modifier.padding(24.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.EDIT_PRODUCTS_SERVICES) },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Productos y Servicios",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS) },
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-            ) {
-                Text(
-                    text = "Registro cortes de caja",
-                    modifier = Modifier.padding(24.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.PRODUCT_CATEGORIES) },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Categorias Productos",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.logout() },
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-            ) {
-                Text(
-                    text = "Cerrar Sesión",
-                    modifier = Modifier.padding(24.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE) },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Corte de caja",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS) },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Registro cortes de caja",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onConfigurationNavigation(ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES) },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Ventas por Categoria de Producto",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.logout() },
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                ) {
+                    Text(
+                        text = "Cerrar Sesión",
+                        modifier = Modifier.padding(24.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+
+            item{
+                Spacer(modifier = Modifier.padding(bottom = 12.dp))
             }
         }
     }
@@ -117,5 +169,7 @@ fun ConfigurationScreenContent(
 enum class ConfigurationScreenRoutes {
     EDIT_PRODUCTS_SERVICES,
     CASH_CLOSURE,
-    CASH_CLOSURE_RECORDS
+    CASH_CLOSURE_RECORDS,
+    PRODUCT_CATEGORIES,
+    SALES_BY_PRODUCT_CATEGORIES
 }

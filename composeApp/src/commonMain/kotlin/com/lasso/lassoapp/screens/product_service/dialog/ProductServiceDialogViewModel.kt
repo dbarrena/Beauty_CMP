@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.Product
+import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,10 @@ class ProductServiceDialogViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(ProductDialogState())
     val state: StateFlow<ProductDialogState> = _state.asStateFlow()
+
+    init {
+        getProductCategories()
+    }
 
     fun registerProduct(product: Product) {
         viewModelScope.launch {
@@ -46,10 +51,22 @@ class ProductServiceDialogViewModel(
             dialogType = type
         )
     }
+
+    fun getProductCategories() {
+        viewModelScope.launch {
+            try {
+                val categories = lassoApi.getProductCategories()
+                _state.value = _state.value.copy(productCategories = categories)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(isLoading = false)
+            }
+        }
+    }
 }
 
 data class ProductDialogState(
     val isLoading: Boolean = false,
+    val productCategories: List<ProductCategory> = emptyList(),
     val registeredProduct: Product? = null,
     val registeredService: Service? = null,
     val dialogType: DialogType = DialogType.SERVICE

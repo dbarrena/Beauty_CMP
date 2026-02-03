@@ -48,7 +48,9 @@ import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.PosScreen
+import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
+import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
 import com.lasso.lassoapp.screens.sales.SalesScreen
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,6 +86,11 @@ object CashClosureDestination
 @Serializable
 object CashClosureRecordsDestination
 
+@Serializable
+object ProductCategoriesDestination
+@Serializable
+object SalesByProductCategoriesDestination
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
@@ -112,6 +119,8 @@ fun App() {
             CalendarDestination::class.qualifiedName -> "Calendario de citas"
             CashClosureDestination::class.qualifiedName -> "Corte de caja"
             CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
+            ProductCategoriesDestination::class.qualifiedName -> "Categorias Productos"
+            SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
             else -> ""
         }
 
@@ -325,6 +334,14 @@ fun App() {
                                 ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS -> {
                                     navController.navigate(CashClosureRecordsDestination)
                                 }
+
+                                ConfigurationScreenRoutes.PRODUCT_CATEGORIES -> {
+                                    navController.navigate(ProductCategoriesDestination)
+                                }
+
+                                ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES -> {
+                                    navController.navigate(SalesByProductCategoriesDestination)
+                                }
                             }
                         }
                     }
@@ -343,8 +360,14 @@ fun App() {
                     composable<CashClosureDestination> {
                         CashClosureScreen()
                     }
-                    composable< CashClosureRecordsDestination> {
+                    composable<CashClosureRecordsDestination> {
                         CashClosureRecordsScreen()
+                    }
+                    composable<ProductCategoriesDestination> {
+                        ProductCategoriesScreen()
+                    }
+                    composable<SalesByProductCategoriesDestination> {
+                        SalesByProductCategoryScreen()
                     }
                 }
             }

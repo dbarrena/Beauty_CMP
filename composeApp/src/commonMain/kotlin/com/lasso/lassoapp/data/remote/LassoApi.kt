@@ -10,10 +10,12 @@ import com.lasso.lassoapp.model.Login
 import com.lasso.lassoapp.model.LoginResponse
 import com.lasso.lassoapp.model.Service
 import com.lasso.lassoapp.model.Product
+import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
 import com.lasso.lassoapp.model.SaleEditDateApiRequest
+import com.lasso.lassoapp.model.SalesByProductCategoryApiResponse
 import com.lasso.lassoapp.model.TopSellersResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -50,6 +52,9 @@ interface LassoApi {
     suspend fun createCashClosure(): String?
     suspend fun getCashClosureRecords(): List<CashClosureRecordsResponse>
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
+    suspend fun getProductCategories(): List<ProductCategory>
+    suspend fun registerProductCategory(productCategory: ProductCategory): ProductCategory
+    suspend fun getSalesByProductCategory(start: Long, end: Long, categoryId: Int): SalesByProductCategoryApiResponse?
 }
 
 class KtorLassoApi(
@@ -320,6 +325,55 @@ class KtorLassoApi(
                 contentType(ContentType.Application.Json)
                 setBody(saleEditDateRequest)
             }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun getProductCategories(): List<ProductCategory> {
+        return try {
+            println("KtorBeautyApi: getProductCategories")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "product_categories/all?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            listOf()
+        }
+    }
+
+    override suspend fun registerProductCategory(productCategory: ProductCategory): ProductCategory {
+        return try {
+            println("KtorBeautyApi: registerProductCategory")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+
+            client.post(API_URL + "product_categories/new") {
+                contentType(ContentType.Application.Json)
+                setBody(productCategory.copy(partnerId = partnerId))
+            }.body<ProductCategory>()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e // or return a sensible default, but not emptyList()
+        }
+    }
+
+    override suspend fun getSalesByProductCategory(
+        start: Long,
+        end: Long,
+        categoryId: Int
+    ): SalesByProductCategoryApiResponse? {
+        return try {
+            println("KtorBeautyApi: getSalesByProductCategory")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "reports/products-by-category?" +
+                    "partnerId=$partnerId" +
+                    "&startEpoch=$start" +
+                    "&endEpoch=$end" +
+                    "&categoryId=$categoryId")
+                .body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()

@@ -15,6 +15,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -31,8 +32,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
+import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
+import org.example.dropdown.data.DefaultDropdownItem
+import org.example.dropdown.data.DropdownConfig
+import org.example.dropdown.data.search.SearchSettings
+import org.example.dropdown.data.selection.ItemContentConfig
+import org.example.project.ui.SearchableDropdown
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -61,7 +68,10 @@ private fun ProductDialogContent(
     )
     val nameState = remember { mutableStateOf(lassoItem?.name ?: "") }
     val priceState = remember { mutableStateOf(lassoItem?.price ?: "") }
+
     var titlePrefix = remember { mutableStateOf("") }
+    val showCategoryDialog = remember { mutableStateOf(false) }
+    val selectedCategory = remember { mutableStateOf<ProductCategory?>(null) }
 
     LaunchedEffect(lassoItem) {
         when (lassoItem) {
@@ -124,7 +134,32 @@ private fun ProductDialogContent(
                 maxLines = 3,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
+            Spacer(modifier = Modifier.padding(vertical = 6.dp))
+            if(state.value.dialogType == DialogType.PRODUCT) {
+                OutlinedButton(
+                    onClick = { showCategoryDialog.value = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(selectedCategory.value?.name ?: "Seleccionar categoría producto")
+                }
+
+                ProductCategoryPickerDialog(
+                    isVisible = showCategoryDialog.value,
+                    categories = state.value.productCategories,
+                    onDismiss = { showCategoryDialog.value = false },
+                    onSelect = { cat ->
+                        selectedCategory.value = cat
+                        showCategoryDialog.value = false
+                        // optionally: viewModel.setSelectedCategory(cat)
+                    },
+                    onNew = {
+                        // open another dialog / navigate / call VM to create category
+                        // viewModel.showCreateCategoryDialog()
+                    }
+                )
+            }
             Spacer(modifier = Modifier.padding(vertical = 12.dp))
+
             ProductDialogButton(state.value.isLoading) {
                 if (state.value.dialogType == DialogType.SERVICE) {
                     val newService = Service(
@@ -135,7 +170,8 @@ private fun ProductDialogContent(
                 } else {
                     val newProduct = Product(
                         name = nameState.value,
-                        price = priceState.value
+                        price = priceState.value,
+                        categoryId = selectedCategory.value?.id
                     )
 
                     viewModel.registerProduct(newProduct)
