@@ -7,22 +7,22 @@ val LightLassoColorScheme = lightColorScheme(
     primary = LassoPrimary,
     onPrimary = LassoOnPrimary,
     primaryContainer = LassoPrimaryLight,
-    onPrimaryContainer = LassoDarkGray,
+    onPrimaryContainer = LassoOnSurface,
 
     secondary = LassoSecondary,
     onSecondary = LassoOnSecondary,
     secondaryContainer = LassoSecondaryLight,
-    onSecondaryContainer = LassoDarkGray,
+    onSecondaryContainer = LassoOnSurface,
 
     tertiary = LassoTertiary,
     onTertiary = LassoOnTertiary,
     tertiaryContainer = LassoTertiaryLight,
-    onTertiaryContainer = LassoDarkGray,
+    onTertiaryContainer = LassoOnSurface,
 
     error = LassoError,
     onError = LassoOnError,
 
-    background = LassoBackground,
+    background = LassoPageBackground,
     onBackground = LassoOnBackground,
 
     surface = LassoSurface,
@@ -30,13 +30,13 @@ val LightLassoColorScheme = lightColorScheme(
     surfaceVariant = LassoSurfaceVariant,
     onSurfaceVariant = LassoOnSurfaceVariant,
 
-    outline = LassoGray,
-    outlineVariant = LassoLightGray,
+    outline = LassoOutlineHairline,
+    outlineVariant = LassoDivider,
 
-    // Additional surface colors for better UI hierarchy
-    surfaceContainer = LassoSecondaryLight,
-    surfaceContainerHigh = LassoPrimaryLight,
-    surfaceContainerHighest = LassoLightGray
+    surfaceContainerLowest = LassoPageBackground,
+    surfaceContainer = LassoSurfaceVariant,
+    surfaceContainerHigh = LassoLightGray,
+    surfaceContainerHighest = LassoDivider,
 )
 
 val DarkLassoColorScheme = darkColorScheme(
@@ -69,8 +69,8 @@ val DarkLassoColorScheme = darkColorScheme(
     outline = LassoLightGray,
     outlineVariant = LassoGray,
 
-    // Additional surface colors for dark mode
+    surfaceContainerLowest = LassoDarkGray,
     surfaceContainer = LassoPrimaryDark,
     surfaceContainerHigh = LassoDarkGray,
-    surfaceContainerHighest = LassoGray
+    surfaceContainerHighest = LassoGray,
 )

@@ -3,6 +3,7 @@ package com.lasso.lassoapp
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,7 +26,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -47,14 +48,20 @@ import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.login.LoginScreen
-import com.lasso.lassoapp.screens.pos.PosScreen
+import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
 import com.lasso.lassoapp.screens.sales.SalesScreen
+import lassoapp.composeapp.generated.resources.Res
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
+import com.lasso.lassoapp.ui.theme.lassoTypography
+import lassoapp.composeapp.generated.resources.lasso_icon_full
+import lassoapp.composeapp.generated.resources.lasso_icon_minimal
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.InternalResourceApi
 
 @Serializable
 object HomeDestination
@@ -91,11 +98,12 @@ object ProductCategoriesDestination
 @Serializable
 object SalesByProductCategoriesDestination
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, InternalResourceApi::class)
 @Composable
 fun App() {
     MaterialTheme(
-        colorScheme = LightLassoColorScheme
+        colorScheme = LightLassoColorScheme,
+        typography = lassoTypography(),
     ) {
         val navController: NavHostController = rememberNavController()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -144,7 +152,11 @@ fun App() {
                                     }*/
 
                                     //Crossfade(targetState = titleText) { targetTitle ->
-                                    Text(text = titleText)
+                                    Image(
+                                        painter = painterResource(Res.drawable.lasso_icon_full),
+                                        contentDescription = titleText.ifBlank { "LassoApp" },
+                                        modifier = Modifier.height(67.dp)
+                                    )
                                     //}
                                 },
                                 navigationIcon = {
@@ -164,15 +176,15 @@ fun App() {
                                         }
                                     ) {
                                         Icon(
-                                            Icons.Default.AccountCircle,
+                                            Icons.Default.Notifications,
                                             contentDescription = "Profile",
-                                            tint = MaterialTheme.colorScheme.onPrimary
+                                            tint = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 },
                                 colors = TopAppBarDefaults.topAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    titleContentColor = MaterialTheme.colorScheme.onSurface
                                 ),
                             )
                         }
@@ -310,7 +322,7 @@ fun App() {
                         HomeScreen()
                     }
                     composable<PosDestination> {
-                        PosScreen()
+                        PosScreenV2()
                     }
                     composable<SalesDestination> {
                         SalesScreen()

@@ -92,7 +92,6 @@ class PosViewModel(private val lassoApi: LassoApi) : ViewModel() {
     }
 
     fun removeItem(item: SelectedPosItem) {
-        println("Removing item: $item")
         val updatedItems = state.value.selectedPosItems.filter {
             it.instanceId != item.instanceId
         }
@@ -112,6 +111,30 @@ class PosViewModel(private val lassoApi: LassoApi) : ViewModel() {
     fun restartSelectedItemToEdit() {
         _state.value = state.value.copy(selectedItemToEdit = null)
     }
+
+    fun setCatalogFilter(filter: PosCatalogFilter) {
+        _state.value = state.value.copy(catalogFilter = filter)
+    }
+
+    fun setSearchQuery(query: String) {
+        _state.value = state.value.copy(searchQuery = query)
+    }
+
+    fun filteredCatalogItems(): List<LassoItem> {
+        val s = state.value
+        var list = s.availableItems
+        list = when (s.catalogFilter) {
+            PosCatalogFilter.ALL -> list
+            PosCatalogFilter.SERVICES -> list.filter { it.type.equals("service", ignoreCase = true) }
+            PosCatalogFilter.PRODUCTS -> list.filter { it.type.equals("product", ignoreCase = true) }
+        }
+        val q = s.searchQuery.trim()
+        return if (q.isEmpty()) {
+            list
+        } else {
+            list.filter { it.name.contains(q, ignoreCase = true) }
+        }
+    }
 }
 
 data class PosModelState(
@@ -119,7 +142,9 @@ data class PosModelState(
     val availableItems: List<LassoItem> = emptyList(),
     val selectedPosItems: MutableList<SelectedPosItem> = mutableListOf<SelectedPosItem>(),
     val totalPrice: Double = 0.0,
-    val selectedItemToEdit: SelectedPosItem? = null
+    val selectedItemToEdit: SelectedPosItem? = null,
+    val catalogFilter: PosCatalogFilter = PosCatalogFilter.ALL,
+    val searchQuery: String = "",
 )
 
 @OptIn(ExperimentalUuidApi::class)
