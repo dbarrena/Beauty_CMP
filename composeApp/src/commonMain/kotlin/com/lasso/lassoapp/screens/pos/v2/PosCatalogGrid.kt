@@ -49,7 +49,7 @@ fun PosCatalogGrid(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(0.dp),
                 ) {
                     items(items, key = { "${it.id}-${it.type}-${it.name}" }) { item ->
                         PosCatalogItemCard(
