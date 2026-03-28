@@ -17,7 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.pos.SelectedPosItem
 
 @Composable
@@ -48,13 +50,19 @@ fun PosCartLine(
         ) {
             Text(
                 text = "${item.lassoItem.name}$qtyLabel",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(600),
+                ),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
             Text(
                 text = "$${lineTotal.toPosMoneyString()}",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(700),
+                ),
                 color = MaterialTheme.colorScheme.onSurface,
             )
             IconButton(onClick = onRemove) {
