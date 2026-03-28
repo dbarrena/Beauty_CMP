@@ -3,7 +3,9 @@ package com.lasso.lassoapp.screens.pos.v2
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -49,13 +51,17 @@ fun PosCatalogGrid(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(0.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp),
                 ) {
                     items(items, key = { "${it.id}-${it.type}-${it.name}" }) { item ->
                         PosCatalogItemCard(
                             item = item,
                             onClick = { onItemClick(item) },
                         )
+                    }
+
+                    item{
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }

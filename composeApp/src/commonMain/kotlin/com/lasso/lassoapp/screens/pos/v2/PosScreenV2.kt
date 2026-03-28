@@ -1,16 +1,13 @@
 package com.lasso.lassoapp.screens.pos.v2
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.pos.DisplaySaleAnimation
@@ -37,58 +33,52 @@ fun PosScreenV2() {
     val isSaleRegisteredDisplayed = remember { mutableStateOf(false) }
     val isNuevoDialogDisplayed = remember { mutableStateOf(false) }
 
+    val cartTransitionMs = 280
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+        ) {
+            PosHeader(modifier = Modifier.padding(top = 16.dp))
+            Spacer(Modifier.height(8.dp))
+
+            PosSearchFilterBar(
+                searchQuery = state.value.searchQuery,
+                onSearchQueryChange = viewModel::setSearchQuery,
+                catalogFilter = state.value.catalogFilter,
+                onCatalogFilterChange = viewModel::setCatalogFilter,
+                onNuevoClick = { isNuevoDialogDisplayed.value = true },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            PosCatalogGrid(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                isLoading = state.value.isAvailableItemsLoading,
+                items = viewModel.filteredCatalogItems(),
+                onItemClick = { viewModel.addSelectedItem(it) },
+            )
+
             Column(
                 Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                PosHeader(modifier = Modifier.padding(top = 16.dp))
-                PosSearchFilterBar(
-                    searchQuery = state.value.searchQuery,
-                    onSearchQueryChange = viewModel::setSearchQuery,
-                    catalogFilter = state.value.catalogFilter,
-                    onCatalogFilterChange = viewModel::setCatalogFilter,
-                    onNuevoClick = { isNuevoDialogDisplayed.value = true },
-                )
-                PosCatalogGrid(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    isLoading = state.value.isAvailableItemsLoading,
-                    items = viewModel.filteredCatalogItems(),
-                    onItemClick = { viewModel.addSelectedItem(it) },
-                )
-            }
-
-            val cartTransitionMs = 280
-            AnimatedVisibility(
-                visible = state.value.selectedPosItems.isNotEmpty(),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                enter = slideInVertically(
-                    animationSpec = tween(cartTransitionMs),
-                    initialOffsetY = { it },
-                ) + fadeIn(animationSpec = tween(cartTransitionMs)),
-                exit = slideOutVertically(
-                    animationSpec = tween(cartTransitionMs),
-                    targetOffsetY = { it },
-                ) + fadeOut(animationSpec = tween(cartTransitionMs)),
+                    .animateContentSize(animationSpec = tween(cartTransitionMs)),
             ) {
-                PosBottomSheet(
-                    selectedItems = state.value.selectedPosItems.toList(),
-                    totalPrice = state.value.totalPrice,
-                    onClear = { viewModel.restartPos() },
-                    onLineClick = { viewModel.selectItemToEdit(it) },
-                    onRemove = { viewModel.removeItem(it) },
-                    onCheckout = { isCheckoutDialogDisplayed.value = true },
-                    enabled = state.value.selectedPosItems.isNotEmpty(),
-                )
+                if (state.value.selectedPosItems.isNotEmpty()) {
+                    PosBottomSheet(
+                        selectedItems = state.value.selectedPosItems.toList(),
+                        totalPrice = state.value.totalPrice,
+                        onClear = { viewModel.restartPos() },
+                        onLineClick = { viewModel.selectItemToEdit(it) },
+                        onRemove = { viewModel.removeItem(it) },
+                        onCheckout = { isCheckoutDialogDisplayed.value = true },
+                        enabled = state.value.selectedPosItems.isNotEmpty(),
+                    )
+                }
             }
         }
     }

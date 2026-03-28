@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.pos.SelectedPosItem
@@ -30,13 +31,19 @@ fun PosBottomSheet(
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(
+    Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
                 width = 1.dp,
                 color = Color(0x1A353D3C),
                 shape = PosBottomSheetShape,
+            )
+            .shadow(
+                elevation = 0.dp,
+                shape = PosBottomSheetShape,
+                /*spotColor = Color(0x40000000),
+                ambientColor = Color(0x40000000),*/
             )
             .background(
                 color = MaterialTheme.colorScheme.surface,
@@ -46,9 +53,7 @@ fun PosBottomSheet(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
+        //elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
     ) {
         Column(
             Modifier
@@ -68,7 +73,7 @@ fun PosBottomSheet(
             PosCheckoutBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 totalPrice = totalPrice,
                 onCheckout = onCheckout,
                 enabled = enabled,

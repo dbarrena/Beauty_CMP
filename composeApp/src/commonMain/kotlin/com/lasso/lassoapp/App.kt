@@ -4,9 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -26,6 +29,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -58,8 +62,12 @@ import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
+import lassoapp.composeapp.generated.resources.bell_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full
+import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped
+import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
 import lassoapp.composeapp.generated.resources.lasso_icon_minimal
+import lassoapp.composeapp.generated.resources.trash_icon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.InternalResourceApi
 
@@ -95,6 +103,7 @@ object CashClosureRecordsDestination
 
 @Serializable
 object ProductCategoriesDestination
+
 @Serializable
 object SalesByProductCategoriesDestination
 
@@ -152,21 +161,26 @@ fun App() {
                                     }*/
 
                                     //Crossfade(targetState = titleText) { targetTitle ->
-                                    Image(
-                                        painter = painterResource(Res.drawable.lasso_icon_full),
-                                        contentDescription = titleText.ifBlank { "LassoApp" },
-                                        modifier = Modifier.height(67.dp)
-                                    )
+                                    Box(modifier = Modifier.padding(0.dp)) {
+                                        Image(
+                                            painter = painterResource(Res.drawable.lasso_icon_full_cropped_title_only),
+                                            contentDescription = titleText.ifBlank { "LassoApp" },
+                                            modifier = Modifier.height(20.dp),
+                                        )
+                                    }
                                     //}
                                 },
                                 navigationIcon = {
                                     if (!showMainTopBar) {
-                                        IconButton(onClick = onBackNavigation) {
+                                        IconButton(
+                                            onClick = onBackNavigation
+                                        ) {
                                             Icon(
                                                 Icons.AutoMirrored.Filled.ArrowBack,
                                                 contentDescription = "Back",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+
+                                                )
                                         }
                                     }
                                 },
@@ -176,7 +190,8 @@ fun App() {
                                         }
                                     ) {
                                         Icon(
-                                            Icons.Default.Notifications,
+                                            modifier = Modifier.size(20.dp),
+                                            painter = painterResource(Res.drawable.bell_icon),
                                             contentDescription = "Profile",
                                             tint = MaterialTheme.colorScheme.onSurface
                                         )
@@ -204,6 +219,7 @@ fun App() {
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             ) {
                                 NavigationBarItem(
+                                    modifier = Modifier.padding(8.dp),
                                     icon = {
                                         Icon(
                                             Icons.Default.Home,
@@ -214,14 +230,20 @@ fun App() {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
-                                    //label = { Text("Inicio") },
+                                    label = {
+                                        Text(
+                                            "Inicio",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
                                     onClick = {
                                         navController.navigate(HomeDestination)
                                     },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
-                                    )
+                                    ),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     icon = {
@@ -234,14 +256,20 @@ fun App() {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
-                                    //label = { Text("POS") },
+                                    label = {
+                                        Text(
+                                            "Agenda",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
                                     onClick = {
                                         navController.navigate(CalendarDestination)
                                     },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
-                                    )
+                                    ),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     icon = {
@@ -254,14 +282,20 @@ fun App() {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
-                                    //label = { Text("POS") },
+                                    label = {
+                                        Text(
+                                            "Venta",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
                                     onClick = {
                                         navController.navigate(PosDestination)
                                     },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
-                                    )
+                                    ),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     icon = {
@@ -274,12 +308,18 @@ fun App() {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
-                                    //label = { Text("Ventas") },
+                                    label = {
+                                        Text(
+                                            "Ventas",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
                                     onClick = { navController.navigate(SalesDestination) },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
-                                    )
+                                    ),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     icon = {
@@ -292,14 +332,20 @@ fun App() {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
-                                    //label = { Text("Configuracion") },
+                                    label = {
+                                        Text(
+                                            "Mas",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
                                     onClick = {
                                         navController.navigate(ConfigurationDestination)
                                     },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
-                                    )
+                                    ),
+                                    alwaysShowLabel = false
                                 )
                             }
                         }

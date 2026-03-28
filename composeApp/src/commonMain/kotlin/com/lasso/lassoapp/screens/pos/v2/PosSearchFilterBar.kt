@@ -75,13 +75,13 @@ fun PosSearchFilterBar(
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier
-                .width(270.dp)
+                .width(200.dp)
                 .height(controlHeight)
-                .border(
+                /*.border(
                     width = 1.dp,
                     color = searchBorderColor,
                     shape = shape
-                )
+                )*/
                 .background(MaterialTheme.colorScheme.surface, shape)
                 .padding(horizontal = 12.dp),
             interactionSource = interactionSource,
