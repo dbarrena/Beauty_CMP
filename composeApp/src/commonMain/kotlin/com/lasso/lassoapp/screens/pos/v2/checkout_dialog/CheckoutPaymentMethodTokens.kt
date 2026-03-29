@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2.checkout
+package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp

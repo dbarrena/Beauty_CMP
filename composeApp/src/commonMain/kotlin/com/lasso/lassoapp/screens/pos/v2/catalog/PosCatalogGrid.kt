@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2
+package com.lasso.lassoapp.screens.pos.v2.catalog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

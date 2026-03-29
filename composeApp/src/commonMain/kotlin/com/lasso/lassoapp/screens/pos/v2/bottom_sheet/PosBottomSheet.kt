@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2
+package com.lasso.lassoapp.screens.pos.v2.bottom_sheet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.pos.SelectedPosItem
+import com.lasso.lassoapp.screens.pos.v2.bottom_sheet.cart.PosCart
 
 /** Top corners only so the sheet sits flush with the bottom edge like a standard bottom sheet. */
 private val PosBottomSheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)

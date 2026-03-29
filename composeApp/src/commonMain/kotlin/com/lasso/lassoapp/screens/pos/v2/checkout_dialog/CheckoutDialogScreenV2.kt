@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2.checkout
+package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +35,6 @@ import lassoapp.composeapp.generated.resources.checkout_chevron_right_teal
 import lassoapp.composeapp.generated.resources.checkout_payment_acredito
 import lassoapp.composeapp.generated.resources.checkout_payment_efectivo
 import lassoapp.composeapp.generated.resources.checkout_payment_multiples
-import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_credito
 import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 

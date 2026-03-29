@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2
+package com.lasso.lassoapp.screens.pos.v2.bottom_sheet.cart
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

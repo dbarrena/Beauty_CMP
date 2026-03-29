@@ -2,7 +2,6 @@ package com.lasso.lassoapp.screens.pos.v2
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,11 +15,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.pos.DisplaySaleAnimation
 import com.lasso.lassoapp.screens.pos.PosViewModel
-import com.lasso.lassoapp.screens.pos.v2.checkout.CheckoutDialogScreenV2
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogScreenV2
 import com.lasso.lassoapp.screens.pos.edit_dialog.PosEditDialogScreen
+import com.lasso.lassoapp.screens.pos.v2.bottom_sheet.PosBottomSheet
+import com.lasso.lassoapp.screens.pos.v2.catalog.PosCatalogGrid
+import com.lasso.lassoapp.screens.pos.v2.header.PosHeader
+import com.lasso.lassoapp.screens.pos.v2.search_bar.PosSearchFilterBar
 import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -28,6 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun PosScreenV2() {
     val viewModel = koinViewModel<PosViewModel>()
     val state = viewModel.state.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val isCheckoutDialogDisplayed = remember { mutableStateOf(false) }
     val isSaleRegisteredDisplayed = remember { mutableStateOf(false) }
@@ -60,7 +65,10 @@ fun PosScreenV2() {
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 isLoading = state.value.isAvailableItemsLoading,
                 items = viewModel.filteredCatalogItems(),
-                onItemClick = { viewModel.addSelectedItem(it) },
+                onItemClick = { item ->
+                    keyboardController?.hide()
+                    viewModel.addSelectedItem(item)
+                },
             )
 
             Column(

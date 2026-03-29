@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2
+package com.lasso.lassoapp.screens.pos.v2.header
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

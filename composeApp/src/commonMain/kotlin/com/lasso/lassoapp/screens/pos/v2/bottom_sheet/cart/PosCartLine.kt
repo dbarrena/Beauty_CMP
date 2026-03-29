@@ -1,6 +1,5 @@
-package com.lasso.lassoapp.screens.pos.v2
+package com.lasso.lassoapp.screens.pos.v2.bottom_sheet.cart
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.pos.SelectedPosItem
+import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.trash_icon
 import org.jetbrains.compose.resources.painterResource
