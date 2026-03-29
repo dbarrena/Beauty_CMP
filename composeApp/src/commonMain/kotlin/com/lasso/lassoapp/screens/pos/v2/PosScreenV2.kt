@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.pos.DisplaySaleAnimation
 import com.lasso.lassoapp.screens.pos.PosViewModel
-import com.lasso.lassoapp.screens.pos.checkout.CheckoutDialogScreen
+import com.lasso.lassoapp.screens.pos.v2.checkout.CheckoutDialogScreenV2
 import com.lasso.lassoapp.screens.pos.edit_dialog.PosEditDialogScreen
 import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,7 +84,7 @@ fun PosScreenV2() {
     }
 
     if (isCheckoutDialogDisplayed.value) {
-        CheckoutDialogScreen(
+        CheckoutDialogScreenV2(
             items = state.value.selectedPosItems,
             totalPrice = state.value.totalPrice,
             onDismiss = { isSuccess ->
