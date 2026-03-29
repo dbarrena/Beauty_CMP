@@ -33,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.pos.PosCatalogFilter
 import com.lasso.lassoapp.screens.pos.label
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
@@ -104,7 +106,10 @@ fun PosSearchFilterBar(
                         if (searchQuery.isEmpty()) {
                             Text(
                                 text = "Buscar...",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight(400),
+                                ),
                                 color = LassoTextPlaceholder
                             )
                         }
@@ -120,6 +125,7 @@ fun PosSearchFilterBar(
                     .fillMaxWidth()
                     .height(controlHeight),
                 shape = shape,
+                border = null,
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
@@ -127,7 +133,10 @@ fun PosSearchFilterBar(
             ) {
                 Text(
                     text = catalogFilter.label(),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(500),
+                    ),
                     modifier = Modifier.weight(1f)
                 )
                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
