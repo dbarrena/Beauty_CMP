@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
+package com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -37,3 +37,19 @@ internal data class PaymentMethodRowStyle(
     val borderWidth: Dp = CheckoutPaymentMethodTokens.multiplesBorderWidth,
     val rowHeight: Dp = CheckoutPaymentMethodTokens.rowHeightDefault,
 )
+
+/** Figma row/circle fills shared by picker rows and split-payment icon circles. */
+internal object CheckoutPaymentMethodColors {
+    val efectivoRow = Color(0xFFE3F8F4)
+    val efectivoCircle = Color(0xFFB3E5FC)
+    val acreditoRow = Color(0xFFE8F5E9)
+    val acreditoCircle = Color(0xFFA5D6A7)
+    val tarjetaCreditoRow = Color(0xFFFFF8E1)
+    val tarjetaCreditoCircle = Color(0xFFFFE082)
+    val tarjetaDebitoRow = Color(0xFFF3E5F5)
+    val tarjetaDebitoCircle = Color(0xFFCE93D8)
+    val transferenciaRow = Color(0xFFFFE0B2)
+    val transferenciaCircle = Color(0xFFFFB74D)
+    val multiplesRow = Color(0xFFE0F7FA)
+    val multiplesCircle = Color(0xFF80DEEA)
+}

@@ -16,3 +16,8 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+/composeApp/schemas/com.lasso.lassoapp.config.LassoDatabase
+/.cursor/skills/lasso-app
+/.cursor/mcp.json
+/.cursor/plans

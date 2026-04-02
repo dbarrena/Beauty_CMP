@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import com.lasso.lassoapp.screens.pos.DisplaySaleAnimation
 import com.lasso.lassoapp.screens.pos.PosViewModel
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogScreenV2
 import com.lasso.lassoapp.screens.pos.edit_dialog.PosEditDialogScreen
@@ -35,7 +34,6 @@ fun PosScreenV2() {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val isCheckoutDialogDisplayed = remember { mutableStateOf(false) }
-    val isSaleRegisteredDisplayed = remember { mutableStateOf(false) }
     val isNuevoDialogDisplayed = remember { mutableStateOf(false) }
 
     val cartTransitionMs = 280
@@ -98,15 +96,10 @@ fun PosScreenV2() {
             onDismiss = { isSuccess ->
                 isCheckoutDialogDisplayed.value = false
                 if (isSuccess) {
-                    isSaleRegisteredDisplayed.value = true
                     viewModel.restartPos()
                 }
             },
         )
-    }
-
-    if (isSaleRegisteredDisplayed.value) {
-        DisplaySaleAnimation { isSaleRegisteredDisplayed.value = false }
     }
 
     state.value.selectedItemToEdit?.let { item ->

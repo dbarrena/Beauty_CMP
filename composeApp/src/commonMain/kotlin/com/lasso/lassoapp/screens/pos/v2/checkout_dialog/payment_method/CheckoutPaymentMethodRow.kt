@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
+package com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
