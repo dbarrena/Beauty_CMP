@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -119,7 +122,7 @@ internal fun CheckoutSplitPaymentContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(CheckoutPaymentMethodTokens.contentPadding)
+                .padding(CheckoutPaymentMethodTokens.contentPadding),
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -179,94 +182,102 @@ internal fun CheckoutSplitPaymentContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                when(checkoutPaymentMethod) {
-                    CheckoutPaymentMethod.Cash -> {
-                        SplitPaymentRow(
-                            label = "Efectivo",
-                            circleColor = CheckoutPaymentMethodColors.efectivoCircle,
-                            icon = Res.drawable.checkout_payment_efectivo,
-                            value = efectivo,
-                            onValueChange = { efectivo = it },
-                        )
-                    }
-                    CheckoutPaymentMethod.Card -> {
-                        SplitPaymentRow(
-                            label = "Tarjeta de Crédito",
-                            circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                            icon = Res.drawable.checkout_payment_tarjeta_credito,
-                            value = tarjetaCredito,
-                            onValueChange = { tarjetaCredito = it },
-                        )
-                    }
-                    CheckoutPaymentMethod.Transfer -> {
-                        SplitPaymentRow(
-                            label = "Transferencia",
-                            circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
-                            icon = Res.drawable.checkout_payment_transferencia,
-                            value = transferencia,
-                            onValueChange = { transferencia = it },
-                        )
-                    }
-                    CheckoutPaymentMethod.Multiple -> {
-                        SplitPaymentRow(
-                            label = "Efectivo",
-                            circleColor = CheckoutPaymentMethodColors.efectivoCircle,
-                            icon = Res.drawable.checkout_payment_efectivo,
-                            value = efectivo,
-                            onValueChange = { efectivo = it },
-                        )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    when (checkoutPaymentMethod) {
+                        CheckoutPaymentMethod.Cash -> {
+                            SplitPaymentRow(
+                                label = "Efectivo",
+                                circleColor = CheckoutPaymentMethodColors.efectivoCircle,
+                                icon = Res.drawable.checkout_payment_efectivo,
+                                value = efectivo,
+                                onValueChange = { efectivo = it },
+                            )
+                        }
 
-                        SplitPaymentRow(
-                            label = "Tarjeta de Crédito",
-                            circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                            icon = Res.drawable.checkout_payment_tarjeta_credito,
-                            value = tarjetaCredito,
-                            onValueChange = { tarjetaCredito = it },
-                        )
+                        CheckoutPaymentMethod.Card -> {
+                            SplitPaymentRow(
+                                label = "Tarjeta de Crédito",
+                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
+                                icon = Res.drawable.checkout_payment_tarjeta_credito,
+                                value = tarjetaCredito,
+                                onValueChange = { tarjetaCredito = it },
+                            )
+                        }
 
-                        SplitPaymentRow(
-                            label = "Transferencia",
-                            circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
-                            icon = Res.drawable.checkout_payment_transferencia,
-                            value = transferencia,
-                            onValueChange = { transferencia = it },
+                        CheckoutPaymentMethod.Transfer -> {
+                            SplitPaymentRow(
+                                label = "Transferencia",
+                                circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
+                                icon = Res.drawable.checkout_payment_transferencia,
+                                value = transferencia,
+                                onValueChange = { transferencia = it },
+                            )
+                        }
+
+                        CheckoutPaymentMethod.Multiple -> {
+                            SplitPaymentRow(
+                                label = "Efectivo",
+                                circleColor = CheckoutPaymentMethodColors.efectivoCircle,
+                                icon = Res.drawable.checkout_payment_efectivo,
+                                value = efectivo,
+                                onValueChange = { efectivo = it },
+                            )
+
+                            SplitPaymentRow(
+                                label = "Tarjeta de Crédito",
+                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
+                                icon = Res.drawable.checkout_payment_tarjeta_credito,
+                                value = tarjetaCredito,
+                                onValueChange = { tarjetaCredito = it },
+                            )
+
+                            SplitPaymentRow(
+                                label = "Transferencia",
+                                circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
+                                icon = Res.drawable.checkout_payment_transferencia,
+                                value = transferencia,
+                                onValueChange = { transferencia = it },
+                            )
+                        }
+                    }
+
+                    /*SplitPaymentRow(
+                        label = "Tarjeta de Débito",
+                        circleColor = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
+                        icon = Res.drawable.checkout_payment_tarjeta_debito,
+                        value = tarjetaDebito,
+                        onValueChange = { tarjetaDebito = it },
+                    )*/
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = onCompleteSale,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LassoPrimary,
+                            contentColor = Color.White,
+                        ),
+                    ) {
+                        Text(
+                            text = "Dejar $${remaining.toPosMoneyString()} a crédito",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.31).sp,
                         )
                     }
                 }
-
-
-                /*SplitPaymentRow(
-                    label = "Tarjeta de Débito",
-                    circleColor = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
-                    icon = Res.drawable.checkout_payment_tarjeta_debito,
-                    value = tarjetaDebito,
-                    onValueChange = { tarjetaDebito = it },
-                )*/
-
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onCompleteSale,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = LassoPrimary,
-                    contentColor = Color.White,
-                ),
-            ) {
-                Text(
-                    text = "Dejar $${remaining.toPosMoneyString()} a crédito",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-0.31).sp,
-                )
             }
         }
     }

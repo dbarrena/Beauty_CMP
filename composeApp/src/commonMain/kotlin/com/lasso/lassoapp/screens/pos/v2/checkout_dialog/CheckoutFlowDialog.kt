@@ -1,14 +1,12 @@
 package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.screens.pos.SelectedPosItem
@@ -55,22 +54,20 @@ fun CheckoutFlowDialog(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             border = BorderStroke(1.dp, LassoOutlineHairline),
         ) {
-            AnimatedContent(
-                targetState = step,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(220)) togetherWith fadeOut(
-                        animationSpec = tween(180),
-                    ) using SizeTransform(
-                        clip = false,
-                        sizeAnimationSpec = { _, _ -> tween(300) },
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 70,
+                            easing = LinearEasing,
+                        ),
                     )
-                },
-                label = "checkoutFlow",
-            ) { current ->
-                when (current) {
+                    .background(Color.Transparent),
+            ) {
+                when (step) {
                     is CheckoutStep.MethodPicker -> {
                         CheckoutPaymentMethodPickerContent(
-                            //modifier = Modifier.height(600.dp),
                             totalPrice = totalPrice,
                             onClose = { onDismiss(false) },
                             onMethodClicked = { checkoutMethod ->
@@ -80,9 +77,9 @@ fun CheckoutFlowDialog(
                     }
 
                     is CheckoutStep.SplitPayment -> {
+                        val splitStep = step as CheckoutStep.SplitPayment
                         CheckoutSplitPaymentContent(
-                            //modifier = Modifier.height(600.dp),
-                            checkoutPaymentMethod = current.checkoutPaymentMethod,
+                            checkoutPaymentMethod = splitStep.checkoutPaymentMethod,
                             totalPrice = totalPrice,
                             onBack = { step = CheckoutStep.MethodPicker },
                             onClose = { onDismiss(false) },
@@ -93,8 +90,9 @@ fun CheckoutFlowDialog(
                     }
 
                     is CheckoutStep.Success -> {
+                        val successStep = step as CheckoutStep.Success
                         CheckoutSaleSuccessContent(
-                            collectedAmount = current.collectedAmount,
+                            collectedAmount = successStep.collectedAmount,
                             onClose = { onDismiss(true) },
                         )
                     }

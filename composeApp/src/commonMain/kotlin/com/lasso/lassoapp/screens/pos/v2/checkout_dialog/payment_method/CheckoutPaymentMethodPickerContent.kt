@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -83,24 +86,30 @@ internal fun CheckoutPaymentMethodPickerContent(
 
             Spacer(modifier = Modifier.height(CheckoutPaymentMethodTokens.gapHeaderToRows))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(
-                    CheckoutPaymentMethodTokens.gapBetweenRows,
-                ),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                CheckoutPaymentMethodRow(
-                    label = "Efectivo",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.efectivoRow,
-                            circleBackground = CheckoutPaymentMethodColors.efectivoCircle,
-                            labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
-                        ),
-                        leadingIcon = Res.drawable.checkout_payment_efectivo,
-                        trailingChevron = Res.drawable.checkout_chevron_right,
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(
+                        CheckoutPaymentMethodTokens.gapBetweenRows,
                     ),
-                    onClick = { onMethodClicked(CheckoutPaymentMethod.Cash) },
-                )
+                ) {
+                    CheckoutPaymentMethodRow(
+                        label = "Efectivo",
+                        style = PaymentMethodStyle(
+                            rowStyle = PaymentMethodRowStyle(
+                                rowBackground = CheckoutPaymentMethodColors.efectivoRow,
+                                circleBackground = CheckoutPaymentMethodColors.efectivoCircle,
+                                labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                            ),
+                            leadingIcon = Res.drawable.checkout_payment_efectivo,
+                            trailingChevron = Res.drawable.checkout_chevron_right,
+                        ),
+                        onClick = { onMethodClicked(CheckoutPaymentMethod.Cash) },
+                    )
                 /*CheckoutPaymentMethodRow(
                     label = "A Crédito",
                     style = PaymentMethodStyle(
@@ -127,47 +136,48 @@ internal fun CheckoutPaymentMethodPickerContent(
                     ),
                     onClick = noOp,
                 )*/
-                CheckoutPaymentMethodRow(
-                    label = "Tarjeta de Débito",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.tarjetaDebitoRow,
-                            circleBackground = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
-                            labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                    CheckoutPaymentMethodRow(
+                        label = "Tarjeta de Débito",
+                        style = PaymentMethodStyle(
+                            rowStyle = PaymentMethodRowStyle(
+                                rowBackground = CheckoutPaymentMethodColors.tarjetaDebitoRow,
+                                circleBackground = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
+                                labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                            ),
+                            leadingIcon = Res.drawable.checkout_payment_tarjeta_debito,
+                            trailingChevron = Res.drawable.checkout_chevron_right,
                         ),
-                        leadingIcon = Res.drawable.checkout_payment_tarjeta_debito,
-                        trailingChevron = Res.drawable.checkout_chevron_right,
-                    ),
-                    onClick = { onMethodClicked(CheckoutPaymentMethod.Card) },
-                )
-                CheckoutPaymentMethodRow(
-                    label = "Transferencia",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.transferenciaRow,
-                            circleBackground = CheckoutPaymentMethodColors.transferenciaCircle,
-                            labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                        onClick = { onMethodClicked(CheckoutPaymentMethod.Card) },
+                    )
+                    CheckoutPaymentMethodRow(
+                        label = "Transferencia",
+                        style = PaymentMethodStyle(
+                            rowStyle = PaymentMethodRowStyle(
+                                rowBackground = CheckoutPaymentMethodColors.transferenciaRow,
+                                circleBackground = CheckoutPaymentMethodColors.transferenciaCircle,
+                                labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                            ),
+                            leadingIcon = Res.drawable.checkout_payment_transferencia,
+                            trailingChevron = Res.drawable.checkout_chevron_right,
                         ),
-                        leadingIcon = Res.drawable.checkout_payment_transferencia,
-                        trailingChevron = Res.drawable.checkout_chevron_right,
-                    ),
-                    onClick = { onMethodClicked(CheckoutPaymentMethod.Transfer) },
-                )
-                CheckoutPaymentMethodRow(
-                    label = "Usar Múltiples Métodos",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.multiplesRow,
-                            circleBackground = CheckoutPaymentMethodColors.multiplesCircle,
-                            labelColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
-                            borderColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
-                            rowHeight = CheckoutPaymentMethodTokens.rowHeightMultiples,
+                        onClick = { onMethodClicked(CheckoutPaymentMethod.Transfer) },
+                    )
+                    CheckoutPaymentMethodRow(
+                        label = "Usar Múltiples Métodos",
+                        style = PaymentMethodStyle(
+                            rowStyle = PaymentMethodRowStyle(
+                                rowBackground = CheckoutPaymentMethodColors.multiplesRow,
+                                circleBackground = CheckoutPaymentMethodColors.multiplesCircle,
+                                labelColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
+                                borderColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
+                                rowHeight = CheckoutPaymentMethodTokens.rowHeightMultiples,
+                            ),
+                            leadingIcon = Res.drawable.checkout_payment_multiples,
+                            trailingChevron = Res.drawable.checkout_chevron_right_teal,
                         ),
-                        leadingIcon = Res.drawable.checkout_payment_multiples,
-                        trailingChevron = Res.drawable.checkout_chevron_right_teal,
-                    ),
-                    onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
-                )
+                        onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
+                    )
+                }
             }
         }
 
