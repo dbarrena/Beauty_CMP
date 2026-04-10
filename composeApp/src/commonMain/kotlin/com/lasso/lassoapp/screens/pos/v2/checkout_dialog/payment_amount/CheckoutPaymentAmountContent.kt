@@ -23,11 +23,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodColors
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
@@ -55,6 +58,7 @@ import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.checkout_payment_efectivo
 import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_credito
+import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -65,19 +69,35 @@ internal fun CheckoutSplitPaymentContent(
     totalPrice: Double,
     onBack: () -> Unit,
     onClose: () -> Unit,
-    onCompleteSale: () -> Unit,
+    onRegisterSale: (payments: List<CheckoutDialogViewModelV2.PosPayment>) -> Unit,
     modifier: Modifier = Modifier,
     checkoutPaymentMethod: CheckoutPaymentMethod,
+    isRegisteringSale: Boolean = false,
+    registerSaleError: String? = null,
 ) {
     var efectivo by remember { mutableStateOf("") }
-    var tarjetaCredito by remember { mutableStateOf("") }
     var tarjetaDebito by remember { mutableStateOf("") }
     var transferencia by remember { mutableStateOf("") }
 
-    val sumEntered = remember(efectivo, tarjetaCredito, tarjetaDebito, transferencia) {
-        listOf(efectivo, tarjetaCredito, tarjetaDebito, transferencia).sumOf { parseMoney(it) }
+    val sumEntered = remember(efectivo, tarjetaDebito, transferencia) {
+        listOf(efectivo, tarjetaDebito, transferencia).sumOf { parseMoney(it) }
     }
     val remaining = (totalPrice - sumEntered).coerceAtLeast(0.0)
+
+    LaunchedEffect(checkoutPaymentMethod, totalPrice) {
+        when (checkoutPaymentMethod) {
+            CheckoutPaymentMethod.Cash -> {
+                efectivo = totalPrice.toPosMoneyString()
+            }
+            CheckoutPaymentMethod.Card -> {
+                tarjetaDebito = totalPrice.toPosMoneyString()
+            }
+            CheckoutPaymentMethod.Transfer -> {
+                transferencia = totalPrice.toPosMoneyString()
+            }
+            else -> {}
+        }
+    }
 
     Box(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -159,24 +179,27 @@ internal fun CheckoutSplitPaymentContent(
                     letterSpacing = 0.35.sp,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = "Restan ",
-                        color = LassoTextMuted,
-                        fontSize = 18.sp,
-                        letterSpacing = (-0.44).sp,
-                    )
-                    Text(
-                        text = "$${remaining.toPosMoneyString()}",
-                        color = LassoSecondary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.44).sp,
-                    )
+
+                if (remaining != 0.0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "Restan ",
+                            color = LassoTextMuted,
+                            fontSize = 18.sp,
+                            letterSpacing = (-0.44).sp,
+                        )
+                        Text(
+                            text = "$${remaining.toPosMoneyString()}",
+                            color = LassoSecondary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = (-0.44).sp,
+                        )
+                    }
                 }
             }
 
@@ -204,11 +227,11 @@ internal fun CheckoutSplitPaymentContent(
 
                         CheckoutPaymentMethod.Card -> {
                             SplitPaymentRow(
-                                label = "Tarjeta de Crédito",
-                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                                icon = Res.drawable.checkout_payment_tarjeta_credito,
-                                value = tarjetaCredito,
-                                onValueChange = { tarjetaCredito = it },
+                                label = "Tarjeta de Débito",
+                                circleColor = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
+                                icon = Res.drawable.checkout_payment_tarjeta_debito,
+                                value = tarjetaDebito,
+                                onValueChange = { tarjetaDebito = it },
                             )
                         }
 
@@ -232,11 +255,11 @@ internal fun CheckoutSplitPaymentContent(
                             )
 
                             SplitPaymentRow(
-                                label = "Tarjeta de Crédito",
+                                label = "Tarjeta de Débito",
                                 circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
                                 icon = Res.drawable.checkout_payment_tarjeta_credito,
-                                value = tarjetaCredito,
-                                onValueChange = { tarjetaCredito = it },
+                                value = tarjetaDebito,
+                                onValueChange = { tarjetaDebito = it },
                             )
 
                             SplitPaymentRow(
@@ -260,21 +283,73 @@ internal fun CheckoutSplitPaymentContent(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = onCompleteSale,
+                        onClick = {
+                            val payments = mutableListOf<CheckoutDialogViewModelV2.PosPayment>()
+
+
+                            if (efectivo.isNotEmpty()) {
+                                val total = efectivo.toDouble()
+
+                                payments.add(
+                                    CheckoutDialogViewModelV2.PosPayment(
+                                        paymentType = CheckoutPaymentMethod.Cash,
+                                        total = total
+                                    )
+                                )
+                            }
+
+                            if (tarjetaDebito.isNotEmpty()) {
+                                val total = tarjetaDebito.toDouble()
+
+                                payments.add(
+                                    CheckoutDialogViewModelV2.PosPayment(
+                                        paymentType = CheckoutPaymentMethod.Card,
+                                        total = total
+                                    )
+                                )
+                            }
+
+                            if (transferencia.isNotEmpty()) {
+                                val total = transferencia.toDouble()
+
+                                payments.add(
+                                    CheckoutDialogViewModelV2.PosPayment(
+                                        paymentType = CheckoutPaymentMethod.Transfer,
+                                        total = total
+                                    )
+                                )
+                            }
+
+                            onRegisterSale(payments)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(20.dp),
+                        enabled = remaining == 0.0 && !isRegisteringSale,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = LassoPrimary,
                             contentColor = Color.White,
                         ),
                     ) {
                         Text(
-                            text = "Dejar $${remaining.toPosMoneyString()} a crédito",
+                            text = if (isRegisteringSale) {
+                                "Registrando…"
+                            } else {
+                                "Confirmar pago en ${checkoutPaymentMethod.display}"
+                            },
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = (-0.31).sp,
+                        )
+                    }
+                    registerSaleError?.let { message ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = message,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }

@@ -1,10 +1,10 @@
 package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
 
-internal sealed class CheckoutPaymentMethod {
-    data object Cash : CheckoutPaymentMethod()
+sealed class CheckoutPaymentMethod(val display: String, val key: String) {
+    data object Cash : CheckoutPaymentMethod("Efectivo", "cash")
 
-    data object Card : CheckoutPaymentMethod()
+    data object Card : CheckoutPaymentMethod("Tarjeta", "card")
 
-    data object Transfer : CheckoutPaymentMethod()
-    data object Multiple : CheckoutPaymentMethod()
+    data object Transfer : CheckoutPaymentMethod("Transferencia", "transfer")
+    data object Multiple : CheckoutPaymentMethod("Multiples Pagos", "")
 }

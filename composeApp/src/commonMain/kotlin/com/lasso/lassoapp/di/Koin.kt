@@ -14,6 +14,7 @@ import com.lasso.lassoapp.screens.home.HomeScreenViewModel
 import com.lasso.lassoapp.screens.login.LoginScreenViewModel
 import com.lasso.lassoapp.screens.pos.PosViewModel
 import com.lasso.lassoapp.screens.pos.checkout.CheckoutDialogViewModel
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesViewModel
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModalViewModel
 import com.lasso.lassoapp.screens.product_service.ProductServiceViewModel
@@ -62,6 +63,7 @@ val viewModelModule = module {
     factoryOf(::ProductCategoryModalViewModel)
     factoryOf(::ProductCategoriesViewModel)
     factoryOf(::SalesByProductCategoryViewModel)
+    factoryOf(::CheckoutDialogViewModelV2)
 }
 
 fun daoModule() = module {
