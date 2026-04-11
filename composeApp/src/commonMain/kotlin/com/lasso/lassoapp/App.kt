@@ -47,12 +47,14 @@ import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
+import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
+import com.lasso.lassoapp.screens.sales.SalesScreen
 import com.lasso.lassoapp.screens.sales.v2.SalesScreenV2
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
@@ -358,24 +360,26 @@ fun App() {
                     }
                 ) {
                     composable<HomeDestination> {
-                        HomeScreenV2(
+                        /*HomeScreenV2(
                             onNavigateToPos = { navController.navigate(PosDestination) },
                             onNavigateToCalendar = { navController.navigate(CalendarDestination) },
                             onNavigateToSales = { navController.navigate(SalesDestination) },
                             onNavigateToCashClosure = { navController.navigate(CashClosureDestination) },
-                        )
+                        )*/
+                        HomeScreen()
                     }
                     composable<PosDestination> {
                         PosScreenV2()
                     }
                     composable<SalesDestination> {
-                        SalesScreenV2(
+                        /*SalesScreenV2(
                             onBack = {
                                 navController.navigate(HomeDestination) {
                                     launchSingleTop = true
                                 }
                             },
-                        )
+                        )*/
+                        SalesScreen()
                     }
                     composable<ConfigurationDestination> {
                         ConfigurationScreen(
