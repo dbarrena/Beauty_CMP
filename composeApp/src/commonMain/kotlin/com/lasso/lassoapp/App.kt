@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -12,12 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,19 +54,15 @@ import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
 import com.lasso.lassoapp.screens.sales.v2.SalesScreenV2
-import lassoapp.composeapp.generated.resources.Res
-import kotlinx.serialization.Serializable
-import org.koin.compose.viewmodel.koinViewModel
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
+import kotlinx.serialization.Serializable
+import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.bell_icon
-import lassoapp.composeapp.generated.resources.lasso_icon_full
-import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
-import lassoapp.composeapp.generated.resources.lasso_icon_minimal
-import lassoapp.composeapp.generated.resources.trash_icon
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.InternalResourceApi
+import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Serializable
 object HomeDestination

@@ -80,6 +80,9 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
+import com.lasso.lassoapp.ui.theme.lassoTypography
 import kotlin.math.roundToLong
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -91,16 +94,32 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun SalesScreenV2(onBack: () -> Unit = {}) {
     val viewModel = koinViewModel<SalesScreenViewModelV2>()
-    SalesScreenContentV2(viewModel = viewModel, onBack = onBack)
+    val state by viewModel.state.collectAsState()
+
+    SalesScreenContentV2(
+        state = state,
+        onBack = onBack,
+        onReloadSales = viewModel::reloadSales,
+        onClearSelectedSale = viewModel::clearSelectedSale,
+        onLoadForPeriod = viewModel::loadForPeriod,
+        onApplyCustomDateRange = viewModel::applyCustomDateRange,
+        onSetSelectedSale = viewModel::setSelectedSale,
+        onDeleteSale = viewModel::deleteSale,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SalesScreenContentV2(
-    viewModel: SalesScreenViewModelV2,
+    state: SalesScreenStateV2,
     onBack: () -> Unit,
+    onReloadSales: () -> Unit,
+    onClearSelectedSale: () -> Unit,
+    onLoadForPeriod: (SalesPeriodFilter) -> Unit,
+    onApplyCustomDateRange: (Long?, Long?) -> Unit,
+    onSetSelectedSale: (SaleApiResponse) -> Unit,
+    onDeleteSale: (Int) -> Unit,
 ) {
-    val state = viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
@@ -112,13 +131,13 @@ private fun SalesScreenContentV2(
     var showCustomRangeDialog by remember { mutableStateOf(false) }
     var pendingDeleteSaleId by remember { mutableStateOf<Int?>(null) }
 
-    LaunchedEffect(state.value.selectedSale) {
-        if (state.value.selectedSale == null) {
+    LaunchedEffect(state.selectedSale) {
+        if (state.selectedSale == null) {
             scaffoldState.bottomSheetState.hide()
         }
     }
 
-    if (state.value.isLoading && state.value.sales.isEmpty()) {
+    if (state.isLoading && state.sales.isEmpty()) {
         FullScreenLoading()
         return
     }
@@ -136,14 +155,14 @@ private fun SalesScreenContentV2(
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 0.dp),
             ) {
-                state.value.selectedSale?.let { sale ->
+                state.selectedSale?.let { sale ->
                     SaleDetailsDialogScreen(sale) { shouldReload ->
                         scope.launch {
                             if (shouldReload) {
-                                viewModel.reloadSales()
+                                onReloadSales()
                             }
                             scaffoldState.bottomSheetState.hide()
-                            viewModel.clearSelectedSale()
+                            onClearSelectedSale()
                         }
                     }
                 }
@@ -156,7 +175,7 @@ private fun SalesScreenContentV2(
                 .padding(innerPadding),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                if (state.value.isLoading && state.value.sales.isNotEmpty()) {
+                if (state.isLoading && state.sales.isNotEmpty()) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
                 LazyColumn(
@@ -173,30 +192,30 @@ private fun SalesScreenContentV2(
                     }
                     item {
                         SalesSummaryCard(
-                            total = state.value.total,
-                            transactionCount = state.value.sales.size,
+                            total = state.total,
+                            transactionCount = state.sales.size,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
                     item {
                         SalesPaymentBreakdownRow(
-                            sales = state.value.sales,
+                            sales = state.sales,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
                     item {
                         SalesPeriodChipsRow(
-                            selected = state.value.periodFilter,
+                            selected = state.periodFilter,
                             onSelect = { period ->
                                 when (period) {
                                     SalesPeriodFilter.Custom -> showCustomRangeDialog = true
-                                    else -> viewModel.loadForPeriod(period)
+                                    else -> onLoadForPeriod(period)
                                 }
                             },
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    if (state.value.sales.isEmpty()) {
+                    if (state.sales.isEmpty()) {
                         item {
                             EmptySalesBody(
                                 modifier = Modifier
@@ -205,11 +224,11 @@ private fun SalesScreenContentV2(
                             )
                         }
                     } else {
-                        items(state.value.sales, key = { it.id }) { sale ->
+                        items(state.sales, key = { it.id }) { sale ->
                             SalesTransactionCard(
                                 sale = sale,
                                 onEdit = {
-                                    viewModel.setSelectedSale(sale)
+                                    onSetSelectedSale(sale)
                                     scope.launch { scaffoldState.bottomSheetState.expand() }
                                 },
                                 onDelete = { pendingDeleteSaleId = sale.id },
@@ -228,7 +247,7 @@ private fun SalesScreenContentV2(
             onDismiss = { showCustomRangeDialog = false },
             onConfirm = { start, end ->
                 showCustomRangeDialog = false
-                viewModel.applyCustomDateRange(start, end)
+                onApplyCustomDateRange(start, end)
             },
         )
     }
@@ -241,7 +260,7 @@ private fun SalesScreenContentV2(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.deleteSale(saleId)
+                        onDeleteSale(saleId)
                         pendingDeleteSaleId = null
                         scope.launch { scaffoldState.bottomSheetState.hide() }
                     },
@@ -719,4 +738,56 @@ private fun formatMoney(amount: Double): String {
     val c = (abs % 100).toInt()
     val s = "$$d.${c.toString().padStart(2, '0')}"
     return if (neg) "-$s" else s
+}
+
+@Preview
+@Composable
+private fun SalesScreenPreview() {
+    val mockSales = listOf(
+        SaleApiResponse(
+            id = 1,
+            total = "$150.00",
+            partnerId = 1,
+            createdAt = 1731515234000L,
+            updatedAt = null,
+            saleDetails = emptyList(),
+            payments = listOf(
+                PaymentApiResponse(id = 1, total = "$150.00", paymentType = "cash")
+            )
+        ),
+        SaleApiResponse(
+            id = 2,
+            total = "$350.50",
+            partnerId = 1,
+            createdAt = 1731515234000L,
+            updatedAt = null,
+            saleDetails = emptyList(),
+            payments = listOf(
+                PaymentApiResponse(id = 2, total = "$350.50", paymentType = "card")
+            )
+        )
+    )
+
+    val mockState = SalesScreenStateV2(
+        total = 500.50,
+        sales = mockSales,
+        isLoading = false,
+        periodFilter = SalesPeriodFilter.Today
+    )
+
+    MaterialTheme(
+        colorScheme = LightLassoColorScheme,
+        typography = lassoTypography()
+    ) {
+        SalesScreenContentV2(
+            state = mockState,
+            onBack = {},
+            onReloadSales = {},
+            onClearSelectedSale = {},
+            onLoadForPeriod = {},
+            onApplyCustomDateRange = { _, _ -> },
+            onSetSelectedSale = {},
+            onDeleteSale = {}
+        )
+    }
 }
