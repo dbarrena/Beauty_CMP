@@ -47,7 +47,7 @@ import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
-import com.lasso.lassoapp.screens.home.HomeScreen
+import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
@@ -358,7 +358,12 @@ fun App() {
                     }
                 ) {
                     composable<HomeDestination> {
-                        HomeScreen()
+                        HomeScreenV2(
+                            onNavigateToPos = { navController.navigate(PosDestination) },
+                            onNavigateToCalendar = { navController.navigate(CalendarDestination) },
+                            onNavigateToSales = { navController.navigate(SalesDestination) },
+                            onNavigateToCashClosure = { navController.navigate(CashClosureDestination) },
+                        )
                     }
                     composable<PosDestination> {
                         PosScreenV2()
