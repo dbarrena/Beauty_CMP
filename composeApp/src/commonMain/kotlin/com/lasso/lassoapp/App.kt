@@ -56,7 +56,7 @@ import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
-import com.lasso.lassoapp.screens.sales.SalesScreen
+import com.lasso.lassoapp.screens.sales.v2.SalesScreenV2
 import lassoapp.composeapp.generated.resources.Res
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
@@ -371,7 +371,13 @@ fun App() {
                         PosScreenV2()
                     }
                     composable<SalesDestination> {
-                        SalesScreen()
+                        SalesScreenV2(
+                            onBack = {
+                                navController.navigate(HomeDestination) {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
                     }
                     composable<ConfigurationDestination> {
                         ConfigurationScreen(

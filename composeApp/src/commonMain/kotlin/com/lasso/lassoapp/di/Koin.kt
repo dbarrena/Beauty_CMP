@@ -21,6 +21,7 @@ import com.lasso.lassoapp.screens.product_service.ProductServiceViewModel
 import com.lasso.lassoapp.screens.product_service.dialog.ProductServiceDialogViewModel
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryViewModel
 import com.lasso.lassoapp.screens.sales.SalesScreenViewModel
+import com.lasso.lassoapp.screens.sales.v2.SalesScreenViewModelV2
 import com.lasso.lassoapp.screens.sales.detail.SaleDetailsDialogScreenViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -51,6 +52,7 @@ val viewModelModule = module {
     factoryOf(::ProductServiceDialogViewModel)
     factoryOf(::CheckoutDialogViewModel)
     factoryOf(::SalesScreenViewModel)
+    factoryOf(::SalesScreenViewModelV2)
     factoryOf(::ConfigurationViewModel)
     factoryOf(::ProductServiceViewModel)
     factoryOf(::HomeScreenViewModel)

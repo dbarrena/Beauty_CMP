@@ -13,6 +13,19 @@ fun Long.toLocalDateTimeString(): String {
     return localDateTime.formatDdMmYyyyHhMm()
 }
 
+private val MONTHS_ES_SHORT =
+    listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+/** e.g. "24 feb - 10:30" for sales list cards */
+fun Long.toSaleCardDateTimeString(): String {
+    val instant = Instant.fromEpochMilliseconds(this)
+    val ldt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    val mon = MONTHS_ES_SHORT[ldt.monthNumber - 1]
+    val h = ldt.hour.toString().padStart(2, '0')
+    val m = ldt.minute.toString().padStart(2, '0')
+    return "${ldt.dayOfMonth} $mon - $h:$m"
+}
+
 fun Long.toLocalDateString(): String {
     val instant = Instant.fromEpochMilliseconds(this)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
