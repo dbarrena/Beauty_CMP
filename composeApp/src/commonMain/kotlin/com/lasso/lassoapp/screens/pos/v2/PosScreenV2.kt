@@ -47,7 +47,10 @@ fun PosScreenV2() {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
         ) {
-            PosHeader(modifier = Modifier.padding(top = 16.dp))
+            PosHeader(
+                modifier = Modifier.padding(top = 16.dp),
+                onNuevoClick = { isNuevoDialogDisplayed.value = true }
+            )
             Spacer(Modifier.height(8.dp))
 
             PosSearchFilterBar(

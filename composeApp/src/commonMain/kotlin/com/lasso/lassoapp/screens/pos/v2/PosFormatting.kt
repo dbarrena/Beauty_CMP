@@ -10,5 +10,12 @@ fun Double.toPosMoneyString(): String {
     val dollars = absCents / 100
     val frac = absCents % 100
     val sign = if (negative) "-" else ""
-    return "$sign$dollars.${frac.toString().padStart(2, '0')}"
+
+    val dollarsStr = dollars.toString()
+        .reversed()
+        .chunked(3)
+        .joinToString(",")
+        .reversed()
+
+    return "$sign$dollarsStr.${frac.toString().padStart(2, '0')}"
 }

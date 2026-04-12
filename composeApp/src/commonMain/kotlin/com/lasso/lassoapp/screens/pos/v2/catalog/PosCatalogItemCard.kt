@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.LassoItem
+import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
 
 @Composable
 fun PosCatalogItemCard(
@@ -50,7 +51,7 @@ fun PosCatalogItemCard(
                 modifier = Modifier.padding(top = 4.dp),
             )
             Text(
-                text = "$${item.price}",
+                text = "$${item.price.toDoubleOrNull()?.toPosMoneyString() ?: item.price}",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 20.sp,
                     fontWeight = FontWeight(700),

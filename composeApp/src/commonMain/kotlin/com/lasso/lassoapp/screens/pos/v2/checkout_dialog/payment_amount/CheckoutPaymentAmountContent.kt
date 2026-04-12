@@ -288,7 +288,7 @@ internal fun CheckoutSplitPaymentContent(
 
 
                             if (efectivo.isNotEmpty()) {
-                                val total = efectivo.toDouble()
+                                val total = parseMoney(efectivo)
 
                                 payments.add(
                                     CheckoutDialogViewModelV2.PosPayment(
@@ -299,7 +299,7 @@ internal fun CheckoutSplitPaymentContent(
                             }
 
                             if (tarjetaDebito.isNotEmpty()) {
-                                val total = tarjetaDebito.toDouble()
+                                val total = parseMoney(tarjetaDebito)
 
                                 payments.add(
                                     CheckoutDialogViewModelV2.PosPayment(
@@ -310,7 +310,7 @@ internal fun CheckoutSplitPaymentContent(
                             }
 
                             if (transferencia.isNotEmpty()) {
-                                val total = transferencia.toDouble()
+                                val total = parseMoney(transferencia)
 
                                 payments.add(
                                     CheckoutDialogViewModelV2.PosPayment(
@@ -473,4 +473,4 @@ private fun sanitizeMoneyInput(input: String): String {
 }
 
 private fun parseMoney(s: String): Double =
-    s.toDoubleOrNull() ?: 0.0
+    s.replace(",", "").toDoubleOrNull() ?: 0.0
