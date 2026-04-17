@@ -60,8 +60,12 @@ import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
 import kotlinx.serialization.Serializable
 import lassoapp.composeapp.generated.resources.Res
+import lassoapp.composeapp.generated.resources.agenda_icon
 import lassoapp.composeapp.generated.resources.bell_icon
+import lassoapp.composeapp.generated.resources.home_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
+import lassoapp.composeapp.generated.resources.sales_icon
+import lassoapp.composeapp.generated.resources.shopping_cart_icon
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -217,7 +221,8 @@ fun App() {
                                     modifier = Modifier.padding(8.dp),
                                     icon = {
                                         Icon(
-                                            Icons.Default.Home,
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.home_icon),
                                             contentDescription = null,
                                             tint = if (currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
@@ -243,7 +248,8 @@ fun App() {
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
-                                            Icons.Default.CalendarMonth,
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.agenda_icon),
                                             contentDescription = null,
                                             tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
@@ -269,7 +275,8 @@ fun App() {
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
-                                            Icons.Default.ShoppingCart,
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.shopping_cart_icon),
                                             contentDescription = null,
                                             tint = if (currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
@@ -295,7 +302,8 @@ fun App() {
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
-                                            Icons.Filled.AttachMoney,
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.sales_icon),
                                             contentDescription = null,
                                             tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
@@ -319,7 +327,8 @@ fun App() {
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
-                                            Icons.Default.Apps,
+                                            modifier = Modifier.size(22.dp),
+                                            imageVector = Icons.Default.Apps,
                                             contentDescription = null,
                                             tint = if (currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
@@ -372,14 +381,13 @@ fun App() {
                         PosScreenV2()
                     }
                     composable<SalesDestination> {
-                        /*SalesScreenV2(
+                        SalesScreenV2(
                             onBack = {
                                 navController.navigate(HomeDestination) {
                                     launchSingleTop = true
                                 }
                             },
-                        )*/
-                        SalesScreen()
+                        )
                     }
                     composable<ConfigurationDestination> {
                         ConfigurationScreen(
