@@ -58,7 +58,6 @@ fun PosScreenV2() {
                 onSearchQueryChange = viewModel::setSearchQuery,
                 catalogFilter = state.value.catalogFilter,
                 onCatalogFilterChange = viewModel::setCatalogFilter,
-                onNuevoClick = { isNuevoDialogDisplayed.value = true },
             )
             Spacer(Modifier.height(8.dp))
 

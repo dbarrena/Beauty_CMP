@@ -12,7 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
 
@@ -28,10 +30,7 @@ fun SearchDialogItem(lassoItem: LassoItem, onClick: (lassoItem: LassoItem) -> Un
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.primary
-        ),
+        elevation = CardDefaults.cardElevation(2.dp),
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -42,34 +41,49 @@ fun SearchDialogItem(lassoItem: LassoItem, onClick: (lassoItem: LassoItem) -> Un
             ) {
                 Text(
                     text = lassoItem.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFF353D3C)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(600),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
                     text = "$${lassoItem.price}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF353D3C)
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight(700),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             if (lassoItem is Product) {
                 lassoItem.category?.let {
                     Text(
-                        text = "Categoria: ${lassoItem.category}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF353D3C)
+                        text = "Categoría: ${lassoItem.category}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(500),
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Text(
                     text = "Producto",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF353D3C)
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(500),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else{
                 Text(
                     text = "Servicio",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF353D3C)
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(500),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

@@ -12,10 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,13 +44,12 @@ import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
-import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
+import com.lasso.lassoapp.screens.product_catalog.ProductCatalogScreen
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
 import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
-import com.lasso.lassoapp.screens.sales.SalesScreen
 import com.lasso.lassoapp.screens.sales.v2.SalesScreenV2
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
@@ -104,6 +99,9 @@ object CashClosureRecordsDestination
 object ProductCategoriesDestination
 
 @Serializable
+object ProductCatalogDestination
+
+@Serializable
 object SalesByProductCategoriesDestination
 
 @OptIn(ExperimentalMaterial3Api::class, InternalResourceApi::class)
@@ -123,7 +121,7 @@ fun App() {
         val showBottomNav = isRootDestination(currentDestination)
         val showMainTopBar = isRootDestination(currentDestination)
 
-        var onBackNavigation: () -> Unit = { navController.popBackStack() }
+        val onBackNavigation: () -> Unit = { navController.popBackStack() }
 
         val titleText: String = when (currentDestination?.route) {
             HomeDestination::class.qualifiedName -> "Inicio"
@@ -136,6 +134,7 @@ fun App() {
             CashClosureDestination::class.qualifiedName -> "Corte de caja"
             CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
             ProductCategoriesDestination::class.qualifiedName -> "Categorias Productos"
+            ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
             SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
             else -> ""
         }
@@ -263,9 +262,9 @@ fun App() {
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },
-                                    selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
+                                    selected = currentDestination?.hierarchy?.any { it.route == ProductCatalogDestination::class.qualifiedName } == true,
                                     onClick = {
-                                        navController.navigate(CalendarDestination)
+                                        navController.navigate(ProductCatalogDestination)
                                     },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
@@ -440,6 +439,9 @@ fun App() {
                     composable<ProductCategoriesDestination> {
                         ProductCategoriesScreen()
                     }
+                    composable<ProductCatalogDestination> {
+                        ProductCatalogScreen()
+                    }
                     composable<SalesByProductCategoriesDestination> {
                         SalesByProductCategoryScreen()
                     }
@@ -455,5 +457,6 @@ fun isRootDestination(destination: NavDestination?): Boolean {
             route == PosDestination::class.qualifiedName ||
             route == SalesDestination::class.qualifiedName ||
             route == ConfigurationDestination::class.qualifiedName ||
-            route == CalendarDestination::class.qualifiedName
+            route == CalendarDestination::class.qualifiedName ||
+            route == ProductCatalogDestination::class.qualifiedName
 }

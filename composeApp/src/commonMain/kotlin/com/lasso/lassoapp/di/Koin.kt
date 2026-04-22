@@ -17,6 +17,7 @@ import com.lasso.lassoapp.screens.pos.checkout.CheckoutDialogViewModel
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
 import com.lasso.lassoapp.screens.product_categories.ProductCategoriesViewModel
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModalViewModel
+import com.lasso.lassoapp.screens.product_catalog.ProductCatalogViewModel
 import com.lasso.lassoapp.screens.product_service.ProductServiceViewModel
 import com.lasso.lassoapp.screens.product_service.dialog.ProductServiceDialogViewModel
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryViewModel
@@ -64,6 +65,7 @@ val viewModelModule = module {
     factoryOf(::CashClosureRecordsScreenViewModel)
     factoryOf(::ProductCategoryModalViewModel)
     factoryOf(::ProductCategoriesViewModel)
+    factoryOf(::ProductCatalogViewModel)
     factoryOf(::SalesByProductCategoryViewModel)
     factoryOf(::CheckoutDialogViewModelV2)
 }

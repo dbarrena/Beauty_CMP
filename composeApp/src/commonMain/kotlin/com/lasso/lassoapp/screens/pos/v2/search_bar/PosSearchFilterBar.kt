@@ -17,14 +17,13 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,11 +44,9 @@ fun PosSearchFilterBar(
     onSearchQueryChange: (String) -> Unit,
     catalogFilter: PosCatalogFilter = PosCatalogFilter.ALL,
     onCatalogFilterChange: (PosCatalogFilter) -> Unit,
-    onNuevoClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
-    val showNuevoButton = false
     val controlHeight = 35.dp
     val shape = RoundedCornerShape(20.dp)
     val interactionSource = remember { MutableInteractionSource() }
@@ -153,14 +150,6 @@ fun PosSearchFilterBar(
                         },
                     )
                 }
-            }
-        }
-        if (showNuevoButton) {
-            TextButton(onClick = onNuevoClick) {
-                Text(
-                    text = "Nuevo",
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
             }
         }
     }
