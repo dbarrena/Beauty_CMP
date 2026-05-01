@@ -2,7 +2,9 @@ package com.lasso.lassoapp.screens.product_catalog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import com.lasso.lassoapp.screens.product_catalog.dialog.DeleteProductConfirmationDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.delete.DeleteProductConfirmationDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.edit.EditProductServiceDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.new.NewProductServiceDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -15,7 +17,7 @@ fun ProductCatalogScreen() {
         onSelectTab = viewModel::setSelectedTab,
         onProductsSearchChange = viewModel::onProductServicesSearchChange,
         onAddProductService = { viewModel.showProductServiceDialog() },
-        onProductServiceClick = viewModel::showDeleteProductServiceConfirmation,
+        onProductServiceClick = viewModel::showProductServiceDialog,
         onAddCategory = { viewModel.showCategoryDialog() },
         onCategoryClick = viewModel::showCategoryDialog,
     )
@@ -28,11 +30,18 @@ fun ProductCatalogScreen() {
     }
 
     if (state.value.productsServices.isDialogDisplayed) {
-        com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen(
-            lassoItem = state.value.productsServices.selectedItem,
-            onDismiss = viewModel::hideProductServiceDialog,
-        ) {
-            viewModel.onProductServiceSaved()
+        val selectedItem = state.value.productsServices.selectedItem
+        if (selectedItem != null) {
+            EditProductServiceDialog(
+                lassoItem = selectedItem,
+                onDismiss = viewModel::hideProductServiceDialog,
+                onResult = { viewModel.onProductServiceSaved() }
+            )
+        } else {
+            NewProductServiceDialog(
+                onDismiss = viewModel::hideProductServiceDialog,
+                onResult = { viewModel.onProductServiceSaved() }
+            )
         }
     }
 

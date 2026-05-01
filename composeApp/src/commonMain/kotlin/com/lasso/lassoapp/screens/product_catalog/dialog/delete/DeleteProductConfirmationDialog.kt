@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.product_catalog.dialog
+package com.lasso.lassoapp.screens.product_catalog.dialog.delete
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
