@@ -101,6 +101,34 @@ class ProductCatalogViewModel(
         )
     }
 
+    fun showDeleteProductServiceConfirmation(item: LassoItem) {
+        _state.value = _state.value.copy(
+            productsServices = _state.value.productsServices.copy(
+                isDeleteConfirmationDisplayed = true,
+                selectedItem = item,
+            ),
+        )
+    }
+
+    fun hideDeleteProductServiceConfirmation() {
+        _state.value = _state.value.copy(
+            productsServices = _state.value.productsServices.copy(
+                isDeleteConfirmationDisplayed = false,
+                selectedItem = null,
+            ),
+        )
+    }
+
+    fun deleteProductService() {
+        val item = _state.value.productsServices.selectedItem ?: return
+        viewModelScope.launch {
+            // TODO: Call API to delete item
+            // lassoApi.deleteProduct(item.id!!) or lassoApi.deleteService(item.id!!)
+            hideDeleteProductServiceConfirmation()
+            refreshProductServices()
+        }
+    }
+
     fun showCategoryDialog(item: ProductCategory? = null) {
         _state.value = _state.value.copy(
             categories = _state.value.categories.copy(

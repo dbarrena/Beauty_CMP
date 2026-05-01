@@ -2,6 +2,7 @@ package com.lasso.lassoapp.screens.product_catalog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.lasso.lassoapp.screens.product_catalog.dialog.DeleteProductConfirmationDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -14,10 +15,17 @@ fun ProductCatalogScreen() {
         onSelectTab = viewModel::setSelectedTab,
         onProductsSearchChange = viewModel::onProductServicesSearchChange,
         onAddProductService = { viewModel.showProductServiceDialog() },
-        onProductServiceClick = viewModel::showProductServiceDialog,
+        onProductServiceClick = viewModel::showDeleteProductServiceConfirmation,
         onAddCategory = { viewModel.showCategoryDialog() },
         onCategoryClick = viewModel::showCategoryDialog,
     )
+
+    if (state.value.productsServices.isDeleteConfirmationDisplayed) {
+        DeleteProductConfirmationDialog(
+            onDismiss = viewModel::hideDeleteProductServiceConfirmation,
+            onConfirm = viewModel::deleteProductService
+        )
+    }
 
     if (state.value.productsServices.isDialogDisplayed) {
         com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen(

@@ -20,6 +20,7 @@ data class ProductServicesTabState(
     val searchQuery: String = "",
     val selectedItem: LassoItem? = null,
     val isDialogDisplayed: Boolean = false,
+    val isDeleteConfirmationDisplayed: Boolean = false,
     val isLoading: Boolean = false,
 )
 
