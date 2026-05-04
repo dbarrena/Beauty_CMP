@@ -57,7 +57,8 @@ fun ProductCatalogContent(
                     state = state.productsServices,
                     onSearchChange = onProductsSearchChange,
                     onAdd = onAddProductService,
-                    onItemClick = onProductServiceClick,
+                    onEditClick = onProductServiceClick,
+                    onDeleteClick = onProductServiceClick,
                 )
             }
 

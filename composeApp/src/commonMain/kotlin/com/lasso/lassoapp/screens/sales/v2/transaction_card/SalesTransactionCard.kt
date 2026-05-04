@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,8 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CreditCard
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,18 +32,13 @@ import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
-import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
 import com.lasso.lassoapp.screens.sales.v2.formatMoney
 import com.lasso.lassoapp.screens.utils.toSaleCardDateTimeString
-import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 import com.lasso.lassoapp.ui.theme.LassoTertiary
+import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 import lassoapp.composeapp.generated.resources.Res
-import lassoapp.composeapp.generated.resources.card_icon
-import lassoapp.composeapp.generated.resources.cash_icon
-import lassoapp.composeapp.generated.resources.checkout_payment_efectivo
 import lassoapp.composeapp.generated.resources.edit_icon
-import lassoapp.composeapp.generated.resources.phone_icon
-import lassoapp.composeapp.generated.resources.trash_can_icon
+import lassoapp.composeapp.generated.resources.trash_icon
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -161,7 +153,7 @@ fun SalesTransactionCard(
                     text = "Eliminar",
                     icon = {
                         Image(
-                            painter = painterResource(Res.drawable.trash_can_icon),
+                            painter = painterResource(Res.drawable.trash_icon),
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             contentScale = ContentScale.Fit,

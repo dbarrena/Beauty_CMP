@@ -2,6 +2,8 @@ package com.lasso.lassoapp.screens.product_catalog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
+import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -20,7 +22,7 @@ fun ProductCatalogScreen() {
     )
 
     if (state.value.productsServices.isDialogDisplayed) {
-        com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen(
+        ProductDialogScreen(
             lassoItem = state.value.productsServices.selectedItem,
             onDismiss = viewModel::hideProductServiceDialog,
         ) {
@@ -29,7 +31,7 @@ fun ProductCatalogScreen() {
     }
 
     if (state.value.categories.isDialogDisplayed) {
-        com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal(
+        ProductCategoryModal(
             productCategory = state.value.categories.selectedItem,
             onDismiss = viewModel::hideCategoryDialog,
         ) {

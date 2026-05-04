@@ -28,7 +28,8 @@ fun ProductServicesTabContent(
     state: ProductServicesTabState,
     onSearchChange: (String) -> Unit,
     onAdd: () -> Unit,
-    onItemClick: (LassoItem) -> Unit,
+    onEditClick: (LassoItem) -> Unit,
+    onDeleteClick: (LassoItem) -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -73,9 +74,11 @@ fun ProductServicesTabContent(
                 .fillMaxWidth(),
         ) {
             items(state.filteredItems) { item ->
-                SearchDialogItem(item) { selectedItem ->
-                    onItemClick(selectedItem)
-                }
+                ProductServicesCatalogItem(
+                    lassoItem = item,
+                    onEditClick = onEditClick,
+                    onDeleteClick = onDeleteClick
+                )
             }
         }
     }
