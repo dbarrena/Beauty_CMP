@@ -34,7 +34,7 @@ interface LassoApi {
     suspend fun getThisMonthSales(): List<SaleApiResponse>
     suspend fun getSalesBetweenDates(start: Long, end: Long): List<SaleApiResponse>
     suspend fun registerProduct(product: Product): Product
-    suspend fun registerService(product: Service): Service
+    suspend fun registerService(service: Service): Service
     suspend fun registerSale(sale: Sale): Sale
 
     suspend fun getSale(id: Int): SaleApiResponse?
@@ -44,18 +44,25 @@ interface LassoApi {
     suspend fun getHomeTopSellers(): TopSellersResponse?
     suspend fun login(login: Login): LoginResponse
     suspend fun getOpenCashClosure(): CashClosure?
-    suspend fun deleteSale(saleId: Int): String?
-
-    suspend fun deleteSaleDetail(saleDetailId: Int): String?
-
-    suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun createCashClosure(): String?
     suspend fun getCashClosureRecords(): List<CashClosureRecordsResponse>
-    suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
+
     suspend fun getProductCategories(): List<ProductCategory>
     suspend fun registerProductCategory(productCategory: ProductCategory): ProductCategory
     suspend fun getSalesByProductCategory(start: Long, end: Long, categoryId: Int): SalesByProductCategoryApiResponse?
+
+    suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
+    suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
+    suspend fun editService(service: Service): Service
+    suspend fun editProduct(product: Product): Product
+
+    suspend fun deleteSale(saleId: Int): String?
+
+    suspend fun deleteSaleDetail(saleDetailId: Int): String?
+    suspend fun disableService(service: Service): String?
+    suspend fun diableProduct(product: Product): String?
 }
+
 
 class KtorLassoApi(
     private val client: HttpClient,
@@ -276,6 +283,36 @@ class KtorLassoApi(
         }
     }
 
+    override suspend fun disableService(service: Service): String? {
+        return try {
+            println("KtorBeautyApi: disableService")
+
+            client.post(API_URL + "services/disable") {
+                contentType(ContentType.Application.Json)
+                setBody(service)
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    override suspend fun diableProduct(product: Product): String? {
+        return try {
+            println("KtorBeautyApi: disableProducts")
+
+            client.post(API_URL + "productss/disable") {
+                contentType(ContentType.Application.Json)
+                setBody(product)
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e
+        }
+    }
+
     override suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String? {
         return try {
             println("KtorBeautyApi: editSaleDetail")
@@ -288,6 +325,38 @@ class KtorLassoApi(
             if (e is CancellationException) throw e
             e.printStackTrace()
             throw e
+        }
+    }
+
+    override suspend fun editService(service: Service): Service {
+        return try {
+            println("KtorBeautyApi: editService")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+
+            client.post(API_URL + "services/edit") {
+                contentType(ContentType.Application.Json)
+                setBody(service)
+            }.body<Service>()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e // or return a sensible default, but not emptyList()
+        }
+    }
+
+    override suspend fun editProduct(product: Product): Product {
+        return try {
+            println("KtorBeautyApi: editProduct")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+
+            client.post(API_URL + "services/edit") {
+                contentType(ContentType.Application.Json)
+                setBody(product)
+            }.body<Product>()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e // or return a sensible default, but not emptyList()
         }
     }
 

@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
 import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
+import com.lasso.lassoapp.screens.product_catalog.dialog.delete.DeleteProductConfirmationDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.edit.EditProductServiceDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.new.NewProductServiceDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -21,12 +24,26 @@ fun ProductCatalogScreen() {
         onCategoryClick = viewModel::showCategoryDialog,
     )
 
+    if (state.value.productsServices.isDeleteConfirmationDisplayed) {
+        DeleteProductConfirmationDialog(
+            onDismiss = viewModel::hideDeleteProductServiceConfirmation,
+            onConfirm = viewModel::deleteProductService
+        )
+    }
+
     if (state.value.productsServices.isDialogDisplayed) {
-        ProductDialogScreen(
-            lassoItem = state.value.productsServices.selectedItem,
-            onDismiss = viewModel::hideProductServiceDialog,
-        ) {
-            viewModel.onProductServiceSaved()
+        val selectedItem = state.value.productsServices.selectedItem
+        if (selectedItem != null) {
+            EditProductServiceDialog(
+                lassoItem = selectedItem,
+                onDismiss = viewModel::hideProductServiceDialog,
+                onResult = { viewModel.onProductServiceSaved() }
+            )
+        } else {
+            NewProductServiceDialog(
+                onDismiss = viewModel::hideProductServiceDialog,
+                onResult = { viewModel.onProductServiceSaved() }
+            )
         }
     }
 

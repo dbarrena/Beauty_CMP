@@ -45,7 +45,7 @@ fun HomeMetricsCards(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
@@ -61,7 +61,7 @@ fun HomeMetricsCards(
             MetricCardLight(
                 label = "Citas",
                 value = appointmentsToday.toString(),
-                sublabel = "$appointmentsPending pendientes",
+                sublabel = null,
                 icon = Icons.Default.CalendarMonth,
                 iconTint = LassoPrimary,
                 iconBackground = LassoPrimary.copy(alpha = 0.1f),
@@ -115,7 +115,9 @@ private fun MetricCardGradientPrimary(
                     )
                     .padding(16.dp),
         ) {
-            Column {
+            Column(
+                modifier = Modifier
+            ) {
                 Box(
                     modifier =
                         Modifier
@@ -135,7 +137,7 @@ private fun MetricCardGradientPrimary(
                     text = label,
                     style = MaterialTheme.typography.bodyMedium,
                     color = LassoOnPrimary.copy(alpha = 0.95f),
-                    modifier = Modifier.padding(top = 36.dp),
+                    modifier = Modifier.padding(top = 28.dp),
                 )
                 Text(
                     text = value,
@@ -171,7 +173,9 @@ private fun MetricCardGradientWarm(
                     )
                     .padding(16.dp),
         ) {
-            Column {
+            Column(
+                modifier = Modifier
+            ) {
                 Box(
                     modifier =
                         Modifier
@@ -238,7 +242,7 @@ private fun MetricCardLight(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = LassoTextMuted,
-                modifier = Modifier.padding(top = 36.dp),
+                modifier = Modifier.padding(top = 28.dp),
             )
             Text(
                 text = value,
