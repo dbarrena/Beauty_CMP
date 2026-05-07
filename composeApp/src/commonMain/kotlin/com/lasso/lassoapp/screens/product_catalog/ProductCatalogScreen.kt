@@ -22,6 +22,7 @@ fun ProductCatalogScreen() {
         onProductServiceClick = viewModel::showProductServiceDialog,
         onAddCategory = { viewModel.showCategoryDialog() },
         onCategoryClick = viewModel::showCategoryDialog,
+        onDelete =  viewModel::showDeleteProductServiceConfirmation
     )
 
     if (state.value.productsServices.isDeleteConfirmationDisplayed) {

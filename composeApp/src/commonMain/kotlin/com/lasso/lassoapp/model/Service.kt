@@ -19,6 +19,7 @@ data class Service(
     override val price: String,
     @SerialName("duration_minutes")
     val durationMinutes: Int? = null,
+    @SerialName("category_id") val categoryId: Int? = null,
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("created_at") val createdAt: Long? = null,
     @SerialName("updated_at") val updatedAt: Long? = null,

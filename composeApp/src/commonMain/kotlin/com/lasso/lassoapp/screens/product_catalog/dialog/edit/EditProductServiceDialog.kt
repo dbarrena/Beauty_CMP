@@ -51,8 +51,8 @@ fun EditProductServiceDialog(
         }
     }
 
-    LaunchedEffect(state.registeredProduct, state.registeredService) {
-        if (state.registeredProduct != null || state.registeredService != null) {
+    LaunchedEffect(state.editedProduct, state.editedService) {
+        if (state.editedProduct != null || state.editedService != null) {
             viewModel.resetState()
             onResult()
         }
@@ -253,9 +253,9 @@ fun EditProductServiceDialog(
                     Button(
                         onClick = {
                             if (lassoItem is Service) {
-                                viewModel.registerService(lassoItem.copy(name = name, price = price))
+                                viewModel.editService(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
                             } else if (lassoItem is Product) {
-                                viewModel.registerProduct(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
+                                viewModel.editProduct(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
                             }
                         },
                         modifier = Modifier

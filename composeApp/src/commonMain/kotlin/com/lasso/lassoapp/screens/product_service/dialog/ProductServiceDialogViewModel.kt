@@ -37,6 +37,22 @@ class ProductServiceDialogViewModel(
         }
     }
 
+    fun editProduct(product: Product) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+            val registeredProduct = lassoApi.editProduct(product)
+            _state.value = _state.value.copy(editedProduct = registeredProduct, isLoading = false)
+        }
+    }
+
+    fun editService(service: Service) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+            val registeredService = lassoApi.editService(service)
+            _state.value = _state.value.copy(editedService = registeredService, isLoading = false)
+        }
+    }
+
     fun resetState() {
         _state.value = _state.value.copy(
             isLoading = false,
@@ -69,6 +85,8 @@ data class ProductDialogState(
     val productCategories: List<ProductCategory> = emptyList(),
     val registeredProduct: Product? = null,
     val registeredService: Service? = null,
+    val editedProduct: Product? = null,
+    val editedService: Service? = null,
     val dialogType: DialogType = DialogType.SERVICE
 )
 

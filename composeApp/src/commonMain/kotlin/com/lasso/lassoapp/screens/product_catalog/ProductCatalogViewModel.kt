@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
+import com.lasso.lassoapp.model.Service
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -122,8 +123,15 @@ class ProductCatalogViewModel(
     fun deleteProductService() {
         val item = _state.value.productsServices.selectedItem ?: return
         viewModelScope.launch {
-            // TODO: Call API to delete item
-            // lassoApi.deleteProduct(item.id!!) or lassoApi.deleteService(item.id!!)
+            when (item) {
+                is Service ->{
+                    lassoApi.disableService(item)
+                }
+
+                is Product -> {
+                    lassoApi.diableProduct(item)
+                }
+            }
             hideDeleteProductServiceConfirmation()
             refreshProductServices()
         }

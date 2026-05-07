@@ -23,6 +23,7 @@ fun ProductCatalogContent(
     onProductsSearchChange: (String) -> Unit,
     onAddProductService: () -> Unit,
     onProductServiceClick: (LassoItem) -> Unit,
+    onDelete: (LassoItem) -> Unit,
     onAddCategory: () -> Unit,
     onCategoryClick: (ProductCategory) -> Unit,
 ) {
@@ -58,7 +59,7 @@ fun ProductCatalogContent(
                     onSearchChange = onProductsSearchChange,
                     onAdd = onAddProductService,
                     onEditClick = onProductServiceClick,
-                    onDeleteClick = onProductServiceClick,
+                    onDeleteClick = onDelete,
                 )
             }
 
