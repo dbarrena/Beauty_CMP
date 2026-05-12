@@ -302,7 +302,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: disableProducts")
 
-            client.post(API_URL + "productss/disable") {
+            client.post(API_URL + "products/disable") {
                 contentType(ContentType.Application.Json)
                 setBody(product)
             }.body()
@@ -349,7 +349,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: editProduct")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "services/edit") {
+            client.post(API_URL + "products/edit") {
                 contentType(ContentType.Application.Json)
                 setBody(product)
             }.body<Product>()

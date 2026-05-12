@@ -30,6 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun NewProductServiceDialog(
+    categories: List<ProductCategory>,
     onDismiss: () -> Unit,
     onResult: () -> Unit,
 ) {
@@ -40,6 +41,10 @@ fun NewProductServiceDialog(
     var price by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<ProductCategory?>(null) }
     var showCategoryPicker by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
 
     LaunchedEffect(state.registeredProduct, state.registeredService) {
         if (state.registeredProduct != null || state.registeredService != null) {
@@ -125,7 +130,6 @@ fun NewProductServiceDialog(
                         TextField(
                             value = name,
                             onValueChange = { name = it },
-                            placeholder = { Text("Nombre", color = LassoTextPlaceholder) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
@@ -162,7 +166,6 @@ fun NewProductServiceDialog(
                         TextField(
                             value = price,
                             onValueChange = { price = it },
-                            placeholder = { Text("Precio", color = LassoTextPlaceholder) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
@@ -239,6 +242,7 @@ fun NewProductServiceDialog(
                                 viewModel.registerProduct(Product(name = name, price = price, categoryId = selectedCategory?.id))
                             }
                         },
+                        enabled = name.isNotBlank() && price.isNotBlank() && !state.isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
@@ -291,7 +295,7 @@ fun NewProductServiceDialog(
     if (showCategoryPicker) {
         ProductCategoryPickerDialog(
             isVisible = showCategoryPicker,
-            categories = state.productCategories,
+            categories = categories,
             onDismiss = { showCategoryPicker = false },
             onSelect = {
                 selectedCategory = it

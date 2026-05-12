@@ -3,7 +3,6 @@ package com.lasso.lassoapp.screens.product_catalog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
-import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
 import com.lasso.lassoapp.screens.product_catalog.dialog.delete.DeleteProductConfirmationDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.edit.EditProductServiceDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.new.NewProductServiceDialog
@@ -19,7 +18,7 @@ fun ProductCatalogScreen() {
         onSelectTab = viewModel::setSelectedTab,
         onProductsSearchChange = viewModel::onProductServicesSearchChange,
         onAddProductService = { viewModel.showProductServiceDialog() },
-        onProductServiceClick = viewModel::showProductServiceDialog,
+        onEditClick = viewModel::showProductServiceDialog,
         onAddCategory = { viewModel.showCategoryDialog() },
         onCategoryClick = viewModel::showCategoryDialog,
         onDelete =  viewModel::showDeleteProductServiceConfirmation
@@ -37,11 +36,13 @@ fun ProductCatalogScreen() {
         if (selectedItem != null) {
             EditProductServiceDialog(
                 lassoItem = selectedItem,
+                categories = state.value.categories.availableItems,
                 onDismiss = viewModel::hideProductServiceDialog,
                 onResult = { viewModel.onProductServiceSaved() }
             )
         } else {
             NewProductServiceDialog(
+                categories = state.value.categories.availableItems,
                 onDismiss = viewModel::hideProductServiceDialog,
                 onResult = { viewModel.onProductServiceSaved() }
             )

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
+import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
 import com.lasso.lassoapp.screens.product_service.dialog.ProductCategoryPickerDialog
 import com.lasso.lassoapp.screens.product_service.dialog.ProductServiceDialogViewModel
@@ -31,6 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun EditProductServiceDialog(
     lassoItem: LassoItem,
+    categories: List<ProductCategory>,
     onDismiss: () -> Unit,
     onResult: () -> Unit,
 ) {
@@ -40,14 +42,18 @@ fun EditProductServiceDialog(
     var name by remember { mutableStateOf(lassoItem.name) }
     var price by remember { mutableStateOf(lassoItem.price) }
     var selectedCategory by remember { 
-        mutableStateOf(state.productCategories.find { it.id == (lassoItem as? Product)?.categoryId }) 
+        mutableStateOf(categories.find { it.id == (lassoItem as? Product)?.categoryId }) 
     }
     var showCategoryPicker by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
+
     // Update selectedCategory when productCategories are loaded
-    LaunchedEffect(state.productCategories) {
+    LaunchedEffect(categories) {
         if (selectedCategory == null) {
-            selectedCategory = state.productCategories.find { it.id == (lassoItem as? Product)?.categoryId }
+            selectedCategory = categories.find { it.id == (lassoItem as? Product)?.categoryId }
         }
     }
 
@@ -258,6 +264,7 @@ fun EditProductServiceDialog(
                                 viewModel.editProduct(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
                             }
                         },
+                        enabled = name.isNotBlank() && price.isNotBlank() && !state.isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
@@ -310,7 +317,7 @@ fun EditProductServiceDialog(
     if (showCategoryPicker) {
         ProductCategoryPickerDialog(
             isVisible = showCategoryPicker,
-            categories = state.productCategories,
+            categories = categories,
             onDismiss = { showCategoryPicker = false },
             onSelect = {
                 selectedCategory = it

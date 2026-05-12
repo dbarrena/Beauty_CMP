@@ -58,6 +58,7 @@ import kotlinx.serialization.Serializable
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.agenda_icon
 import lassoapp.composeapp.generated.resources.bell_icon
+import lassoapp.composeapp.generated.resources.catalog
 import lassoapp.composeapp.generated.resources.home_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
 import lassoapp.composeapp.generated.resources.sales_icon
@@ -249,9 +250,9 @@ fun App() {
                                     icon = {
                                         Icon(
                                             modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.agenda_icon),
+                                            painter = painterResource(Res.drawable.catalog),
                                             contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == ProductCatalogDestination::class.qualifiedName } == true)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -259,7 +260,7 @@ fun App() {
                                     },
                                     label = {
                                         Text(
-                                            "Agenda",
+                                            "Catálogo",
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },

@@ -55,6 +55,10 @@ private fun ProductCategoryModalContent(
     )
     val nameState = remember { mutableStateOf(productCategory?.name ?: "") }
 
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
+
     ModalBottomSheet(
         sheetState = sheetState,
         onDismissRequest = onDismiss,

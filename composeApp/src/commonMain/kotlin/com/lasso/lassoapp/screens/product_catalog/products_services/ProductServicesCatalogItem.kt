@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
+import com.lasso.lassoapp.model.Service
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.pencil_icon
 import lassoapp.composeapp.generated.resources.trash_icon
@@ -59,35 +60,34 @@ fun ProductServicesCatalogItem(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    if (lassoItem is Product) {
-                        lassoItem.category?.let {
-                            Text(
-                                text = "Categoría: ${lassoItem.category}",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight(500),
-                                ),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                    val typeLabel = when (lassoItem) {
+                        is Product -> "Producto"
+                        is Service -> "Servicio"
+                    }
+
+                    val category = when (lassoItem) {
+                        is Product -> lassoItem.category
+                        is Service -> lassoItem.category
+                    }
+
+                    val labelStyle = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(500),
+                    )
+
+                    category?.let {
                         Text(
-                            text = "Producto",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight(500),
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        Text(
-                            text = "Servicio",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight(500),
-                            ),
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            text = "Categoría: $it",
+                            style = labelStyle,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    Text(
+                        text = typeLabel,
+                        style = labelStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
 
                 Text(

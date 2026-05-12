@@ -22,7 +22,7 @@ fun ProductCatalogContent(
     onSelectTab: (ProductCatalogTab) -> Unit,
     onProductsSearchChange: (String) -> Unit,
     onAddProductService: () -> Unit,
-    onProductServiceClick: (LassoItem) -> Unit,
+    onEditClick: (LassoItem) -> Unit,
     onDelete: (LassoItem) -> Unit,
     onAddCategory: () -> Unit,
     onCategoryClick: (ProductCategory) -> Unit,
@@ -58,7 +58,7 @@ fun ProductCatalogContent(
                     state = state.productsServices,
                     onSearchChange = onProductsSearchChange,
                     onAdd = onAddProductService,
-                    onEditClick = onProductServiceClick,
+                    onEditClick = onEditClick,
                     onDeleteClick = onDelete,
                 )
             }

@@ -58,6 +58,8 @@ class ProductServiceDialogViewModel(
             isLoading = false,
             registeredProduct = null,
             registeredService = null,
+            editedProduct = null,
+            editedService = null,
             dialogType = DialogType.SERVICE
         )
     }
