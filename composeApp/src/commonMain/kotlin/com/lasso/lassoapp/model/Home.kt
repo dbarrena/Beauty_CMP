@@ -10,6 +10,17 @@ data class Home(
     val totalItemsSold: Int,
     val productsSold: Int,
     val servicesSold: Int,
+    val todayEarnings: String? = null,
+    val weekEarnings: String? = null,
+    val todayTransactionCount: Int? = null,
+    val last7DaysEarnings: List<DailyEarning> = emptyList(),
+)
+
+@Serializable
+data class DailyEarning(
+    val date: String,
+    val earnings: String,
+    val earningsNumber: Float
 )
 
 @Serializable

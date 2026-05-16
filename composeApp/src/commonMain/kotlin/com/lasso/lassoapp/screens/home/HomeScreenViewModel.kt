@@ -10,14 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.minus
-import kotlinx.datetime.toLocalDateTime
-import kotlin.math.roundToInt
-import kotlin.time.Clock
 
 class HomeScreenViewModel(
     private val lassoApi: LassoApi,
@@ -46,29 +40,50 @@ class HomeScreenViewModel(
                     _state.value.copy(
                         home = home,
                         topSellers = null,
-                        todayEarningsFormatted = HomeDashboardPlaceholders.todayEarningsFormatted(),
-                        todayTransactionCount = HomeDashboardPlaceholders.todayTransactionCount(),
-                        weekEarningsFormatted = HomeDashboardPlaceholders.weekEarningsFormatted(),
-                        appointmentsToday = HomeDashboardPlaceholders.appointmentsToday(),
-                        appointmentsPending = HomeDashboardPlaceholders.appointmentsPending(),
-                        lastSevenDays = HomeDashboardPlaceholders.lastSevenDays(),
+                        todayEarningsFormatted = home?.todayEarnings ?: "$0.00",
+                        todayTransactionCount = home?.todayTransactionCount ?: 0,
+                        weekEarningsFormatted = home?.weekEarnings ?: "$0.00",
+                        appointmentsToday = 0,
+                        appointmentsPending = 0,
+                        lastSevenDays = home?.last7DaysEarnings?.map {
+                            HomeDailySalesBar(
+                                shortDayLabel = try {
+                                    spanishDayShort(LocalDate.parse(it.date))
+                                } catch (e: Exception) {
+                                    ""
+                                },
+                                valueFormatted = it.earnings,
+                                yValue = it.earningsNumber,
+                            )
+                        } ?: emptyList(),
                     )
             } catch (e: Exception) {
                 _state.value =
                     _state.value.copy(
                         error = e.message,
-                        todayEarningsFormatted = HomeDashboardPlaceholders.todayEarningsFormatted(),
-                        todayTransactionCount = HomeDashboardPlaceholders.todayTransactionCount(),
-                        weekEarningsFormatted = HomeDashboardPlaceholders.weekEarningsFormatted(),
-                        appointmentsToday = HomeDashboardPlaceholders.appointmentsToday(),
-                        appointmentsPending = HomeDashboardPlaceholders.appointmentsPending(),
-                        lastSevenDays = HomeDashboardPlaceholders.lastSevenDays(),
+                        todayEarningsFormatted = "$0.00",
+                        todayTransactionCount = 0,
+                        weekEarningsFormatted = "$0.00",
+                        appointmentsToday = 0,
+                        appointmentsPending = 0,
+                        lastSevenDays = emptyList(),
                     )
             } finally {
                 _state.value = _state.value.copy(isLoading = false)
             }
         }
     }
+
+    private fun spanishDayShort(date: LocalDate): String =
+        when (date.dayOfWeek) {
+            DayOfWeek.MONDAY -> "lun"
+            DayOfWeek.TUESDAY -> "mar"
+            DayOfWeek.WEDNESDAY -> "mié"
+            DayOfWeek.THURSDAY -> "jue"
+            DayOfWeek.FRIDAY -> "vie"
+            DayOfWeek.SATURDAY -> "sáb"
+            DayOfWeek.SUNDAY -> "dom"
+        }
 }
 
 data class HomeDailySalesBar(
@@ -91,58 +106,3 @@ data class HomeScreenState(
     val appointmentsPending: Int = 0,
     val lastSevenDays: List<HomeDailySalesBar> = emptyList(),
 )
-
-/**
- * Replace with real API-backed values when endpoints exist.
- */
-object HomeDashboardPlaceholders {
-    fun todayEarningsFormatted(): String = "$1,450"
-
-    fun todayTransactionCount(): Int = 5
-
-    fun weekEarningsFormatted(): String = "$5,890"
-
-    fun appointmentsToday(): Int = 3
-
-    fun appointmentsPending(): Int = 1
-
-    /**
-     * Rolling last 7 days, Spanish short labels; amounts are static placeholders.
-     */
-    fun lastSevenDays(): List<HomeDailySalesBar> {
-        val tz = TimeZone.currentSystemDefault()
-        val today = Clock.System.now().toLocalDateTime(tz).date
-        val amounts =
-            listOf(10_000f, 12_500f, 8_200f, 15_000f, 9_100f, 11_300f, 13_750f)
-        return (0..6).map { index ->
-            val date = today.minus(6 - index, DateTimeUnit.DAY)
-            HomeDailySalesBar(
-                shortDayLabel = spanishDayShort(date),
-                valueFormatted = formatMoneyWhole(amounts[index].roundToInt()),
-                yValue = amounts[index],
-            )
-        }
-    }
-
-    private fun spanishDayShort(date: LocalDate): String =
-        when (date.dayOfWeek) {
-            DayOfWeek.MONDAY -> "lun"
-            DayOfWeek.TUESDAY -> "mar"
-            DayOfWeek.WEDNESDAY -> "mié"
-            DayOfWeek.THURSDAY -> "jue"
-            DayOfWeek.FRIDAY -> "vie"
-            DayOfWeek.SATURDAY -> "sáb"
-            DayOfWeek.SUNDAY -> "dom"
-        }
-
-    private fun formatMoneyWhole(amount: Int): String {
-        val s =
-            amount
-                .toString()
-                .reversed()
-                .chunked(3)
-                .joinToString(",")
-                .reversed()
-        return "$$s"
-    }
-}

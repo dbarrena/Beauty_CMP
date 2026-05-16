@@ -20,14 +20,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.ui.theme.LassoOnPrimary
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoPrimaryDark
@@ -116,7 +123,7 @@ private fun MetricCardGradientPrimary(
                     .padding(16.dp),
         ) {
             Column(
-                modifier = Modifier
+                modifier = Modifier,
             ) {
                 Box(
                     modifier =
@@ -139,7 +146,7 @@ private fun MetricCardGradientPrimary(
                     color = LassoOnPrimary.copy(alpha = 0.95f),
                     modifier = Modifier.padding(top = 28.dp),
                 )
-                Text(
+                AutoResizeText(
                     text = value,
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = LassoOnPrimary,
@@ -174,7 +181,7 @@ private fun MetricCardGradientWarm(
                     .padding(16.dp),
         ) {
             Column(
-                modifier = Modifier
+                modifier = Modifier,
             ) {
                 Box(
                     modifier =
@@ -197,7 +204,7 @@ private fun MetricCardGradientWarm(
                     color = LassoOnPrimary.copy(alpha = 0.95f),
                     modifier = Modifier.padding(top = 28.dp),
                 )
-                Text(
+                AutoResizeText(
                     text = value,
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = LassoOnPrimary,
@@ -244,7 +251,7 @@ private fun MetricCardLight(
                 color = LassoTextMuted,
                 modifier = Modifier.padding(top = 28.dp),
             )
-            Text(
+            AutoResizeText(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
@@ -259,4 +266,42 @@ private fun MetricCardLight(
             }
         }
     }
+}
+
+@Composable
+private fun AutoResizeText(
+    text: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    maxLines: Int = 1,
+) {
+    var resizedTextStyle by remember(text) { mutableStateOf(style) }
+    var shouldDraw by remember(text) { mutableStateOf(value = false) }
+
+    Text(
+        text = text,
+        color = color,
+        modifier = modifier.drawWithContent {
+            if (shouldDraw) {
+                drawContent()
+            }
+        },
+        softWrap = false,
+        maxLines = maxLines,
+        style = resizedTextStyle,
+        onTextLayout = { result ->
+            if (result.didOverflowWidth) {
+                if (resizedTextStyle.fontSize > 12.sp) {
+                    resizedTextStyle = resizedTextStyle.copy(
+                        fontSize = resizedTextStyle.fontSize * 0.9f
+                    )
+                } else {
+                    shouldDraw = true
+                }
+            } else {
+                shouldDraw = true
+            }
+        }
+    )
 }
