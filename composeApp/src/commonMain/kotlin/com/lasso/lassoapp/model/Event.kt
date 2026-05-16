@@ -43,24 +43,23 @@ fun LocalDateTime.formatEventTimeAmPm(): String {
 
 val sampleEvents = listOf(
     Event(
-        name = "Google I/O Keynote",
+        name = "Gelish liso",
         color = Color(0xFFAFBBF2),
         start = LocalDateTime.parse("2021-05-18T11:00:00"),
-        end = LocalDateTime.parse("2021-05-18T12:00:00"),
-        description = "Tune in to find out about how we're furthering our mission to organize the world’s information and make it universally accessible and useful.",
+        end = LocalDateTime.parse("2021-05-18T11:30:00"),
+        description = "Diego Barrena",
     ),
     Event(
-        name = "Developer Keynote",
+        name = "Acrilico",
         color = Color(0xFFAFBBF2),
         start = LocalDateTime.parse("2021-05-18T13:00:00"),
-        end = LocalDateTime.parse("2021-05-18T15:00:00"),
-        description = "Learn about the latest updates to our developer products and platforms from Google Developers.",
+        end = LocalDateTime.parse("2021-05-18T15:00:00")
     ),
     Event(
-        name = "What's new in Android",
+        name = "Mani Pedi",
         color = Color(0xFF1B998B),
         start = LocalDateTime.parse("2021-05-18T15:00:00"),
-        end = LocalDateTime.parse("2021-05-18T17:00:00"),
-        description = "In this Keynote, Chet Haase, Dan Sandler, and Romain Guy discuss the latest Android features and enhancements for developers.",
+        end = LocalDateTime.parse("2021-05-18T16:00:00"),
+        description = "Fernanda G",
     ),
 )
