@@ -178,7 +178,7 @@ fun App() {
                                             Icon(
                                                 Icons.AutoMirrored.Filled.ArrowBack,
                                                 contentDescription = "Back",
-                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                tint = MaterialTheme.colorScheme.primary,
 
                                                 )
                                         }
