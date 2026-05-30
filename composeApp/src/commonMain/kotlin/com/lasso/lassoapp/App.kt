@@ -39,6 +39,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lasso.lassoapp.screens.calendar.CalendarScreen
+import com.lasso.lassoapp.screens.commissions.CommissionsScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
@@ -109,6 +110,9 @@ object SalesByProductCategoriesDestination
 @Serializable
 object EmployeesDestination
 
+@Serializable
+object CommissionsDestination
+
 @OptIn(ExperimentalMaterial3Api::class, InternalResourceApi::class)
 @Composable
 fun App() {
@@ -142,6 +146,7 @@ fun App() {
             ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
             SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
             EmployeesDestination::class.qualifiedName -> "Empleados"
+            CommissionsDestination::class.qualifiedName -> "Comisiones"
             else -> ""
         }
 
@@ -425,6 +430,10 @@ fun App() {
                                 ConfigurationScreenRoutes.EMPLOYEES -> {
                                     navController.navigate(EmployeesDestination)
                                 }
+
+                                ConfigurationScreenRoutes.COMMISSIONS -> {
+                                    navController.navigate(CommissionsDestination)
+                                }
                             }
                         }
                     }
@@ -457,6 +466,9 @@ fun App() {
                     }
                     composable<EmployeesDestination> {
                         com.lasso.lassoapp.screens.employees.EmployeesScreen()
+                    }
+                    composable<CommissionsDestination> {
+                        CommissionsScreen()
                     }
                 }
             }

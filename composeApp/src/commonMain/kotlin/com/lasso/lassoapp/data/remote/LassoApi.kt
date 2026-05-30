@@ -3,6 +3,7 @@ package com.lasso.lassoapp.data.remote
 import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.model.CashClosure
 import com.lasso.lassoapp.model.CashClosureRecordsResponse
+import com.lasso.lassoapp.model.CommissionCalculationResponse
 import com.lasso.lassoapp.model.CreateCashClosureRequest
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Home
@@ -55,6 +56,12 @@ interface LassoApi {
         end: Long,
         categoryId: Int
     ): SalesByProductCategoryApiResponse?
+
+    suspend fun calculateCommissions(
+        employeeId: Int,
+        start: Long,
+        end: Long
+    ): List<CommissionCalculationResponse>
 
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
@@ -489,6 +496,28 @@ class KtorLassoApi(
             if (e is CancellationException) throw e
             e.printStackTrace()
             null
+        }
+    }
+
+    override suspend fun calculateCommissions(
+        employeeId: Int,
+        start: Long,
+        end: Long
+    ): List<CommissionCalculationResponse> {
+        return try {
+            println("KtorBeautyApi: calculateCommissions")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(
+                API_URL + "commissions/calculate?" +
+                        "partnerId=$partnerId" +
+                        "&employeeId=$employeeId" +
+                        "&startEpoch=$start" +
+                        "&endEpoch=$end"
+            ).body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            emptyList()
         }
     }
 }

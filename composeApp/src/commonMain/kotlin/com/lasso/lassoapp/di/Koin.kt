@@ -9,6 +9,7 @@ import com.lasso.lassoapp.data.remote.KtorLassoApi
 import com.lasso.lassoapp.screens.calendar.CalendarScreenViewModel
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureViewModel
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreenViewModel
+import com.lasso.lassoapp.screens.commissions.CommissionsViewModel
 import com.lasso.lassoapp.screens.configuration.ConfigurationViewModel
 import com.lasso.lassoapp.screens.employees.EmployeesViewModel
 import com.lasso.lassoapp.screens.home.HomeScreenViewModel
@@ -56,6 +57,7 @@ val viewModelModule = module {
     factoryOf(::SalesScreenViewModel)
     factoryOf(::SalesScreenViewModelV2)
     factoryOf(::ConfigurationViewModel)
+    factoryOf(::CommissionsViewModel)
     factoryOf(::ProductServiceViewModel)
     factoryOf(::HomeScreenViewModel)
     factoryOf(::AppViewModel)

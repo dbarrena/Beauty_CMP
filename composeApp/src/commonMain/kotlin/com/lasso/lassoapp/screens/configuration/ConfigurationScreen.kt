@@ -165,6 +165,15 @@ fun ConfigurationScreenContent(
                     onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
                 )
 
+                ConfigurationTile(
+                    title = "Comisiones",
+                    subtitle = "Calcula comisiones de empleados",
+                    icon = Icons.Default.BarChart,
+                    containerColor = LassoPrimary.copy(alpha = 0.1f),
+                    iconTint = LassoPrimary,
+                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.COMMISSIONS) }
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Logout Button
@@ -327,5 +336,6 @@ enum class ConfigurationScreenRoutes {
     CASH_CLOSURE_RECORDS,
     PRODUCT_CATEGORIES,
     SALES_BY_PRODUCT_CATEGORIES,
-    EMPLOYEES
+    EMPLOYEES,
+    COMMISSIONS
 }
