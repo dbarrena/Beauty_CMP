@@ -106,6 +106,9 @@ object ProductCatalogDestination
 @Serializable
 object SalesByProductCategoriesDestination
 
+@Serializable
+object EmployeesDestination
+
 @OptIn(ExperimentalMaterial3Api::class, InternalResourceApi::class)
 @Composable
 fun App() {
@@ -138,6 +141,7 @@ fun App() {
             ProductCategoriesDestination::class.qualifiedName -> "Categorias Productos"
             ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
             SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
+            EmployeesDestination::class.qualifiedName -> "Empleados"
             else -> ""
         }
 
@@ -417,6 +421,10 @@ fun App() {
                                 ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES -> {
                                     navController.navigate(SalesByProductCategoriesDestination)
                                 }
+
+                                ConfigurationScreenRoutes.EMPLOYEES -> {
+                                    navController.navigate(EmployeesDestination)
+                                }
                             }
                         }
                     }
@@ -446,6 +454,9 @@ fun App() {
                     }
                     composable<SalesByProductCategoriesDestination> {
                         SalesByProductCategoryScreen()
+                    }
+                    composable<EmployeesDestination> {
+                        com.lasso.lassoapp.screens.employees.EmployeesScreen()
                     }
                 }
             }

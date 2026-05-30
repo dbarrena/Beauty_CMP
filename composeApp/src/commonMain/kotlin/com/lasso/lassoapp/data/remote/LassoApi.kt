@@ -39,6 +39,7 @@ interface LassoApi {
 
     suspend fun getSale(id: Int): SaleApiResponse?
     suspend fun getEmployeeById(id: Int): Employee?
+    suspend fun getEmployees(): List<Employee>
     suspend fun getHome(): Home?
 
     suspend fun getHomeTopSellers(): TopSellersResponse?
@@ -49,12 +50,17 @@ interface LassoApi {
 
     suspend fun getProductCategories(): List<ProductCategory>
     suspend fun registerProductCategory(productCategory: ProductCategory): ProductCategory
-    suspend fun getSalesByProductCategory(start: Long, end: Long, categoryId: Int): SalesByProductCategoryApiResponse?
+    suspend fun getSalesByProductCategory(
+        start: Long,
+        end: Long,
+        categoryId: Int
+    ): SalesByProductCategoryApiResponse?
 
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun editService(service: Service): Service
     suspend fun editProduct(product: Product): Product
+    suspend fun editEmployee(employee: Employee): String?
 
     suspend fun deleteSale(saleId: Int): String?
 
@@ -175,10 +181,18 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: registerSale")
             val partnerId = sessionRepository.getPartnerId() ?: 0
+            val employeeId = sessionRepository.getEmployeeId()
 
             client.post(API_URL + "sales/new") {
                 contentType(ContentType.Application.Json)
-                setBody(sale.copy(partnerId = partnerId))
+                setBody(
+                    sale.copy(
+                        partnerId = partnerId,
+                        saleDetails = sale.saleDetails.map {
+                            it.copy(employeeId = employeeId)
+                        }
+                    )
+                )
             }.body<Sale>()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
@@ -206,6 +220,18 @@ class KtorLassoApi(
             if (e is CancellationException) throw e
             e.printStackTrace()
             null
+        }
+    }
+
+    override suspend fun getEmployees(): List<Employee> {
+        return try {
+            println("KtorBeautyApi: getEmployees")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+            client.get(API_URL + "employees/all?partnerId=$partnerId").body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            emptyList()
         }
     }
 
@@ -360,6 +386,20 @@ class KtorLassoApi(
         }
     }
 
+    override suspend fun editEmployee(employee: Employee): String? {
+        return try {
+            println("KtorBeautyApi: editEmployee")
+            client.post(API_URL + "employees/edit/${employee.id}") {
+                contentType(ContentType.Application.Json)
+                setBody(employee)
+            }.body()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            null
+        }
+    }
+
     override suspend fun createCashClosure(): String? {
         return try {
             println("KtorBeautyApi: getCashClosure")
@@ -437,11 +477,13 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getSalesByProductCategory")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "reports/products-by-category?" +
-                    "partnerId=$partnerId" +
-                    "&startEpoch=$start" +
-                    "&endEpoch=$end" +
-                    "&categoryId=$categoryId")
+            client.get(
+                API_URL + "reports/products-by-category?" +
+                        "partnerId=$partnerId" +
+                        "&startEpoch=$start" +
+                        "&endEpoch=$end" +
+                        "&categoryId=$categoryId"
+            )
                 .body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e

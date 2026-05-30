@@ -156,6 +156,15 @@ fun ConfigurationScreenContent(
                     onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES) }
                 )
 
+                ConfigurationTile(
+                    title = "Empleados",
+                    subtitle = "Administra tus empleados",
+                    icon = Icons.Default.Person,
+                    containerColor = LassoSecondary.copy(alpha = 0.1f),
+                    iconTint = LassoSecondary,
+                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Logout Button
@@ -317,5 +326,6 @@ enum class ConfigurationScreenRoutes {
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,
     PRODUCT_CATEGORIES,
-    SALES_BY_PRODUCT_CATEGORIES
+    SALES_BY_PRODUCT_CATEGORIES,
+    EMPLOYEES
 }

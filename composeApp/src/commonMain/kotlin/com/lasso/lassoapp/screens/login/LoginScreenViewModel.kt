@@ -24,6 +24,7 @@ class LoginScreenViewModel(
             val loginResult = lassoApi.login(Login(username, password))
 
             loginResult.employee?.let {
+                println("DIEGO: login result $it")
                 sessionRepository.saveSession(it)
                 onLoginSuccess()
             } ?: run {

@@ -11,7 +11,7 @@ class SessionRepository(
         val sessionEntity = Session(
             employeeId = employee.id,
             partnerId = employee.partnerId,
-            partnerName = employee.partners.name,
+            partnerName = employee.partners?.name.orEmpty(),
             employeeName = employee.name,
             employeeRole = employee.role
         )
@@ -31,6 +31,10 @@ class SessionRepository(
 
     suspend fun getPartnerId(): Int? {
         return sessionDao.getSession()?.partnerId
+    }
+
+    suspend fun getEmployeeId(): Int? {
+        return sessionDao.getSession()?.employeeId
     }
 
     suspend fun isLoggedIn(): Boolean {

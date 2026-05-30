@@ -18,7 +18,8 @@ data class SaleDetail(
     @SerialName("item_id") val itemId: Int,
     @SerialName("item_type") val itemType: String,
     val quantity: Int,
-    val price: Double
+    val price: Double,
+    @SerialName("employee_id") val employeeId: Int? = null,
 )
 
 @Serializable

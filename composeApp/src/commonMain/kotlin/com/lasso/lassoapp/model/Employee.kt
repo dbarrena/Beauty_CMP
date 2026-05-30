@@ -20,7 +20,13 @@ data class Employee(
     @SerialName("updated_at")
     val updatedAt: Long?,
 
-    val partners: Partner
+    val partners: Partner? = null,
+
+    @SerialName("product_commission_percentage")
+    val productCommissionPercentage: String? = "0",
+
+    @SerialName("service_commission_percentage")
+    val serviceCommissionPercentage: String? = "0"
 )
 
 @Serializable

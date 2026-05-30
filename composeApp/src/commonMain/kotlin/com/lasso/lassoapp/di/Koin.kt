@@ -10,6 +10,7 @@ import com.lasso.lassoapp.screens.calendar.CalendarScreenViewModel
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureViewModel
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreenViewModel
 import com.lasso.lassoapp.screens.configuration.ConfigurationViewModel
+import com.lasso.lassoapp.screens.employees.EmployeesViewModel
 import com.lasso.lassoapp.screens.home.HomeScreenViewModel
 import com.lasso.lassoapp.screens.login.LoginScreenViewModel
 import com.lasso.lassoapp.screens.pos.PosViewModel
@@ -67,6 +68,7 @@ val viewModelModule = module {
     factoryOf(::ProductCategoriesViewModel)
     factoryOf(::ProductCatalogViewModel)
     factoryOf(::SalesByProductCategoryViewModel)
+    factoryOf(::EmployeesViewModel)
     factoryOf(::CheckoutDialogViewModelV2)
 }
 
