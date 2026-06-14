@@ -21,31 +21,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.Employee
-import com.lasso.lassoapp.screens.employees.EmployeesViewModel
 import com.lasso.lassoapp.screens.employees.dialog.new.EmployeeField
 import com.lasso.lassoapp.ui.theme.*
-import org.koin.compose.viewmodel.koinViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun EditEmployeeDialog(
     employee: Employee,
+    isLoading: Boolean = false,
     onDismiss: () -> Unit,
-    onResult: () -> Unit
+    onEdit: (Employee) -> Unit
 ) {
-    val viewModel = koinViewModel<EmployeesViewModel>()
-    
     var name by remember { mutableStateOf(employee.name) }
     var email by remember { mutableStateOf(employee.email) }
     var role by remember { mutableStateOf(employee.role) }
     var productCommission by remember { mutableStateOf(employee.productCommissionPercentage ?: "0") }
     var serviceCommission by remember { mutableStateOf(employee.serviceCommissionPercentage ?: "0") }
     var showRoleMenu by remember { mutableStateOf(false) }
-    
-    val scope = rememberCoroutineScope()
-    var isLoading by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = { if (!isLoading) onDismiss() }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -76,12 +69,22 @@ fun EditEmployeeDialog(
                     )
 
                     // Nombre Field
-                    EmployeeField(label = "Nombre", value = name, onValueChange = { name = it })
+                    EmployeeField(
+                        label = "Nombre",
+                        value = name,
+                        onValueChange = { name = it },
+                        enabled = !isLoading
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Email Field
-                    EmployeeField(label = "Email", value = email, onValueChange = { email = it })
+                    EmployeeField(
+                        label = "Email",
+                        value = email,
+                        onValueChange = { email = it },
+                        enabled = !isLoading
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -101,7 +104,7 @@ fun EditEmployeeDialog(
                                 .fillMaxWidth()
                                 .height(48.dp)
                                 .background(LassoSurfaceVariant, RoundedCornerShape(14.dp))
-                                .clickable { showRoleMenu = true }
+                                .clickable(enabled = !isLoading) { showRoleMenu = true }
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
@@ -154,7 +157,8 @@ fun EditEmployeeDialog(
                                 label = "Comisión Prod. (%)",
                                 value = productCommission,
                                 onValueChange = { productCommission = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                enabled = !isLoading
                             )
                         }
                         Box(modifier = Modifier.weight(1f)) {
@@ -162,7 +166,8 @@ fun EditEmployeeDialog(
                                 label = "Comisión Serv. (%)",
                                 value = serviceCommission,
                                 onValueChange = { serviceCommission = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                enabled = !isLoading
                             )
                         }
                     }
@@ -172,20 +177,15 @@ fun EditEmployeeDialog(
                     // Save Button
                     Button(
                         onClick = {
-                            isLoading = true
-                            scope.launch {
-                                viewModel.editEmployee(
-                                    employee.copy(
-                                        name = name,
-                                        email = email,
-                                        role = role,
-                                        productCommissionPercentage = productCommission,
-                                        serviceCommissionPercentage = serviceCommission
-                                    )
+                            onEdit(
+                                employee.copy(
+                                    name = name,
+                                    email = email,
+                                    role = role,
+                                    productCommissionPercentage = productCommission,
+                                    serviceCommissionPercentage = serviceCommission
                                 )
-                                isLoading = false
-                                onResult()
-                            }
+                            )
                         },
                         enabled = name.isNotBlank() && email.isNotBlank() && !isLoading,
                         modifier = Modifier
@@ -198,7 +198,11 @@ fun EditEmployeeDialog(
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
                         } else {
                             Text(
                                 text = "Guardar Cambios",
@@ -215,6 +219,7 @@ fun EditEmployeeDialog(
                     // Cancel Button
                     TextButton(
                         onClick = onDismiss,
+                        enabled = !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
@@ -230,18 +235,20 @@ fun EditEmployeeDialog(
                     }
                 }
 
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = 12.dp, y = (-12).dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = LassoTextMuted.copy(alpha = 0.7f),
-                        modifier = Modifier.size(24.dp)
-                    )
+                if (!isLoading) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 12.dp, y = (-12).dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = LassoTextMuted.copy(alpha = 0.7f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }

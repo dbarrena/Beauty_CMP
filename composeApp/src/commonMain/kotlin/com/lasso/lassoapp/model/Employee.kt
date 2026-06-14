@@ -30,6 +30,23 @@ data class Employee(
 )
 
 @Serializable
+data class EmployeeRegistrationRequest(
+    val name: String,
+    val email: String,
+    val password: String,
+    val role: String,
+
+    @SerialName("partner_id")
+    val partnerId: Int? = null,
+
+    @SerialName("product_commission_percentage")
+    val productCommissionPercentage: String? = "0",
+
+    @SerialName("service_commission_percentage")
+    val serviceCommissionPercentage: String? = "0"
+)
+
+@Serializable
 data class Partner(
     val id: Int,
     val name: String,

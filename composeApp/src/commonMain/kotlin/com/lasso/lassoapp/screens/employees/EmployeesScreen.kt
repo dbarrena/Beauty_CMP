@@ -105,8 +105,9 @@ fun EmployeesScreen() {
 
     if (state.isNewEmployeeDialogDisplayed) {
         NewEmployeeDialog(
+            isLoading = state.isRegistering,
             onDismiss = { viewModel.hideNewEmployeeDialog() },
-            onResult = { viewModel.onEmployeeSaved() }
+            onRegister = { viewModel.registerEmployee(it) }
         )
     }
 
@@ -115,8 +116,9 @@ fun EmployeesScreen() {
         if (employee != null) {
             EditEmployeeDialog(
                 employee = employee,
+                isLoading = state.isUpdating,
                 onDismiss = { viewModel.hideEditEmployeeDialog() },
-                onResult = { viewModel.onEmployeeSaved() }
+                onEdit = { viewModel.editEmployee(it) }
             )
         }
     }

@@ -6,6 +6,7 @@ import com.lasso.lassoapp.model.CashClosureRecordsResponse
 import com.lasso.lassoapp.model.CommissionCalculationResponse
 import com.lasso.lassoapp.model.CreateCashClosureRequest
 import com.lasso.lassoapp.model.Employee
+import com.lasso.lassoapp.model.EmployeeRegistrationRequest
 import com.lasso.lassoapp.model.Home
 import com.lasso.lassoapp.model.Login
 import com.lasso.lassoapp.model.LoginResponse
@@ -37,6 +38,7 @@ interface LassoApi {
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(service: Service): Service
     suspend fun registerSale(sale: Sale): Sale
+    suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee
 
     suspend fun getSale(id: Int): SaleApiResponse?
     suspend fun getEmployeeById(id: Int): Employee?
@@ -197,6 +199,22 @@ class KtorLassoApi(
             if (e is CancellationException) throw e
             e.printStackTrace()
             throw e // or return a sensible default, but not emptyList()
+        }
+    }
+
+    override suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee {
+        return try {
+            println("KtorBeautyApi: registerEmployee")
+            val partnerId = sessionRepository.getPartnerId() ?: 0
+
+            client.post(API_URL + "employees/add") {
+                contentType(ContentType.Application.Json)
+                setBody(employee.copy(partnerId = partnerId))
+            }.body<Employee>()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
+            throw e
         }
     }
 
