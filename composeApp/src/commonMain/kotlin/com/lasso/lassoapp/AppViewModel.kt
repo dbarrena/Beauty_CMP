@@ -16,12 +16,22 @@ class AppViewModel(
 
     init {
         viewModelScope.launch {
-            _state.value = AppState(isLoggedIn = sessionRepository.isLoggedIn())
+            val session = sessionRepository.getSession()
+            _state.value = AppState(
+                isLoggedIn = session != null,
+                isAdmin = session?.isAdmin ?: false
+            )
         }
     }
 
     fun setLoggedIn() {
-        _state.value = AppState(isLoggedIn = true)
+        viewModelScope.launch {
+            val session = sessionRepository.getSession()
+            _state.value = AppState(
+                isLoggedIn = true,
+                isAdmin = session?.isAdmin ?: false
+            )
+        }
     }
 
     fun setLoggedOut() {
@@ -30,5 +40,6 @@ class AppViewModel(
 }
 
 data class AppState(
-    val isLoggedIn: Boolean? = null
+    val isLoggedIn: Boolean? = null,
+    val isAdmin: Boolean = false
 )

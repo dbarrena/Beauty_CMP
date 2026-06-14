@@ -44,22 +44,27 @@ fun HomeScreenV2(
             ) {
                 HomeHeaderTitle(partnerName = state.value.partnerName)
                 Spacer(Modifier.height(16.dp))
-                HomeMetricsCards(
-                    todayEarningsFormatted = state.value.todayEarningsFormatted,
-                    todayTransactionCount = state.value.todayTransactionCount,
-                    weekEarningsFormatted = state.value.weekEarningsFormatted,
-                    appointmentsToday = state.value.appointmentsToday,
-                    appointmentsPending = state.value.appointmentsPending,
-                )
-                Spacer(Modifier.height(20.dp))
+                if (state.value.isAdmin) {
+                    HomeMetricsCards(
+                        todayEarningsFormatted = state.value.todayEarningsFormatted,
+                        todayTransactionCount = state.value.todayTransactionCount,
+                        weekEarningsFormatted = state.value.weekEarningsFormatted,
+                        appointmentsToday = state.value.appointmentsToday,
+                        appointmentsPending = state.value.appointmentsPending,
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
                 HomeQuickActionsRow(
                     onNuevaVenta = onNavigateToPos,
                     onAgendar = onNavigateToCalendar,
                     onVentas = onNavigateToSales,
                     onCorteCaja = onNavigateToCashClosure,
+                    isAdmin = state.value.isAdmin,
                 )
-                Spacer(Modifier.height(24.dp))
-                HomeWeeklySalesChart(lastSevenDays = state.value.lastSevenDays)
+                if (state.value.isAdmin) {
+                    Spacer(Modifier.height(24.dp))
+                    HomeWeeklySalesChart(lastSevenDays = state.value.lastSevenDays)
+                }
                 Spacer(Modifier.height(24.dp))
                 HomeAgendaSection(onVerTodo = onNavigateToCalendar)
             }

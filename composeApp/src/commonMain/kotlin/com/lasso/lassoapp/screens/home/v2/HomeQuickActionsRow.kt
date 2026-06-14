@@ -44,6 +44,7 @@ fun HomeQuickActionsRow(
     onAgendar: () -> Unit,
     onVentas: () -> Unit,
     onCorteCaja: () -> Unit,
+    isAdmin: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -83,24 +84,26 @@ fun HomeQuickActionsRow(
                 isPrimaryAction = false,
                 onClick = onAgendar,
             )
-            QuickActionCell(
-                label = "Ventas",
-                icon = Icons.AutoMirrored.Filled.TrendingUp,
-                containerColor = MaterialTheme.colorScheme.surface,
-                iconTint = MaterialTheme.colorScheme.onSurface,
-                labelColor = MaterialTheme.colorScheme.onSurface,
-                isPrimaryAction = false,
-                onClick = onVentas,
-            )
-            QuickActionCell(
-                label = "Corte de caja",
-                icon = Icons.Default.AccountBalanceWallet,
-                containerColor = MaterialTheme.colorScheme.surface,
-                iconTint = MaterialTheme.colorScheme.onSurface,
-                labelColor = MaterialTheme.colorScheme.onSurface,
-                isPrimaryAction = false,
-                onClick = onCorteCaja,
-            )
+            if (isAdmin) {
+                QuickActionCell(
+                    label = "Ventas",
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    iconTint = MaterialTheme.colorScheme.onSurface,
+                    labelColor = MaterialTheme.colorScheme.onSurface,
+                    isPrimaryAction = false,
+                    onClick = onVentas,
+                )
+                QuickActionCell(
+                    label = "Corte de caja",
+                    icon = Icons.Default.AccountBalanceWallet,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    iconTint = MaterialTheme.colorScheme.onSurface,
+                    labelColor = MaterialTheme.colorScheme.onSurface,
+                    isPrimaryAction = false,
+                    onClick = onCorteCaja,
+                )
+            }
         }
     }
 }

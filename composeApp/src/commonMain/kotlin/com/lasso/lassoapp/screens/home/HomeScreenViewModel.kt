@@ -27,6 +27,7 @@ class HomeScreenViewModel(
                     _state.value.copy(
                         partnerName = session.partnerName,
                         employeeName = session.employeeName,
+                        isAdmin = session.isAdmin
                     )
             }
 
@@ -96,6 +97,7 @@ data class HomeScreenState(
     val isLoading: Boolean = false,
     val partnerName: String = "",
     val employeeName: String = "",
+    val isAdmin: Boolean = false,
     val home: Home? = null,
     val error: String? = null,
     val topSellers: TopSellersResponse? = null,

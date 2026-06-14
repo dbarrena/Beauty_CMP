@@ -61,14 +61,16 @@ fun ConfigurationScreen(
 
     ConfigurationScreenContent(
         onLogout = { viewModel.logout() },
-        onConfigurationNavigation = onConfigurationNavigation
+        onConfigurationNavigation = onConfigurationNavigation,
+        isAdmin = state.value.session?.isAdmin ?: false
     )
 }
 
 @Composable
 fun ConfigurationScreenContent(
     onLogout: () -> Unit,
-    onConfigurationNavigation: (ConfigurationScreenRoutes) -> Unit
+    onConfigurationNavigation: (ConfigurationScreenRoutes) -> Unit,
+    isAdmin: Boolean
 ) {
     val scrollState = rememberScrollState()
 
@@ -101,32 +103,34 @@ fun ConfigurationScreenContent(
 
             // Menu Options
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                ConfigurationTile(
-                    title = "Reportes",
-                    subtitle = "Estadísticas y gráficas de tu negocio",
-                    icon = Icons.Default.BarChart,
-                    containerColor = LassoPrimary.copy(alpha = 0.1f),
-                    iconTint = LassoPrimary,
-                    onClick = { /* No-op */ }
-                )
+                if (isAdmin) {
+                    ConfigurationTile(
+                        title = "Reportes",
+                        subtitle = "Estadísticas y gráficas de tu negocio",
+                        icon = Icons.Default.BarChart,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { /* No-op */ }
+                    )
 
-                ConfigurationTile(
-                    title = "Historial de ventas",
-                    subtitle = "Consulta y gestiona tus ventas",
-                    icon = Icons.Default.History,
-                    containerColor = LassoSecondary.copy(alpha = 0.1f),
-                    iconTint = LassoSecondary,
-                    onClick = { /* No-op */ }
-                )
+                    ConfigurationTile(
+                        title = "Historial de ventas",
+                        subtitle = "Consulta y gestiona tus ventas",
+                        icon = Icons.Default.History,
+                        containerColor = LassoSecondary.copy(alpha = 0.1f),
+                        iconTint = LassoSecondary,
+                        onClick = { /* No-op */ }
+                    )
 
-                ConfigurationTile(
-                    title = "Caja",
-                    subtitle = "Cortes de caja y resumen",
-                    icon = Icons.Default.AccountBalanceWallet,
-                    containerColor = LassoTertiary.copy(alpha = 0.1f),
-                    iconTint = LassoTertiary,
-                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE) }
-                )
+                    ConfigurationTile(
+                        title = "Caja",
+                        subtitle = "Cortes de caja y resumen",
+                        icon = Icons.Default.AccountBalanceWallet,
+                        containerColor = LassoTertiary.copy(alpha = 0.1f),
+                        iconTint = LassoTertiary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE) }
+                    )
+                }
 
                 ConfigurationTile(
                     title = "Mi perfil",
@@ -147,32 +151,34 @@ fun ConfigurationScreenContent(
                     onClick = { /* No-op */ }
                 )
 
-                ConfigurationTile(
-                    title = "Ventas por Categoría",
-                    subtitle = "Reporte detallado por categorías",
-                    icon = Icons.AutoMirrored.Filled.TrendingUp,
-                    containerColor = LassoPrimary.copy(alpha = 0.1f),
-                    iconTint = LassoPrimary,
-                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES) }
-                )
+                if (isAdmin) {
+                    ConfigurationTile(
+                        title = "Ventas por Categoría",
+                        subtitle = "Reporte detallado por categorías",
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES) }
+                    )
 
-                ConfigurationTile(
-                    title = "Empleados",
-                    subtitle = "Administra tus empleados",
-                    icon = Icons.Default.Person,
-                    containerColor = LassoSecondary.copy(alpha = 0.1f),
-                    iconTint = LassoSecondary,
-                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
-                )
+                    ConfigurationTile(
+                        title = "Empleados",
+                        subtitle = "Administra tus empleados",
+                        icon = Icons.Default.Person,
+                        containerColor = LassoSecondary.copy(alpha = 0.1f),
+                        iconTint = LassoSecondary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
+                    )
 
-                ConfigurationTile(
-                    title = "Comisiones",
-                    subtitle = "Calcula comisiones de empleados",
-                    icon = Icons.Default.BarChart,
-                    containerColor = LassoPrimary.copy(alpha = 0.1f),
-                    iconTint = LassoPrimary,
-                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.COMMISSIONS) }
-                )
+                    ConfigurationTile(
+                        title = "Comisiones",
+                        subtitle = "Calcula comisiones de empleados",
+                        icon = Icons.Default.BarChart,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.COMMISSIONS) }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
