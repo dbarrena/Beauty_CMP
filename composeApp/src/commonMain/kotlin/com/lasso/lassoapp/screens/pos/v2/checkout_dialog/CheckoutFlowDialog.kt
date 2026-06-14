@@ -79,10 +79,10 @@ fun CheckoutFlowDialog(
                         CheckoutSplitPaymentContent(
                             checkoutPaymentMethod = step.checkoutPaymentMethod,
                             totalPrice = totalPrice,
-                            isRegisteringSale = state.isLoading,
-                            registerSaleError = state.error,
+                            state = state,
                             onBack = viewModel::navigateToMethodPicker,
                             onClose = { onDismiss(false) },
+                            onSelectEmployee = viewModel::setSelectedEmployee,
                             onRegisterSale = { payments ->
                                 viewModel.registerSale(
                                     items = items,

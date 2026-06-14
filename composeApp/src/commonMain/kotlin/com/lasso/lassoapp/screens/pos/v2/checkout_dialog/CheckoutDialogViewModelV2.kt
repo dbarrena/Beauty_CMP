@@ -2,7 +2,9 @@ package com.lasso.lassoapp.screens.pos.v2.checkout_dialog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.data.remote.LassoApi
+import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Payment
 import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleDetail
@@ -13,7 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CheckoutDialogViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
+class CheckoutDialogViewModelV2(
+    private val lassoApi: LassoApi,
+    private val sessionRepository: SessionRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(CheckoutDialogState())
     val state: StateFlow<CheckoutDialogState> = _state.asStateFlow()
 
@@ -38,9 +43,40 @@ class CheckoutDialogViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
      */
     fun resetCheckoutFlow() {
         _state.value = CheckoutDialogState()
+        loadInitialData()
+    }
+
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val employees = lassoApi.getEmployees()
+                val session = sessionRepository.getSession()
+                val currentEmployeeId = session?.employeeId
+                
+                val selectedEmployee = employees.find { it.id == currentEmployeeId } ?: employees.firstOrNull()
+                val canSelectEmployee = session?.isAdmin == true
+
+                _state.update {
+                    it.copy(
+                        employees = employees,
+                        selectedEmployee = selectedEmployee,
+                        canSelectEmployee = canSelectEmployee,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun setSelectedEmployee(employee: Employee) {
+        _state.update { it.copy(selectedEmployee = employee) }
     }
 
     fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<PosPayment>) {
+        val selectedEmployeeId = _state.value.selectedEmployee?.id
         val saleDetails = items.map { selectedPosItem ->
             val item = selectedPosItem.lassoItem
 
@@ -48,7 +84,8 @@ class CheckoutDialogViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
                 itemType = item.type,
                 itemId = item.id ?: 0,
                 quantity = selectedPosItem.quantity,
-                price = selectedPosItem.price.toDouble()
+                price = selectedPosItem.price,
+                employeeId = selectedEmployeeId
             )
         }
         viewModelScope.launch {
@@ -93,6 +130,9 @@ class CheckoutDialogViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
         val payments: List<PosPayment> = emptyList(),
         val isLoading: Boolean = false,
         val error: String? = null,
+        val employees: List<Employee> = emptyList(),
+        val selectedEmployee: Employee? = null,
+        val canSelectEmployee: Boolean = false,
     )
 
     data class PosPayment(

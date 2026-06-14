@@ -10,5 +10,8 @@ data class Session(
     val employeeId: Int,
     val partnerName: String,
     val employeeName: String,
-    val employeeRole: String
-)
+    val employeeRole: String,
+) {
+    val isAdmin: Boolean
+        get() = employeeRole.lowercase() == "administrador"
+}

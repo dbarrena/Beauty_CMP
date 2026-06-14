@@ -188,18 +188,10 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: registerSale")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            val employeeId = sessionRepository.getEmployeeId()
 
             client.post(API_URL + "sales/new") {
                 contentType(ContentType.Application.Json)
-                setBody(
-                    sale.copy(
-                        partnerId = partnerId,
-                        saleDetails = sale.saleDetails.map {
-                            it.copy(employeeId = employeeId)
-                        }
-                    )
-                )
+                setBody(sale.copy(partnerId = partnerId))
             }.body<Sale>()
         } catch (e: Exception) {
             if (e is CancellationException) throw e

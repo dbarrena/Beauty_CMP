@@ -45,6 +45,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.model.Employee
+import com.lasso.lassoapp.screens.commissions.components.EmployeeSelector
+import com.lasso.lassoapp.screens.commissions.dialog.EmployeePickerDialog
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodColors
@@ -62,7 +65,6 @@ import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import kotlin.text.iterator
 
 @Composable
 internal fun CheckoutSplitPaymentContent(
@@ -70,14 +72,15 @@ internal fun CheckoutSplitPaymentContent(
     onBack: () -> Unit,
     onClose: () -> Unit,
     onRegisterSale: (payments: List<CheckoutDialogViewModelV2.PosPayment>) -> Unit,
+    onSelectEmployee: (Employee) -> Unit,
     modifier: Modifier = Modifier,
     checkoutPaymentMethod: CheckoutPaymentMethod,
-    isRegisteringSale: Boolean = false,
-    registerSaleError: String? = null,
+    state: CheckoutDialogViewModelV2.CheckoutDialogState,
 ) {
     var efectivo by remember { mutableStateOf("") }
     var tarjetaDebito by remember { mutableStateOf("") }
     var transferencia by remember { mutableStateOf("") }
+    var showEmployeePicker by remember { mutableStateOf(false) }
 
     val sumEntered = remember(efectivo, tarjetaDebito, transferencia) {
         listOf(efectivo, tarjetaDebito, transferencia).sumOf { parseMoney(it) }
@@ -208,12 +211,22 @@ internal fun CheckoutSplitPaymentContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f, fill = false) // Grow only as needed, but allow taking up space if large
                     .heightIn(max = 400.dp)
                     .verticalScroll(rememberScrollState()),
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    EmployeeSelector(
+                        selectedEmployee = state.selectedEmployee,
+                        onClick = { showEmployeePicker = true },
+                        enabled = state.canSelectEmployee,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     when (checkoutPaymentMethod) {
                         CheckoutPaymentMethod.Cash -> {
                             SplitPaymentRow(
@@ -271,90 +284,95 @@ internal fun CheckoutSplitPaymentContent(
                             )
                         }
                     }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
 
-                    /*SplitPaymentRow(
-                        label = "Tarjeta de Débito",
-                        circleColor = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
-                        icon = Res.drawable.checkout_payment_tarjeta_debito,
-                        value = tarjetaDebito,
-                        onValueChange = { tarjetaDebito = it },
-                    )*/
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        val payments = mutableListOf<CheckoutDialogViewModelV2.PosPayment>()
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            val payments = mutableListOf<CheckoutDialogViewModelV2.PosPayment>()
-
-
-                            if (efectivo.isNotEmpty()) {
-                                val total = parseMoney(efectivo)
-
-                                payments.add(
-                                    CheckoutDialogViewModelV2.PosPayment(
-                                        paymentType = CheckoutPaymentMethod.Cash,
-                                        total = total
-                                    )
+                        if (efectivo.isNotEmpty()) {
+                            val total = parseMoney(efectivo)
+                            payments.add(
+                                CheckoutDialogViewModelV2.PosPayment(
+                                    paymentType = CheckoutPaymentMethod.Cash,
+                                    total = total
                                 )
-                            }
+                            )
+                        }
 
-                            if (tarjetaDebito.isNotEmpty()) {
-                                val total = parseMoney(tarjetaDebito)
-
-                                payments.add(
-                                    CheckoutDialogViewModelV2.PosPayment(
-                                        paymentType = CheckoutPaymentMethod.Card,
-                                        total = total
-                                    )
+                        if (tarjetaDebito.isNotEmpty()) {
+                            val total = parseMoney(tarjetaDebito)
+                            payments.add(
+                                CheckoutDialogViewModelV2.PosPayment(
+                                    paymentType = CheckoutPaymentMethod.Card,
+                                    total = total
                                 )
-                            }
+                            )
+                        }
 
-                            if (transferencia.isNotEmpty()) {
-                                val total = parseMoney(transferencia)
-
-                                payments.add(
-                                    CheckoutDialogViewModelV2.PosPayment(
-                                        paymentType = CheckoutPaymentMethod.Transfer,
-                                        total = total
-                                    )
+                        if (transferencia.isNotEmpty()) {
+                            val total = parseMoney(transferencia)
+                            payments.add(
+                                CheckoutDialogViewModelV2.PosPayment(
+                                    paymentType = CheckoutPaymentMethod.Transfer,
+                                    total = total
                                 )
-                            }
+                            )
+                        }
 
-                            onRegisterSale(payments)
+                        onRegisterSale(payments)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    enabled = remaining == 0.0 && !state.isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = LassoPrimary,
+                        contentColor = Color.White,
+                    ),
+                ) {
+                    Text(
+                        text = if (state.isLoading) {
+                            "Registrando…"
+                        } else {
+                            "Confirmar pago en ${checkoutPaymentMethod.display}"
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        enabled = remaining == 0.0 && !isRegisteringSale,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = LassoPrimary,
-                            contentColor = Color.White,
-                        ),
-                    ) {
-                        Text(
-                            text = if (isRegisteringSale) {
-                                "Registrando…"
-                            } else {
-                                "Confirmar pago en ${checkoutPaymentMethod.display}"
-                            },
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = (-0.31).sp,
-                        )
-                    }
-                    registerSaleError?.let { message ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = message,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 14.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = (-0.31).sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                state.error?.let { message ->
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
+    }
+    
+    EmployeePickerDialog(
+        isVisible = showEmployeePicker,
+        employees = state.employees,
+        isLoading = state.isLoading,
+        onDismiss = { showEmployeePicker = false }
+    ) {
+        onSelectEmployee(it)
+        showEmployeePicker = false
     }
 }
 

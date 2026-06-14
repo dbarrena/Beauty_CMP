@@ -38,6 +38,7 @@ import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.screens.commissions.components.CommissionItemCard
 import com.lasso.lassoapp.screens.commissions.components.CommissionsSummaryCard
 import com.lasso.lassoapp.screens.commissions.components.CommissionsTitleRow
+import com.lasso.lassoapp.screens.commissions.components.EmployeeSelector
 import com.lasso.lassoapp.screens.commissions.dialog.EmployeePickerDialog
 import com.lasso.lassoapp.screens.sales.v2.SalesPeriodFilter
 import com.lasso.lassoapp.screens.sales.v2.custom_range.SalesCustomDateRangeDialog
@@ -151,49 +152,3 @@ fun CommissionsContent(
     }
 }
 
-@Composable
-private fun EmployeeSelector(
-    selectedEmployee: Employee?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        color = Color.White,
-        tonalElevation = 1.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Empleado",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = selectedEmployee?.name ?: "Seleccionar empleado",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
