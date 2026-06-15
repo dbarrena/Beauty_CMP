@@ -43,7 +43,14 @@ interface LassoApi {
     suspend fun getSale(id: Int): SaleApiResponse?
     suspend fun getEmployeeById(id: Int): Employee?
     suspend fun getEmployees(): List<Employee>
-    suspend fun getHome(): Home?
+    suspend fun getHome(
+        startMonthEpoch: Long,
+        endMonthEpoch: Long,
+        startDayEpoch: Long,
+        endDayEpoch: Long,
+        startWeekEpoch: Long,
+        endWeekEpoch: Long
+    ): Home?
 
     suspend fun getHomeTopSellers(): TopSellersResponse?
     suspend fun login(login: Login): LoginResponse
@@ -252,11 +259,19 @@ class KtorLassoApi(
         }
     }
 
-    override suspend fun getHome(): Home? {
+    override suspend fun getHome(
+        startMonthEpoch: Long,
+        endMonthEpoch: Long,
+        startDayEpoch: Long,
+        endDayEpoch: Long,
+        startWeekEpoch: Long,
+        endWeekEpoch: Long
+    ): Home? {
         return try {
             println("KtorBeautyApi: getHome")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "home?partnerId=$partnerId").body()
+            client.get(API_URL + "home?partnerId=$partnerId&startMonthEpoch=$startMonthEpoch&endMonthEpoch=$endMonthEpoch&startDayEpoch=$startDayEpoch&endDayEpoch=$endDayEpoch&startWeekEpoch=$startWeekEpoch&endWeekEpoch=$endWeekEpoch")
+                .body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()

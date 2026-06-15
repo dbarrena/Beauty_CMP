@@ -61,10 +61,12 @@ fun HomeScreenV2(
                     onCorteCaja = onNavigateToCashClosure,
                     isAdmin = state.value.isAdmin,
                 )
-                if (state.value.isAdmin) {
+                // Disabling this to avoid complexity on the home endpoint,
+                // will include this chart on reports screen eventually...
+                /*if (state.value.isAdmin) {
                     Spacer(Modifier.height(24.dp))
                     HomeWeeklySalesChart(lastSevenDays = state.value.lastSevenDays)
-                }
+                }*/
                 Spacer(Modifier.height(24.dp))
                 HomeAgendaSection(onVerTodo = onNavigateToCalendar)
             }

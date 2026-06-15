@@ -13,7 +13,7 @@ data class Home(
     val todayEarnings: String? = null,
     val weekEarnings: String? = null,
     val todayTransactionCount: Int? = null,
-    val last7DaysEarnings: List<DailyEarning> = emptyList(),
+    @SerialName("dailyEarnings") val last7DaysEarnings: List<DailyEarning> = emptyList(),
 )
 
 @Serializable
