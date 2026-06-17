@@ -49,6 +49,7 @@ fun PosScreenV2() {
         ) {
             PosHeader(
                 modifier = Modifier.padding(top = 16.dp),
+                isAdmin = state.value.isAdmin,
                 onNuevoClick = { isNuevoDialogDisplayed.value = true }
             )
             Spacer(Modifier.height(8.dp))

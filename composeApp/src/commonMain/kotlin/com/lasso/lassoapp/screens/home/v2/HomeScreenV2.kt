@@ -23,6 +23,7 @@ fun HomeScreenV2(
     onNavigateToCalendar: () -> Unit,
     onNavigateToSales: () -> Unit,
     onNavigateToCashClosure: () -> Unit,
+    onNavigateToCommissions: () -> Unit,
 ) {
     val viewModel = koinViewModel<HomeScreenViewModel>()
     val state = viewModel.state.collectAsState()
@@ -59,6 +60,7 @@ fun HomeScreenV2(
                     onAgendar = onNavigateToCalendar,
                     onVentas = onNavigateToSales,
                     onCorteCaja = onNavigateToCashClosure,
+                    onComisiones = onNavigateToCommissions,
                     isAdmin = state.value.isAdmin,
                 )
                 // Disabling this to avoid complexity on the home endpoint,
@@ -67,8 +69,9 @@ fun HomeScreenV2(
                     Spacer(Modifier.height(24.dp))
                     HomeWeeklySalesChart(lastSevenDays = state.value.lastSevenDays)
                 }*/
-                Spacer(Modifier.height(24.dp))
-                HomeAgendaSection(onVerTodo = onNavigateToCalendar)
+                // Disabled until Agenda is ready
+                /*Spacer(Modifier.height(24.dp))
+                HomeAgendaSection(onVerTodo = onNavigateToCalendar)*/
             }
         }
     }

@@ -388,6 +388,7 @@ fun App() {
                             onNavigateToCalendar = { navController.navigate(CalendarDestination) },
                             onNavigateToSales = { navController.navigate(SalesDestination) },
                             onNavigateToCashClosure = { navController.navigate(CashClosureDestination) },
+                            onNavigateToCommissions = { navController.navigate(CommissionsDestination) },
                         )
                         //HomeScreen()
                     }

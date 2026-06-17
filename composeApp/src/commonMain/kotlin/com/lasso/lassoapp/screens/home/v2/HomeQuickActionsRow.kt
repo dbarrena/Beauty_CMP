@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +45,7 @@ fun HomeQuickActionsRow(
     onAgendar: () -> Unit,
     onVentas: () -> Unit,
     onCorteCaja: () -> Unit,
+    onComisiones: () -> Unit,
     isAdmin: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -75,7 +77,8 @@ fun HomeQuickActionsRow(
                 isPrimaryAction = true,
                 onClick = onNuevaVenta,
             )
-            QuickActionCell(
+            // Disabled until Agenda is ready
+            /*QuickActionCell(
                 label = "Agendar",
                 icon = Icons.Default.CalendarMonth,
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -83,7 +86,7 @@ fun HomeQuickActionsRow(
                 labelColor = MaterialTheme.colorScheme.onSurface,
                 isPrimaryAction = false,
                 onClick = onAgendar,
-            )
+            )*/
             if (isAdmin) {
                 QuickActionCell(
                     label = "Ventas",
@@ -95,6 +98,16 @@ fun HomeQuickActionsRow(
                     onClick = onVentas,
                 )
                 QuickActionCell(
+                    label = "Comisiones",
+                    icon = Icons.Default.Groups,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    iconTint = MaterialTheme.colorScheme.onSurface,
+                    labelColor = MaterialTheme.colorScheme.onSurface,
+                    isPrimaryAction = false,
+                    onClick = onComisiones,
+                )
+                // Disabled until corte de caja is ready
+                /*QuickActionCell(
                     label = "Corte de caja",
                     icon = Icons.Default.AccountBalanceWallet,
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -102,7 +115,7 @@ fun HomeQuickActionsRow(
                     labelColor = MaterialTheme.colorScheme.onSurface,
                     isPrimaryAction = false,
                     onClick = onCorteCaja,
-                )
+                )*/
             }
         }
     }

@@ -104,14 +104,15 @@ fun ConfigurationScreenContent(
             // Menu Options
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (isAdmin) {
-                    ConfigurationTile(
+                    // Disabled until reportes is ready
+                    /*ConfigurationTile(
                         title = "Reportes",
                         subtitle = "Estadísticas y gráficas de tu negocio",
                         icon = Icons.Default.BarChart,
                         containerColor = LassoPrimary.copy(alpha = 0.1f),
                         iconTint = LassoPrimary,
                         onClick = { /* No-op */ }
-                    )
+                    )*/
 
                     ConfigurationTile(
                         title = "Historial de ventas",
@@ -122,17 +123,19 @@ fun ConfigurationScreenContent(
                         onClick = { /* No-op */ }
                     )
 
-                    ConfigurationTile(
+                    // Disabled until corte de caja is ready
+                    /*ConfigurationTile(
                         title = "Caja",
                         subtitle = "Cortes de caja y resumen",
                         icon = Icons.Default.AccountBalanceWallet,
                         containerColor = LassoTertiary.copy(alpha = 0.1f),
                         iconTint = LassoTertiary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CASH_CLOSURE) }
-                    )
+                    )*/
                 }
 
-                ConfigurationTile(
+                // Disabled until mi perfil and notificaciones is ready
+                /*ConfigurationTile(
                     title = "Mi perfil",
                     subtitle = "Datos personales y contraseña",
                     icon = Icons.Default.Person,
@@ -149,10 +152,11 @@ fun ConfigurationScreenContent(
                     iconTint = LassoSecondary,
                     badgeCount = 2,
                     onClick = { /* No-op */ }
-                )
+                )*/
 
                 if (isAdmin) {
-                    ConfigurationTile(
+                    // Disabled until ventas por categoria and empleados is ready
+                    /*ConfigurationTile(
                         title = "Ventas por Categoría",
                         subtitle = "Reporte detallado por categorías",
                         icon = Icons.AutoMirrored.Filled.TrendingUp,
@@ -168,7 +172,7 @@ fun ConfigurationScreenContent(
                         containerColor = LassoSecondary.copy(alpha = 0.1f),
                         iconTint = LassoSecondary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
-                    )
+                    )*/
 
                     ConfigurationTile(
                         title = "Comisiones",

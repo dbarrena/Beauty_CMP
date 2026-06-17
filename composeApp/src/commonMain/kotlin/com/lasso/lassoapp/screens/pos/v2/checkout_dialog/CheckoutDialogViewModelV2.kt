@@ -55,7 +55,9 @@ class CheckoutDialogViewModelV2(
                 val currentEmployeeId = session?.employeeId
                 
                 val selectedEmployee = employees.find { it.id == currentEmployeeId } ?: employees.firstOrNull()
-                val canSelectEmployee = session?.isAdmin == true
+                // Disabled because a pos tablet needs to be able to select employee on the sale
+                //val canSelectEmployee = session?.isAdmin == true
+                val canSelectEmployee = true
 
                 _state.update {
                     it.copy(

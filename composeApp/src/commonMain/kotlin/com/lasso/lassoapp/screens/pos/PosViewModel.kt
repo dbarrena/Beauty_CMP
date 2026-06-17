@@ -2,6 +2,7 @@ package com.lasso.lassoapp.screens.pos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.LassoItem
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,12 +12,20 @@ import kotlinx.coroutines.launch
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class PosViewModel(private val lassoApi: LassoApi) : ViewModel() {
+class PosViewModel(
+    private val lassoApi: LassoApi,
+    private val sessionRepository: SessionRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(PosModelState())
     val state: StateFlow<PosModelState> = _state.asStateFlow()
 
     init {
         getAvailableItems()
+        viewModelScope.launch {
+            sessionRepository.getSession()?.let { session ->
+                _state.value = _state.value.copy(isAdmin = session.isAdmin)
+            }
+        }
     }
 
     fun getAvailableItems() {
@@ -145,6 +154,7 @@ data class PosModelState(
     val selectedItemToEdit: SelectedPosItem? = null,
     val catalogFilter: PosCatalogFilter = PosCatalogFilter.ALL,
     val searchQuery: String = "",
+    val isAdmin: Boolean = false,
 )
 
 @OptIn(ExperimentalUuidApi::class)

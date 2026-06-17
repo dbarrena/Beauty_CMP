@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun PosHeader(
     onNuevoClick: () -> Unit,
+    isAdmin: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -46,20 +47,22 @@ fun PosHeader(
             )
         }
 
-        OutlinedButton(
-            onClick = onNuevoClick,
-            shape = RoundedCornerShape(24.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Text(
-                text = "Nuevo",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight(600)
+        if (isAdmin) {
+            OutlinedButton(
+                onClick = onNuevoClick,
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
                 )
-            )
+            ) {
+                Text(
+                    text = "Nuevo",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight(600)
+                    )
+                )
+            }
         }
     }
 }
