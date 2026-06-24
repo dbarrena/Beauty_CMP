@@ -114,14 +114,14 @@ fun ConfigurationScreenContent(
                         onClick = { /* No-op */ }
                     )*/
 
-                    ConfigurationTile(
+                    /*ConfigurationTile(
                         title = "Historial de ventas",
                         subtitle = "Consulta y gestiona tus ventas",
                         icon = Icons.Default.History,
                         containerColor = LassoSecondary.copy(alpha = 0.1f),
                         iconTint = LassoSecondary,
                         onClick = { /* No-op */ }
-                    )
+                    )*/
 
                     // Disabled until corte de caja is ready
                     /*ConfigurationTile(
@@ -163,7 +163,7 @@ fun ConfigurationScreenContent(
                         containerColor = LassoPrimary.copy(alpha = 0.1f),
                         iconTint = LassoPrimary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES) }
-                    )
+                    )*/
 
                     ConfigurationTile(
                         title = "Empleados",
@@ -172,7 +172,7 @@ fun ConfigurationScreenContent(
                         containerColor = LassoSecondary.copy(alpha = 0.1f),
                         iconTint = LassoSecondary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
-                    )*/
+                    )
 
                     ConfigurationTile(
                         title = "Comisiones",
@@ -201,7 +201,7 @@ fun ConfigurationScreenContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "LASSO v1.5.2 (9)",
+                    text = "LASSO v1.5.3 (10)",
                     style = MaterialTheme.typography.bodySmall,
                     color = LassoTextMuted
                 )
