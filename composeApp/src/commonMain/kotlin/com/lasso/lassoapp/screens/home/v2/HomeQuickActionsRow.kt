@@ -78,7 +78,7 @@ fun HomeQuickActionsRow(
                 onClick = onNuevaVenta,
             )
             // Disabled until Agenda is ready
-            /*QuickActionCell(
+            QuickActionCell(
                 label = "Agendar",
                 icon = Icons.Default.CalendarMonth,
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -86,7 +86,7 @@ fun HomeQuickActionsRow(
                 labelColor = MaterialTheme.colorScheme.onSurface,
                 isPrimaryAction = false,
                 onClick = onAgendar,
-            )*/
+            )
             if (isAdmin) {
                 QuickActionCell(
                     label = "Ventas",

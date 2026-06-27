@@ -36,12 +36,14 @@ fun CalendarEvents(
                 for (i in 0..visibleHours) {
                     val y = i * hourHeight.toPx()
                     // Hour line
-                    drawLine(
-                        Color.LightGray,
-                        start = Offset(0f, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = lineStroke,
-                    )
+                    if(i != 0) {
+                        drawLine(
+                            Color.LightGray,
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = lineStroke,
+                        )
+                    }
                     // 30 min line
                     if (i < visibleHours) {
                         val halfY = y + (hourHeight.toPx() / 2)

@@ -3,6 +3,7 @@ package com.lasso.lassoapp.screens.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
+import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.sampleEvents
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,9 +49,21 @@ class CalendarScreenViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
             // Simulated API call using lassoApi in the future
-            // For now, we just pass the sample events
+            
+            val employees = listOf(
+                Employee(id = 1, name = "Diego Barrena", email = "", role = "", partnerId = 0, createdAt = 0, updatedAt = 0),
+                Employee(id = 2, name = "Fernanda G", email = "", role = "", partnerId = 0, createdAt = 0, updatedAt = 0),
+                Employee(id = 3, name = "Naomi A", email = "", role = "", partnerId = 0, createdAt = 0, updatedAt = 0)
+            )
+
+            // Distribute sample events among employees for testing
+            val eventsWithEmployees = sampleEvents.mapIndexed { index, event ->
+                event.copy(employeeId = (index % employees.size) + 1)
+            }
+
             _state.value = _state.value.copy(
-                events = sampleEvents, 
+                employees = employees,
+                events = eventsWithEmployees,
                 isLoading = false
             )
             println("Loading events for $date using $lassoApi")
@@ -61,6 +74,7 @@ class CalendarScreenViewModel(
 data class CalendarScreenState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    val employees: List<Employee> = emptyList(),
     val events: List<Event> = emptyList(),
     val selectedDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 )

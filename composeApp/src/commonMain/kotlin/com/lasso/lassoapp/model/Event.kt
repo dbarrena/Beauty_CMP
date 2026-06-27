@@ -10,7 +10,8 @@ data class Event(
     val color: Color,
     val start: LocalDateTime,
     val end: LocalDateTime,
-    val description: String? = null
+    val description: String? = null,
+    val employeeId: Int? = null
 )
 
 fun minutesBetween(start: LocalDateTime, end: LocalDateTime, timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
