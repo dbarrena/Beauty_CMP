@@ -8,6 +8,7 @@ sealed interface LassoItem {
     val name: String
     val price: String
     val type: String
+    val categoryId: Int?
 }
 
 @Serializable
@@ -20,7 +21,7 @@ data class Service(
     @SerialName("duration_minutes")
     val durationMinutes: Int? = null,
     val category: String? = null,
-    @SerialName("category_id") val categoryId: Int? = null,
+    @SerialName("category_id") override val categoryId: Int? = null,
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("created_at") val createdAt: Long? = null,
     @SerialName("updated_at") val updatedAt: Long? = null,

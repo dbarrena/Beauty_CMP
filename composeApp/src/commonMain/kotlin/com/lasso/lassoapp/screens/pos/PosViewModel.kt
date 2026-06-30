@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.LassoItem
+import com.lasso.lassoapp.model.ProductCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,9 +34,13 @@ class PosViewModel(
             _state.value = _state.value.copy(isAvailableItemsLoading = true)
             val products = lassoApi.getProducts()
             val services = lassoApi.getServices()
+            val categories = lassoApi.getProductCategories()
             val items: List<LassoItem> = products + services
-            _state.value =
-                _state.value.copy(availableItems = items, isAvailableItemsLoading = false)
+            _state.value = _state.value.copy(
+                availableItems = items,
+                categories = categories,
+                isAvailableItemsLoading = false
+            )
         }
     }
 
@@ -121,7 +126,7 @@ class PosViewModel(
         _state.value = state.value.copy(selectedItemToEdit = null)
     }
 
-    fun setCatalogFilter(filter: PosCatalogFilter) {
+    fun setCatalogFilter(filter: ProductCategory?) {
         _state.value = state.value.copy(catalogFilter = filter)
     }
 
@@ -130,18 +135,19 @@ class PosViewModel(
     }
 
     fun filteredCatalogItems(): List<LassoItem> {
-        val s = state.value
-        var list = s.availableItems
-        list = when (s.catalogFilter) {
-            PosCatalogFilter.ALL -> list
-            PosCatalogFilter.SERVICES -> list.filter { it.type.equals("service", ignoreCase = true) }
-            PosCatalogFilter.PRODUCTS -> list.filter { it.type.equals("product", ignoreCase = true) }
+        val currentState = state.value
+        var items = currentState.availableItems
+        
+        val filter = currentState.catalogFilter
+        if (filter != null) {
+            items = items.filter { it.categoryId == filter.id }
         }
-        val q = s.searchQuery.trim()
-        return if (q.isEmpty()) {
-            list
+
+        val query = currentState.searchQuery.trim()
+        return if (query.isEmpty()) {
+            items
         } else {
-            list.filter { it.name.contains(q, ignoreCase = true) }
+            items.filter { it.name.contains(query, ignoreCase = true) }
         }
     }
 }
@@ -149,10 +155,11 @@ class PosViewModel(
 data class PosModelState(
     val isAvailableItemsLoading: Boolean = false,
     val availableItems: List<LassoItem> = emptyList(),
+    val categories: List<ProductCategory> = emptyList(),
     val selectedPosItems: MutableList<SelectedPosItem> = mutableListOf<SelectedPosItem>(),
     val totalPrice: Double = 0.0,
     val selectedItemToEdit: SelectedPosItem? = null,
-    val catalogFilter: PosCatalogFilter = PosCatalogFilter.ALL,
+    val catalogFilter: ProductCategory? = null,
     val searchQuery: String = "",
     val isAdmin: Boolean = false,
 )

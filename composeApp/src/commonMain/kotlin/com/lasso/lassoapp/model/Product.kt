@@ -16,7 +16,7 @@ data class Product(
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("created_at") val createdAt: Long? = null,
     @SerialName("updated_at") val updatedAt: Long? = null,
-    @SerialName("category_id") val categoryId: Int? = null,
+    @SerialName("category_id") override val categoryId: Int? = null,
 ) : LassoItem
 
 @Serializable

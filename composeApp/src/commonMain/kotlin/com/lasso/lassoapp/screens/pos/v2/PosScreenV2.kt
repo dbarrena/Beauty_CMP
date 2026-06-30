@@ -57,6 +57,7 @@ fun PosScreenV2() {
             PosSearchFilterBar(
                 searchQuery = state.value.searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
+                categories = state.value.categories,
                 catalogFilter = state.value.catalogFilter,
                 onCatalogFilterChange = viewModel::setCatalogFilter,
             )
