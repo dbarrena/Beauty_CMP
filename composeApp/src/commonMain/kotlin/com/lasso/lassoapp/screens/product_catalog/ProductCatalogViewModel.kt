@@ -175,16 +175,15 @@ class ProductCatalogViewModel(
     private fun buildCategoryCounts(
         categories: List<ProductCategory>,
         lassoItems: List<LassoItem>,
-    ): Map<String, Int> {
-        val categoryNameCount = lassoItems
-            .filterIsInstance<Product>()
-            .mapNotNull { it.category }
-            .groupingBy { it.trim().lowercase() }
+    ): Map<Int, Int> {
+        val categoryIdCount = lassoItems
+            .mapNotNull { it.categoryId }
+            .groupingBy { it }
             .eachCount()
 
         return categories.associate { category ->
-            val key = category.name.trim().lowercase()
-            key to (categoryNameCount[key] ?: 0)
+            val id = category.id ?: -1
+            id to (categoryIdCount[id] ?: 0)
         }
     }
 }
