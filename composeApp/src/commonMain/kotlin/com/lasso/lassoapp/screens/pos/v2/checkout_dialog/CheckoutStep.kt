@@ -13,4 +13,6 @@ sealed class CheckoutStep {
     data class Success(
         val collectedAmount: Double,
     ) : CheckoutStep()
+
+    data object Discount : CheckoutStep()
 }

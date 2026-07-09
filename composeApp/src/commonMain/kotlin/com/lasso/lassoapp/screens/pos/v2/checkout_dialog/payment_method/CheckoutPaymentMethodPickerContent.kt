@@ -3,6 +3,7 @@ package com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
+import com.lasso.lassoapp.ui.theme.LassoSecondary
+import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.checkout_chevron_right
 import lassoapp.composeapp.generated.resources.checkout_chevron_right_teal
@@ -36,10 +39,17 @@ import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 @Composable
 internal fun CheckoutPaymentMethodPickerContent(
     totalPrice: Double,
+    discountAmount: Double? = null,
     onClose: () -> Unit,
     onMethodClicked: (checkoutPaymentMethod: CheckoutPaymentMethod) -> Unit,
+    onRegisterDiscountClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val appliedDiscount = discountAmount
+        ?.coerceIn(0.0, totalPrice.coerceAtLeast(0.0))
+        ?: 0.0
+    val payableTotal = (totalPrice - appliedDiscount).coerceAtLeast(0.0)
+
     Box(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -74,7 +84,7 @@ internal fun CheckoutPaymentMethodPickerContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$${totalPrice.toPosMoneyString()}",
+                    text = "$${payableTotal.toPosMoneyString()}",
                     color = CheckoutPaymentMethodTokens.amountColor,
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
@@ -82,6 +92,28 @@ internal fun CheckoutPaymentMethodPickerContent(
                     letterSpacing = 0.35.sp,
                     textAlign = TextAlign.Center,
                 )
+
+                if (appliedDiscount > 0.0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "Descuento ",
+                            color = LassoTextMuted,
+                            fontSize = 18.sp,
+                            letterSpacing = (-0.44).sp,
+                        )
+                        Text(
+                            text = "$${appliedDiscount.toPosMoneyString()}",
+                            color = LassoSecondary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = (-0.44).sp,
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(CheckoutPaymentMethodTokens.gapHeaderToRows))
@@ -176,6 +208,19 @@ internal fun CheckoutPaymentMethodPickerContent(
                             trailingChevron = Res.drawable.checkout_chevron_right_teal,
                         ),
                         onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
+                    )
+                    CheckoutPaymentMethodRow(
+                        label = "Aplicar Descuento",
+                        style = PaymentMethodStyle(
+                            rowStyle = PaymentMethodRowStyle(
+                                rowBackground = CheckoutPaymentMethodColors.acreditoRow,
+                                circleBackground = CheckoutPaymentMethodColors.acreditoCircle,
+                                labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                            ),
+                            leadingIcon = Res.drawable.checkout_payment_acredito,
+                            trailingChevron = Res.drawable.checkout_chevron_right,
+                        ),
+                        onClick = onRegisterDiscountClicked,
                     )
                 }
             }

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -110,6 +111,8 @@ fun SalesTransactionCard(
                                 imageVector = when (payment.paymentType) {
                                     "cash" -> Icons.Outlined.AttachMoney
                                     "transfer" -> Icons.Outlined.Smartphone
+                                    "other" -> Icons.Outlined.MoreHoriz
+                                    "advance" -> Icons.Outlined.MoreHoriz
                                     else -> Icons.Outlined.CreditCard
                                 },
                                 contentDescription = null,
@@ -172,7 +175,10 @@ fun SalesTransactionCard(
 private fun paymentTypeLabel(payment: PaymentApiResponse): String =
     when (payment.paymentType) {
         "cash" -> "Efectivo"
+        "card" -> "Tarjeta"
         "transfer" -> "Transferencia"
+        "other" -> "Otro"
+        "advance" -> "Anticipo"
         else -> "Tarjeta"
     }
 

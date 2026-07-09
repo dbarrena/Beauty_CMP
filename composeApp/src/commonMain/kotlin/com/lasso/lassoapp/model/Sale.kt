@@ -9,7 +9,8 @@ data class Sale(
     @SerialName("client_id") val clientId: Int? = null,
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("sale_details") val saleDetails: List<SaleDetail>,
-    @SerialName("payments") val payments: List<Payment>
+    @SerialName("payments") val payments: List<Payment>,
+    @SerialName("discount_amount") val discountAmount: Double? = null
 )
 
 @Serializable

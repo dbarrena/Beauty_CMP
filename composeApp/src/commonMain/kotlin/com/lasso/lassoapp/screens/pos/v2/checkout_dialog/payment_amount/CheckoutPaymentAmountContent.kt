@@ -60,9 +60,11 @@ import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.checkout_payment_efectivo
+import lassoapp.composeapp.generated.resources.checkout_payment_multiples
 import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_credito
 import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
+import lassoapp.composeapp.generated.resources.sales_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -80,10 +82,12 @@ internal fun CheckoutSplitPaymentContent(
     var efectivo by remember { mutableStateOf("") }
     var tarjetaDebito by remember { mutableStateOf("") }
     var transferencia by remember { mutableStateOf("") }
+    var otro by remember { mutableStateOf("") }
+    var anticipo by remember { mutableStateOf("") }
     var showEmployeePicker by remember { mutableStateOf(false) }
 
-    val sumEntered = remember(efectivo, tarjetaDebito, transferencia) {
-        listOf(efectivo, tarjetaDebito, transferencia).sumOf { parseMoney(it) }
+    val sumEntered = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
+        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo).sumOf { parseMoney(it) }
     }
     val remaining = (totalPrice - sumEntered).coerceAtLeast(0.0)
 
@@ -97,6 +101,12 @@ internal fun CheckoutSplitPaymentContent(
             }
             CheckoutPaymentMethod.Transfer -> {
                 transferencia = totalPrice.toPosMoneyString()
+            }
+            CheckoutPaymentMethod.Other -> {
+                otro = totalPrice.toPosMoneyString()
+            }
+            CheckoutPaymentMethod.Advance -> {
+                anticipo = totalPrice.toPosMoneyString()
             }
             else -> {}
         }
@@ -258,6 +268,26 @@ internal fun CheckoutSplitPaymentContent(
                             )
                         }
 
+                        CheckoutPaymentMethod.Other -> {
+                            SplitPaymentRow(
+                                label = "Otro",
+                                circleColor = CheckoutPaymentMethodColors.multiplesCircle,
+                                icon = Res.drawable.checkout_payment_multiples,
+                                value = otro,
+                                onValueChange = { otro = it },
+                            )
+                        }
+
+                        CheckoutPaymentMethod.Advance -> {
+                            SplitPaymentRow(
+                                label = "Anticipo",
+                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
+                                icon = Res.drawable.sales_icon,
+                                value = anticipo,
+                                onValueChange = { anticipo = it },
+                            )
+                        }
+
                         CheckoutPaymentMethod.Multiple -> {
                             SplitPaymentRow(
                                 label = "Efectivo",
@@ -281,6 +311,22 @@ internal fun CheckoutSplitPaymentContent(
                                 icon = Res.drawable.checkout_payment_transferencia,
                                 value = transferencia,
                                 onValueChange = { transferencia = it },
+                            )
+
+                            SplitPaymentRow(
+                                label = "Otro",
+                                circleColor = CheckoutPaymentMethodColors.multiplesCircle,
+                                icon = Res.drawable.checkout_payment_multiples,
+                                value = otro,
+                                onValueChange = { otro = it },
+                            )
+
+                            SplitPaymentRow(
+                                label = "Anticipo",
+                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
+                                icon = Res.drawable.sales_icon,
+                                value = anticipo,
+                                onValueChange = { anticipo = it },
                             )
                         }
                     }
@@ -324,6 +370,26 @@ internal fun CheckoutSplitPaymentContent(
                             payments.add(
                                 CheckoutDialogViewModelV2.PosPayment(
                                     paymentType = CheckoutPaymentMethod.Transfer,
+                                    total = total
+                                )
+                            )
+                        }
+
+                        if (otro.isNotEmpty()) {
+                            val total = parseMoney(otro)
+                            payments.add(
+                                CheckoutDialogViewModelV2.PosPayment(
+                                    paymentType = CheckoutPaymentMethod.Other,
+                                    total = total
+                                )
+                            )
+                        }
+
+                        if (anticipo.isNotEmpty()) {
+                            val total = parseMoney(anticipo)
+                            payments.add(
+                                CheckoutDialogViewModelV2.PosPayment(
+                                    paymentType = CheckoutPaymentMethod.Advance,
                                     total = total
                                 )
                             )
@@ -377,7 +443,7 @@ internal fun CheckoutSplitPaymentContent(
 }
 
 @Composable
-private fun SplitPaymentRow(
+internal fun SplitPaymentRow(
     label: String,
     circleColor: Color,
     icon: DrawableResource,

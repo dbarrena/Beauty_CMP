@@ -92,6 +92,38 @@ fun SalesPaymentBreakdownRow(
                     isLoading = isLoading
                 )
             }
+            item {
+                PaymentMiniCard(
+                    label = "Otro",
+                    amount = paymentBreakdown.other,
+                    icon = {
+                        Image(
+                            painter = painterResource(Res.drawable.card_icon),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit,
+                        )
+                    },
+                    modifier = Modifier.width(128.dp),
+                    isLoading = isLoading
+                )
+            }
+            item {
+                PaymentMiniCard(
+                    label = "Anticipo",
+                    amount = paymentBreakdown.advance,
+                    icon = {
+                        Image(
+                            painter = painterResource(Res.drawable.card_icon),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit,
+                        )
+                    },
+                    modifier = Modifier.width(128.dp),
+                    isLoading = isLoading
+                )
+            }
         }
     }
 }
