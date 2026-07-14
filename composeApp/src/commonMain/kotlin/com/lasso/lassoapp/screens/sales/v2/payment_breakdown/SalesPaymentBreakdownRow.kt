@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.screens.sales.v2.paymentBreakdown
+import com.lasso.lassoapp.ui.theme.LassoPrimary
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.card_icon
 import lassoapp.composeapp.generated.resources.cash_icon
@@ -97,11 +102,11 @@ fun SalesPaymentBreakdownRow(
                     label = "Otro",
                     amount = paymentBreakdown.other,
                     icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.card_icon),
+                        Icon(
+                            imageVector = Icons.Outlined.MoreHoriz,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit,
+                            tint = LassoPrimary,
                         )
                     },
                     modifier = Modifier.width(128.dp),
@@ -113,11 +118,11 @@ fun SalesPaymentBreakdownRow(
                     label = "Anticipo",
                     amount = paymentBreakdown.advance,
                     icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.card_icon),
+                        Icon(
+                            imageVector = Icons.Outlined.Download,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit,
+                            tint = LassoPrimary,
                         )
                     },
                     modifier = Modifier.width(128.dp),
