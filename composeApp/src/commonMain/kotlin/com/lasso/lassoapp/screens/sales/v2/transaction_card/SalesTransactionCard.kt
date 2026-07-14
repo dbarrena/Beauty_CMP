@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.Card
@@ -34,6 +35,8 @@ import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.screens.sales.v2.formatMoney
+import com.lasso.lassoapp.screens.sales.v2.discountAmountValue
+import com.lasso.lassoapp.screens.sales.v2.netTotalValue
 import com.lasso.lassoapp.screens.utils.toSaleCardDateTimeString
 import com.lasso.lassoapp.ui.theme.LassoTertiary
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
@@ -49,6 +52,7 @@ fun SalesTransactionCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val discount = sale.discountAmountValue()
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -101,10 +105,17 @@ fun SalesTransactionCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formatMoney(sale.total),
+                        text = formatMoney(sale.netTotalValue()),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                     )
+                    if (discount > 0.0) {
+                        Text(
+                            text = "-${formatMoney(discount)}",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                     sale.payments.forEach { payment ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -112,7 +123,7 @@ fun SalesTransactionCard(
                                     "cash" -> Icons.Outlined.AttachMoney
                                     "transfer" -> Icons.Outlined.Smartphone
                                     "other" -> Icons.Outlined.MoreHoriz
-                                    "advance" -> Icons.Outlined.MoreHoriz
+                                    "advance" -> Icons.Outlined.Download
                                     else -> Icons.Outlined.CreditCard
                                 },
                                 contentDescription = null,

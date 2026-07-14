@@ -27,6 +27,7 @@ data class SaleDetail(
 data class SaleApiResponse(
     val id: Int,
     val total: String,
+    @SerialName("discount_amount") val discountAmount: String? = null,
     val formattedDate: String? = null,
     @SerialName("client_id") val clientId: Int? = null,
     @SerialName("partner_id") val partnerId: Int,

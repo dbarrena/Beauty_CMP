@@ -52,7 +52,8 @@ internal fun parsePaymentAmount(p: PaymentApiResponse): Double =
 internal fun formatMoney(amount: Double): String =
     amount.formatCurrency(includeSymbol = true)
 
-internal fun formatMoney(amount: String): String {
-    val amountStripped = amount.replace("$", "").toDoubleOrNull() ?: 0.0
-    return amountStripped.formatCurrency(includeSymbol = true)
-}
+internal fun SaleApiResponse.discountAmountValue(): Double =
+    discountAmount?.parseCurrency() ?: 0.0
+
+internal fun SaleApiResponse.netTotalValue(): Double =
+    total.parseCurrency() - discountAmountValue()

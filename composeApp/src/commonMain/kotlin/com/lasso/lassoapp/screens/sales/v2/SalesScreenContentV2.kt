@@ -125,8 +125,8 @@ internal fun SalesScreenContentV2(
                     item {
                         SalesSummaryCard(
                             total = state.total,
+                            discounts = state.discounts,
                             transactionCount = state.sales.size,
-                            isLoading = state.isLoading,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }

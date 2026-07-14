@@ -237,9 +237,21 @@ fun NewProductServiceDialog(
                     Button(
                         onClick = {
                             if (state.dialogType == DialogType.SERVICE) {
-                                viewModel.registerService(Service(name = name, price = price))
+                                viewModel.registerService(
+                                    Service(
+                                        name = name,
+                                        price = price,
+                                        categoryId = selectedCategory?.id
+                                    )
+                                )
                             } else {
-                                viewModel.registerProduct(Product(name = name, price = price, categoryId = selectedCategory?.id))
+                                viewModel.registerProduct(
+                                    Product(
+                                        name = name,
+                                        price = price,
+                                        categoryId = selectedCategory?.id
+                                    )
+                                )
                             }
                         },
                         enabled = name.isNotBlank() && price.isNotBlank() && !state.isLoading,

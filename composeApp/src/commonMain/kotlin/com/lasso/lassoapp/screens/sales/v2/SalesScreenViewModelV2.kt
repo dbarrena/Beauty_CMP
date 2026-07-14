@@ -75,10 +75,6 @@ class SalesScreenViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
         }
     }
 
-    fun getSalesBetweenDates(start: Long, end: Long) {
-        applyCustomDateRange(start, end)
-    }
-
     fun reloadSales() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
@@ -117,15 +113,13 @@ class SalesScreenViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
         return (this * 100).roundToLong() / 100.0
     }
 
-    fun setSelectedDateRange(start: Long?, end: Long?) {
-        _state.value = _state.value.copy(selectedDateStart = start, selectedDateEnd = end)
-    }
-
     private fun applySalesResult(sales: List<SaleApiResponse>) {
-        val total = sales.sumOf { it.total.replace("$", "").toDoubleOrNull() ?: 0.0 }
+        val total = sales.sumOf { it.netTotalValue() }
+        val discounts = sales.sumOf { it.discountAmountValue() }
         _state.value = _state.value.copy(
             sales = sales,
             total = total.roundTo2Decimals(),
+            discounts = discounts.roundTo2Decimals(),
         )
     }
 
@@ -201,6 +195,7 @@ class SalesScreenViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
 
 data class SalesScreenStateV2(
     val total: Double = 0.0,
+    val discounts: Double = 0.0,
     val sales: List<SaleApiResponse> = emptyList(),
     val selectedSale: SaleApiResponse? = null,
     val isLoading: Boolean = false,
