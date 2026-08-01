@@ -21,23 +21,28 @@ fun SalesPeriodChipsRow(
     selected: SalesPeriodFilter,
     onSelect: (SalesPeriodFilter) -> Unit,
     modifier: Modifier = Modifier,
+    periods: List<SalesPeriodFilter> = SalesPeriodFilter.entries,
 ) {
-    val chips = listOf(
-        SalesPeriodFilter.Today to "Hoy",
-        SalesPeriodFilter.ThisWeek to "Esta semana",
-        SalesPeriodFilter.ThisMonth to "Este mes",
-        SalesPeriodFilter.Custom to "Personalizado",
-    )
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(chips) { (filter, label) ->
+        items(periods) { filter ->
             val isSelected = selected == filter
             FilterChip(
                 selected = isSelected,
                 onClick = { onSelect(filter) },
-                label = { Text(label, maxLines = 1) },
+                label = {
+                    Text(
+                        text = when (filter) {
+                            SalesPeriodFilter.Today -> "Hoy"
+                            SalesPeriodFilter.ThisWeek -> "Esta semana"
+                            SalesPeriodFilter.ThisMonth -> "Este mes"
+                            SalesPeriodFilter.Custom -> "Personalizado"
+                        },
+                        maxLines = 1,
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     labelColor = MaterialTheme.colorScheme.onSurface,

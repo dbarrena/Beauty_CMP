@@ -311,33 +311,31 @@ fun App() {
                                     ),
                                     alwaysShowLabel = false
                                 )
-                                if (state.value.isAdmin) {
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                modifier = Modifier.size(22.dp),
-                                                painter = painterResource(Res.drawable.sales_icon),
-                                                contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                "Ventas",
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
-                                        onClick = { navController.navigate(SalesDestination) },
-                                        colors = NavigationBarItemDefaults.colors(
-                                            indicatorColor = Color.Transparent
-                                        ),
-                                        alwaysShowLabel = false
-                                    )
-                                }
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.sales_icon),
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            "Ventas",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
+                                    onClick = { navController.navigate(SalesDestination) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
+                                    ),
+                                    alwaysShowLabel = false
+                                )
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
@@ -397,6 +395,7 @@ fun App() {
                     }
                     composable<SalesDestination> {
                         SalesScreenV2(
+                            isAdmin = state.value.isAdmin,
                             onBack = {
                                 navController.navigate(HomeDestination) {
                                     launchSingleTop = true

@@ -48,7 +48,8 @@ data class SaleDetailApiResponse(
     @SerialName("created_at") val createdAt: Long,
     @SerialName("updated_at") val updatedAt: Long?,
     val product: Product? = null,
-    val service: Service? = null
+    val service: Service? = null,
+    @SerialName("employee_name") val employeeName: String? = null,
 )
 
 @Serializable

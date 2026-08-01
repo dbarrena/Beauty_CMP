@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.Download
@@ -51,6 +52,7 @@ fun SalesTransactionCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    isAdmin: Boolean,
 ) {
     val discount = sale.discountAmountValue()
     Card(
@@ -92,10 +94,29 @@ fun SalesTransactionCard(
                         )
                         Spacer(Modifier.height(4.dp))
                     }
+                    sale.saleDetails[0].employeeName?.let { employeeName ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = LassoTextPlaceholder,
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = employeeName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LassoTextPlaceholder,
+                            )
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+                    }
                     sale.saleDetails.forEach { detail ->
                         val line = detailLineLabel(detail)
                         if (line.isNotBlank()) {
                             Text(
+                                modifier = Modifier.padding(start = 4.dp),
                                 text = "• $line",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = LassoTextPlaceholder,
@@ -141,43 +162,46 @@ fun SalesTransactionCard(
                     }
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedActionButton(
-                    text = "Editar",
-                    icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.edit_icon),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            contentScale = ContentScale.Fit,
-                        )
-                    },
-                    borderColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    onClick = onEdit,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedActionButton(
-                    text = "Eliminar",
-                    icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.trash_icon),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            contentScale = ContentScale.Fit,
-                        )
-                    },
-                    borderColor = LassoTertiary,
-                    contentColor = LassoTertiary,
-                    onClick = onDelete,
-                    modifier = Modifier.weight(1f),
-                )
+
+            if (isAdmin) {
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedActionButton(
+                        text = "Editar",
+                        icon = {
+                            Image(
+                                painter = painterResource(Res.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                contentScale = ContentScale.Fit,
+                            )
+                        },
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f),
+                    )
+                    OutlinedActionButton(
+                        text = "Eliminar",
+                        icon = {
+                            Image(
+                                painter = painterResource(Res.drawable.trash_icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                contentScale = ContentScale.Fit,
+                            )
+                        },
+                        borderColor = LassoTertiary,
+                        contentColor = LassoTertiary,
+                        onClick = onDelete,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
