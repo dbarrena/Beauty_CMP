@@ -2,6 +2,13 @@ package com.lasso.lassoapp.data.remote
 
 import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.model.CashClosure
+import com.lasso.lassoapp.model.AppointmentCalendarResponse
+import com.lasso.lassoapp.model.AppointmentWriteRequest
+import com.lasso.lassoapp.model.Client
+import com.lasso.lassoapp.model.ClientWriteRequest
+import com.lasso.lassoapp.model.MessageResponse
+import com.lasso.lassoapp.model.SavedAppointment
+import com.lasso.lassoapp.model.normalized
 import com.lasso.lassoapp.model.CashClosureRecordsResponse
 import com.lasso.lassoapp.model.CommissionCalculationResponse
 import com.lasso.lassoapp.model.CreateCashClosureRequest
@@ -21,15 +28,42 @@ import com.lasso.lassoapp.model.SalesByProductCategoryApiResponse
 import com.lasso.lassoapp.model.TopSellersResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
+import kotlinx.serialization.Serializable
+
+@Serializable
+private data class ApiErrorResponse(val error: String? = null, val message: String? = null)
+
+class LassoApiException(
+    message: String,
+    val statusCode: Int,
+) : Exception(message)
+
+private suspend inline fun <reified T> HttpResponse.bodyOrThrow(): T {
+    if (status.isSuccess()) return body()
+    val apiError = runCatching { body<ApiErrorResponse>() }.getOrNull()
+    throw LassoApiException(
+        message = apiError?.error ?: apiError?.message ?: "Error de servidor (${status.value})",
+        statusCode = status.value,
+    )
+}
 
 interface LassoApi {
+    suspend fun getClients(): List<Client>
+    suspend fun registerClient(request: ClientWriteRequest): Client
+    suspend fun editClient(id: Int, request: ClientWriteRequest): Client
+    suspend fun getAppointmentCalendar(startEpoch: Long, endEpoch: Long): AppointmentCalendarResponse
+    suspend fun createAppointment(request: AppointmentWriteRequest): SavedAppointment
+    suspend fun editAppointment(id: Int, request: AppointmentWriteRequest): SavedAppointment
+    suspend fun deleteAppointment(id: Int): MessageResponse
     suspend fun getServices(): List<Service>
     suspend fun getProducts(): List<Product>
     suspend fun getSales(): List<SaleApiResponse>
@@ -93,6 +127,63 @@ class KtorLassoApi(
     companion object {
         private const val API_URL =
             "https://cdn.dbxprts.com:3000/api/"
+    }
+
+    private suspend fun requirePartnerId(): Int = sessionRepository.getPartnerId()
+        ?: throw LassoApiException("No hay una sesión activa", 401)
+
+    override suspend fun getClients(): List<Client> {
+        val partnerId = requirePartnerId()
+        return client.get(API_URL + "clients/all?partnerId=$partnerId").bodyOrThrow()
+    }
+
+    override suspend fun registerClient(request: ClientWriteRequest): Client {
+        val partnerId = requirePartnerId()
+        return client.post(API_URL + "clients/new") {
+            contentType(ContentType.Application.Json)
+            setBody(request.normalized().copy(partnerId = partnerId))
+        }.bodyOrThrow()
+    }
+
+    override suspend fun editClient(id: Int, request: ClientWriteRequest): Client {
+        return client.post(API_URL + "clients/edit") {
+            contentType(ContentType.Application.Json)
+            setBody(request.normalized().copy(id = id))
+        }.bodyOrThrow()
+    }
+
+    override suspend fun getAppointmentCalendar(
+        startEpoch: Long,
+        endEpoch: Long,
+    ): AppointmentCalendarResponse {
+        val partnerId = requirePartnerId()
+        return client.get(
+            API_URL + "appointments/calendar?partnerId=$partnerId&startEpoch=$startEpoch&endEpoch=$endEpoch"
+        ).bodyOrThrow()
+    }
+
+    override suspend fun createAppointment(request: AppointmentWriteRequest): SavedAppointment {
+        val partnerId = requirePartnerId()
+        return client.post(API_URL + "appointments/new") {
+            contentType(ContentType.Application.Json)
+            setBody(request.normalized().copy(partnerId = partnerId))
+        }.bodyOrThrow()
+    }
+
+    override suspend fun editAppointment(
+        id: Int,
+        request: AppointmentWriteRequest,
+    ): SavedAppointment {
+        val partnerId = requirePartnerId()
+        return client.post(API_URL + "appointments/edit/$id") {
+            contentType(ContentType.Application.Json)
+            setBody(request.normalized().copy(partnerId = partnerId))
+        }.bodyOrThrow()
+    }
+
+    override suspend fun deleteAppointment(id: Int): MessageResponse {
+        val partnerId = requirePartnerId()
+        return client.delete(API_URL + "appointments/delete/$id?partnerId=$partnerId").bodyOrThrow()
     }
 
     override suspend fun getServices(): List<Service> {

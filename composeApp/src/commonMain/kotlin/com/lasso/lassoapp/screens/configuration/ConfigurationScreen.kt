@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -172,6 +173,15 @@ fun ConfigurationScreenContent(
                         containerColor = LassoSecondary.copy(alpha = 0.1f),
                         iconTint = LassoSecondary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.EMPLOYEES) }
+                    )
+
+                    ConfigurationTile(
+                        title = "Clientes",
+                        subtitle = "Administra tus clientes",
+                        icon = Icons.Default.Groups,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CLIENTS) }
                     )
 
                     ConfigurationTile(
@@ -347,5 +357,6 @@ enum class ConfigurationScreenRoutes {
     PRODUCT_CATEGORIES,
     SALES_BY_PRODUCT_CATEGORIES,
     EMPLOYEES,
+    CLIENTS,
     COMMISSIONS
 }

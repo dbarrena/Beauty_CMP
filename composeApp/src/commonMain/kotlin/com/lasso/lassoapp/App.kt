@@ -42,6 +42,7 @@ import com.lasso.lassoapp.screens.calendar.CalendarScreen
 import com.lasso.lassoapp.screens.commissions.CommissionsScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
+import com.lasso.lassoapp.screens.clients.ClientsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
@@ -111,6 +112,9 @@ object SalesByProductCategoriesDestination
 object EmployeesDestination
 
 @Serializable
+object ClientsDestination
+
+@Serializable
 object CommissionsDestination
 
 @OptIn(ExperimentalMaterial3Api::class, InternalResourceApi::class)
@@ -146,6 +150,7 @@ fun App() {
             ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
             SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
             EmployeesDestination::class.qualifiedName -> "Empleados"
+            ClientsDestination::class.qualifiedName -> "Clientes"
             CommissionsDestination::class.qualifiedName -> "Comisiones"
             else -> ""
         }
@@ -435,6 +440,10 @@ fun App() {
                                     navController.navigate(EmployeesDestination)
                                 }
 
+                                ConfigurationScreenRoutes.CLIENTS -> {
+                                    navController.navigate(ClientsDestination)
+                                }
+
                                 ConfigurationScreenRoutes.COMMISSIONS -> {
                                     navController.navigate(CommissionsDestination)
                                 }
@@ -470,6 +479,9 @@ fun App() {
                     }
                     composable<EmployeesDestination> {
                         com.lasso.lassoapp.screens.employees.EmployeesScreen()
+                    }
+                    composable<ClientsDestination> {
+                        ClientsScreen()
                     }
                     composable<CommissionsDestination> {
                         CommissionsScreen()
