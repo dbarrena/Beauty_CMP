@@ -85,7 +85,7 @@ android {
         applicationId = "com.lasso.lassoapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 11
+        versionCode = 12
         versionName = "1.5.4"
     }
     packaging {
