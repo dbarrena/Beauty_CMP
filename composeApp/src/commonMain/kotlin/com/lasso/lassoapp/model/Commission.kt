@@ -34,7 +34,9 @@ data class CommissionProduct(
     val quantity: Int,
     @SerialName("total_sales")
     val totalSales: Double,
-    val commission: Double
+    val commission: Double,
+    @SerialName("commission_percentage")
+    val commissionPercentage: Double? = null
 )
 
 @Serializable
@@ -44,5 +46,7 @@ data class CommissionService(
     val quantity: Int,
     @SerialName("total_sales")
     val totalSales: Double,
-    val commission: Double
+    val commission: Double,
+    @SerialName("commission_percentage")
+    val commissionPercentage: Double? = null
 )

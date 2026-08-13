@@ -34,28 +34,22 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lasso.lassoapp.screens.pos.PosCatalogFilter
-import com.lasso.lassoapp.screens.pos.label
+import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 
 @Composable
 fun PosSearchFilterBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    catalogFilter: PosCatalogFilter = PosCatalogFilter.ALL,
-    onCatalogFilterChange: (PosCatalogFilter) -> Unit,
+    categories: List<ProductCategory> = emptyList(),
+    catalogFilter: ProductCategory? = null,
+    onCatalogFilterChange: (ProductCategory?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
     val controlHeight = 35.dp
     val shape = RoundedCornerShape(20.dp)
     val interactionSource = remember { MutableInteractionSource() }
-    val isSearchFocused by interactionSource.collectIsFocusedAsState()
-    val searchBorderColor = if (isSearchFocused) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
 
     Row(
         modifier = modifier
@@ -128,7 +122,7 @@ fun PosSearchFilterBar(
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
             ) {
                 Text(
-                    text = catalogFilter.label(),
+                    text = catalogFilter?.name ?: "Todas",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(500),
@@ -141,11 +135,18 @@ fun PosSearchFilterBar(
                 expanded = menuExpanded.value,
                 onDismissRequest = { menuExpanded.value = false },
             ) {
-                PosCatalogFilter.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text("Todas") },
+                    onClick = {
+                        onCatalogFilterChange(null)
+                        menuExpanded.value = false
+                    },
+                )
+                categories.forEach { category ->
                     DropdownMenuItem(
-                        text = { Text(option.label()) },
+                        text = { Text(category.name) },
                         onClick = {
-                            onCatalogFilterChange(option)
+                            onCatalogFilterChange(category)
                             menuExpanded.value = false
                         },
                     )

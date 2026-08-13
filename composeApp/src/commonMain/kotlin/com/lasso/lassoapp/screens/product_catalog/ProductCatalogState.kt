@@ -26,7 +26,7 @@ data class ProductServicesTabState(
 
 data class CategoriesTabState(
     val availableItems: List<ProductCategory> = emptyList(),
-    val categoryItemCounts: Map<String, Int> = emptyMap(),
+    val categoryItemCounts: Map<Int, Int> = emptyMap(),
     val selectedItem: ProductCategory? = null,
     val isDialogDisplayed: Boolean = false,
     val isLoading: Boolean = false,

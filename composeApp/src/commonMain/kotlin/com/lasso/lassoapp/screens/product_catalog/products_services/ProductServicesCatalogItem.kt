@@ -77,12 +77,24 @@ fun ProductServicesCatalogItem(
 
                     category?.let {
                         Text(
-                            modifier = Modifier.padding(bottom = 8.dp),
+                            modifier = Modifier.padding(bottom = 4.dp),
                             text = "Categoría: $it",
                             style = labelStyle,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+
+                    lassoItem.commissionPercentage
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { commissionPercentage ->
+                            Text(
+                                modifier = Modifier.padding(bottom = 4.dp),
+                                text = "Comisión: $commissionPercentage%",
+                                style = labelStyle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+
                     Text(
                         text = typeLabel,
                         style = labelStyle,

@@ -26,9 +26,9 @@ import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 @Composable
 fun SalesSummaryCard(
     total: Double,
+    discounts: Double,
     transactionCount: Int,
     modifier: Modifier = Modifier,
-    isLoading: Boolean,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     Card(
@@ -50,36 +50,52 @@ fun SalesSummaryCard(
                 .padding(16.dp)
                 .fillMaxWidth(),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
-            ) {
-                Column {
-                    Text(
-                        text = "Total de ventas",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LassoTextPlaceholder,
-                    )
-                    Text(
-                        text = formatMoney(total),
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = primary,
-                        ),
-                    )
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Column {
+                        Text(
+                            text = "Total de ventas",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LassoTextPlaceholder,
+                        )
+                        Text(
+                            text = formatMoney(total),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = primary,
+                            ),
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Transacciones",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LassoTextPlaceholder,
+                        )
+                        Text(
+                            text = transactionCount.toString(),
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Transacciones",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LassoTextPlaceholder,
-                    )
-                    Text(
-                        text = transactionCount.toString(),
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                if (discounts > 0.0) {
+                    Column {
+                        Text(
+                            text = "Descuentos",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LassoTextPlaceholder,
+                        )
+                        Text(
+                            text = formatMoney(discounts),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                 }
             }
         }

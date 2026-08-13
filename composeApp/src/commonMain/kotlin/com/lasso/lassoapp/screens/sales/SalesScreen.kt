@@ -153,7 +153,10 @@ private fun SaleItem(sale: SaleApiResponse, onSaleClick: (SaleApiResponse) -> Un
     val paymentType = sale.payments.joinToString(", ") { payment ->
         val typeLabel = when (payment.paymentType) {
             "cash" -> "Efectivo"
+            "card" -> "Tarjeta"
             "transfer" -> "Transferencia"
+            "other" -> "Otro"
+            "advance" -> "Anticipo"
             else -> "Tarjeta"
         }
 

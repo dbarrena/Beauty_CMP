@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -175,6 +176,15 @@ fun ConfigurationScreenContent(
                     )
 
                     ConfigurationTile(
+                        title = "Clientes",
+                        subtitle = "Administra tus clientes",
+                        icon = Icons.Default.Groups,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CLIENTS) }
+                    )
+
+                    ConfigurationTile(
                         title = "Comisiones",
                         subtitle = "Calcula comisiones de empleados",
                         icon = Icons.Default.BarChart,
@@ -201,7 +211,7 @@ fun ConfigurationScreenContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "LASSO v1.5.3 (10)",
+                    text = "LASSO v1.5.4 (12)",
                     style = MaterialTheme.typography.bodySmall,
                     color = LassoTextMuted
                 )
@@ -341,11 +351,10 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
-    EDIT_PRODUCTS_SERVICES,
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,
-    PRODUCT_CATEGORIES,
     SALES_BY_PRODUCT_CATEGORIES,
     EMPLOYEES,
+    CLIENTS,
     COMMISSIONS
 }

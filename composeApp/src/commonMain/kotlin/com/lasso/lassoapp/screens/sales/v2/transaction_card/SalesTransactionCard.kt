@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,6 +36,8 @@ import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.screens.sales.v2.formatMoney
+import com.lasso.lassoapp.screens.sales.v2.discountAmountValue
+import com.lasso.lassoapp.screens.sales.v2.netTotalValue
 import com.lasso.lassoapp.screens.utils.toSaleCardDateTimeString
 import com.lasso.lassoapp.ui.theme.LassoTertiary
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
@@ -47,7 +52,9 @@ fun SalesTransactionCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    isAdmin: Boolean,
 ) {
+    val discount = sale.discountAmountValue()
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -87,10 +94,29 @@ fun SalesTransactionCard(
                         )
                         Spacer(Modifier.height(4.dp))
                     }
+                    sale.saleDetails[0].employeeName?.let { employeeName ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = LassoTextPlaceholder,
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = employeeName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LassoTextPlaceholder,
+                            )
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+                    }
                     sale.saleDetails.forEach { detail ->
                         val line = detailLineLabel(detail)
                         if (line.isNotBlank()) {
                             Text(
+                                modifier = Modifier.padding(start = 4.dp),
                                 text = "• $line",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = LassoTextPlaceholder,
@@ -100,16 +126,25 @@ fun SalesTransactionCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formatMoney(sale.total),
+                        text = formatMoney(sale.netTotalValue()),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                     )
+                    if (discount > 0.0) {
+                        Text(
+                            text = "-${formatMoney(discount)}",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                     sale.payments.forEach { payment ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = when (payment.paymentType) {
                                     "cash" -> Icons.Outlined.AttachMoney
                                     "transfer" -> Icons.Outlined.Smartphone
+                                    "other" -> Icons.Outlined.MoreHoriz
+                                    "advance" -> Icons.Outlined.Download
                                     else -> Icons.Outlined.CreditCard
                                 },
                                 contentDescription = null,
@@ -127,43 +162,46 @@ fun SalesTransactionCard(
                     }
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedActionButton(
-                    text = "Editar",
-                    icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.edit_icon),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            contentScale = ContentScale.Fit,
-                        )
-                    },
-                    borderColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    onClick = onEdit,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedActionButton(
-                    text = "Eliminar",
-                    icon = {
-                        Image(
-                            painter = painterResource(Res.drawable.trash_icon),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            contentScale = ContentScale.Fit,
-                        )
-                    },
-                    borderColor = LassoTertiary,
-                    contentColor = LassoTertiary,
-                    onClick = onDelete,
-                    modifier = Modifier.weight(1f),
-                )
+
+            if (isAdmin) {
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedActionButton(
+                        text = "Editar",
+                        icon = {
+                            Image(
+                                painter = painterResource(Res.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                contentScale = ContentScale.Fit,
+                            )
+                        },
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f),
+                    )
+                    OutlinedActionButton(
+                        text = "Eliminar",
+                        icon = {
+                            Image(
+                                painter = painterResource(Res.drawable.trash_icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                contentScale = ContentScale.Fit,
+                            )
+                        },
+                        borderColor = LassoTertiary,
+                        contentColor = LassoTertiary,
+                        onClick = onDelete,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -172,7 +210,10 @@ fun SalesTransactionCard(
 private fun paymentTypeLabel(payment: PaymentApiResponse): String =
     when (payment.paymentType) {
         "cash" -> "Efectivo"
+        "card" -> "Tarjeta"
         "transfer" -> "Transferencia"
+        "other" -> "Otro"
+        "advance" -> "Anticipo"
         else -> "Tarjeta"
     }
 

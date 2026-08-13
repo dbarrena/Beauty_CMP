@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -86,6 +87,7 @@ internal fun CheckoutPaymentMethodRow(
                     contentDescription = null,
                     modifier = Modifier.size(CheckoutPaymentMethodTokens.iconImageSize),
                     contentScale = ContentScale.Fit,
+                    colorFilter = style.rowStyle.iconTint?.let { ColorFilter.tint(it) },
                 )
             }
             Text(

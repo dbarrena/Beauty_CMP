@@ -33,6 +33,7 @@ internal data class PaymentMethodRowStyle(
     val rowBackground: Color,
     val circleBackground: Color,
     val labelColor: Color,
+    val iconTint: Color? = null,
     val borderColor: Color? = null,
     val borderWidth: Dp = CheckoutPaymentMethodTokens.multiplesBorderWidth,
     val rowHeight: Dp = CheckoutPaymentMethodTokens.rowHeightDefault,

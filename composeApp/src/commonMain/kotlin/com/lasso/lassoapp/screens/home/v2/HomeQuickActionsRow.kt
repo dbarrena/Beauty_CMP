@@ -77,6 +77,15 @@ fun HomeQuickActionsRow(
                 isPrimaryAction = true,
                 onClick = onNuevaVenta,
             )
+            QuickActionCell(
+                label = "Ventas",
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                containerColor = MaterialTheme.colorScheme.surface,
+                iconTint = MaterialTheme.colorScheme.onSurface,
+                labelColor = MaterialTheme.colorScheme.onSurface,
+                isPrimaryAction = false,
+                onClick = onVentas,
+            )
             // Disabled until Agenda is ready
             QuickActionCell(
                 label = "Agendar",
@@ -88,15 +97,6 @@ fun HomeQuickActionsRow(
                 onClick = onAgendar,
             )
             if (isAdmin) {
-                QuickActionCell(
-                    label = "Ventas",
-                    icon = Icons.AutoMirrored.Filled.TrendingUp,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    iconTint = MaterialTheme.colorScheme.onSurface,
-                    labelColor = MaterialTheme.colorScheme.onSurface,
-                    isPrimaryAction = false,
-                    onClick = onVentas,
-                )
                 QuickActionCell(
                     label = "Comisiones",
                     icon = Icons.Default.Groups,

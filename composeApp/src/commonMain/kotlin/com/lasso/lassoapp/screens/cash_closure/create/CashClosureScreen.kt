@@ -43,7 +43,10 @@ fun CashClosureContent(viewModel: CashClosureViewModel) {
                 cashClosure.openPayments.forEach {
                     val title = when (it.paymentType) {
                         "cash" -> "Efectivo"
+                        "card" -> "Tarjeta"
                         "transfer" -> "Transferencia"
+                        "other" -> "Otro"
+                        "advance" -> "Anticipo"
                         else -> "Tarjeta"
                     }
 

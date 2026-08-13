@@ -10,12 +10,16 @@ import org.koin.compose.viewmodel.koinViewModel
  * Legacy fallback: `com.lasso.lassoapp.screens.sales.SalesScreen` + `SalesScreenViewModel`.
  */
 @Composable
-fun SalesScreenV2(onBack: () -> Unit = {}) {
+fun SalesScreenV2(
+    isAdmin: Boolean,
+    onBack: () -> Unit = {},
+) {
     val viewModel = koinViewModel<SalesScreenViewModelV2>()
     val state by viewModel.state.collectAsState()
 
     SalesScreenContentV2(
         state = state,
+        isAdmin = isAdmin,
         onBack = onBack,
         onReloadSales = viewModel::reloadSales,
         onClearSelectedSale = viewModel::clearSelectedSale,

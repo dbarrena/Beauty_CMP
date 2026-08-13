@@ -9,7 +9,8 @@ data class Sale(
     @SerialName("client_id") val clientId: Int? = null,
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("sale_details") val saleDetails: List<SaleDetail>,
-    @SerialName("payments") val payments: List<Payment>
+    @SerialName("payments") val payments: List<Payment>,
+    @SerialName("discount_amount") val discountAmount: Double? = null
 )
 
 @Serializable
@@ -26,6 +27,7 @@ data class SaleDetail(
 data class SaleApiResponse(
     val id: Int,
     val total: String,
+    @SerialName("discount_amount") val discountAmount: String? = null,
     val formattedDate: String? = null,
     @SerialName("client_id") val clientId: Int? = null,
     @SerialName("partner_id") val partnerId: Int,
@@ -46,7 +48,8 @@ data class SaleDetailApiResponse(
     @SerialName("created_at") val createdAt: Long,
     @SerialName("updated_at") val updatedAt: Long?,
     val product: Product? = null,
-    val service: Service? = null
+    val service: Service? = null,
+    @SerialName("employee_name") val employeeName: String? = null,
 )
 
 @Serializable

@@ -37,6 +37,22 @@ class CheckoutDialogViewModelV2(
         }
     }
 
+    fun navigateToRegisterDiscount() {
+        _state.update {
+            it.copy(step = CheckoutStep.Discount, error = null)
+        }
+    }
+
+    fun registerDiscount(discountAmount: Double) {
+        _state.update {
+            it.copy(
+                step = CheckoutStep.MethodPicker,
+                discountAmount = discountAmount.takeIf { amount -> amount > 0.0 },
+                error = null,
+            )
+        }
+    }
+
     /**
      * Restores the dialog to the method picker. Call when the checkout dialog is shown so a reused
      * ViewModel does not resume a completed or stale step.
@@ -102,7 +118,8 @@ class CheckoutDialogViewModelV2(
                 lassoApi.registerSale(
                     Sale(
                         saleDetails = saleDetails,
-                        payments = payments
+                        payments = payments,
+                        discountAmount = _state.value.discountAmount,
                     )
                 )
                 val collectedAmount = unprocessedPayments.sumOf { it.total }
@@ -121,20 +138,16 @@ class CheckoutDialogViewModelV2(
         }
     }
 
-    fun registerPayments(payments: List<PosPayment>) {
-        _state.update { it.copy(payments = it.payments + payments) }
-    }
-
     data class CheckoutDialogState(
         val step: CheckoutStep = CheckoutStep.MethodPicker,
         val total: Double = 0.0,
         val remainingTotal: Double = 0.0,
-        val payments: List<PosPayment> = emptyList(),
         val isLoading: Boolean = false,
         val error: String? = null,
         val employees: List<Employee> = emptyList(),
         val selectedEmployee: Employee? = null,
         val canSelectEmployee: Boolean = false,
+        val discountAmount: Double? = null
     )
 
     data class PosPayment(

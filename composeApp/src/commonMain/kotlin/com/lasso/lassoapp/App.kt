@@ -42,6 +42,7 @@ import com.lasso.lassoapp.screens.calendar.CalendarScreen
 import com.lasso.lassoapp.screens.commissions.CommissionsScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
+import com.lasso.lassoapp.screens.clients.ClientsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
@@ -49,8 +50,6 @@ import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_catalog.ProductCatalogScreen
-import com.lasso.lassoapp.screens.product_categories.ProductCategoriesScreen
-import com.lasso.lassoapp.screens.product_service.ProductServiceScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
 import com.lasso.lassoapp.screens.sales.v2.SalesScreenV2
 import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
@@ -84,9 +83,6 @@ object ConfigurationDestination
 data class DetailDestination(val objectId: Int)
 
 @Serializable
-object ProductServiceDestination
-
-@Serializable
 object LoginDestination
 
 @Serializable
@@ -99,9 +95,6 @@ object CashClosureDestination
 object CashClosureRecordsDestination
 
 @Serializable
-object ProductCategoriesDestination
-
-@Serializable
 object ProductCatalogDestination
 
 @Serializable
@@ -109,6 +102,9 @@ object SalesByProductCategoriesDestination
 
 @Serializable
 object EmployeesDestination
+
+@Serializable
+object ClientsDestination
 
 @Serializable
 object CommissionsDestination
@@ -137,15 +133,14 @@ fun App() {
             PosDestination::class.qualifiedName -> "Punto de Venta"
             SalesDestination::class.qualifiedName -> "Ventas"
             ConfigurationDestination::class.qualifiedName -> "Herramientas"
-            ProductServiceDestination::class.qualifiedName -> "Productos y Servicios"
             DetailDestination::class.qualifiedName -> "Detalle"
             CalendarDestination::class.qualifiedName -> "Calendario de citas"
             CashClosureDestination::class.qualifiedName -> "Corte de caja"
             CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
-            ProductCategoriesDestination::class.qualifiedName -> "Categorias Productos"
             ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
             SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
             EmployeesDestination::class.qualifiedName -> "Empleados"
+            ClientsDestination::class.qualifiedName -> "Clientes"
             CommissionsDestination::class.qualifiedName -> "Comisiones"
             else -> ""
         }
@@ -311,33 +306,31 @@ fun App() {
                                     ),
                                     alwaysShowLabel = false
                                 )
-                                if (state.value.isAdmin) {
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                modifier = Modifier.size(22.dp),
-                                                painter = painterResource(Res.drawable.sales_icon),
-                                                contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                "Ventas",
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
-                                        onClick = { navController.navigate(SalesDestination) },
-                                        colors = NavigationBarItemDefaults.colors(
-                                            indicatorColor = Color.Transparent
-                                        ),
-                                        alwaysShowLabel = false
-                                    )
-                                }
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            modifier = Modifier.size(22.dp),
+                                            painter = painterResource(Res.drawable.sales_icon),
+                                            contentDescription = null,
+                                            tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            "Ventas",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
+                                    onClick = { navController.navigate(SalesDestination) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent
+                                    ),
+                                    alwaysShowLabel = false
+                                )
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
@@ -397,6 +390,7 @@ fun App() {
                     }
                     composable<SalesDestination> {
                         SalesScreenV2(
+                            isAdmin = state.value.isAdmin,
                             onBack = {
                                 navController.navigate(HomeDestination) {
                                     launchSingleTop = true
@@ -412,20 +406,12 @@ fun App() {
                             }
                         ) { destination ->
                             when (destination) {
-                                ConfigurationScreenRoutes.EDIT_PRODUCTS_SERVICES -> {
-                                    navController.navigate(ProductServiceDestination)
-                                }
-
                                 ConfigurationScreenRoutes.CASH_CLOSURE -> {
                                     navController.navigate(CashClosureDestination)
                                 }
 
                                 ConfigurationScreenRoutes.CASH_CLOSURE_RECORDS -> {
                                     navController.navigate(CashClosureRecordsDestination)
-                                }
-
-                                ConfigurationScreenRoutes.PRODUCT_CATEGORIES -> {
-                                    navController.navigate(ProductCategoriesDestination)
                                 }
 
                                 ConfigurationScreenRoutes.SALES_BY_PRODUCT_CATEGORIES -> {
@@ -436,14 +422,15 @@ fun App() {
                                     navController.navigate(EmployeesDestination)
                                 }
 
+                                ConfigurationScreenRoutes.CLIENTS -> {
+                                    navController.navigate(ClientsDestination)
+                                }
+
                                 ConfigurationScreenRoutes.COMMISSIONS -> {
                                     navController.navigate(CommissionsDestination)
                                 }
                             }
                         }
-                    }
-                    composable<ProductServiceDestination> {
-                        ProductServiceScreen()
                     }
                     composable<LoginDestination> {
                         LoginScreen {
@@ -460,9 +447,6 @@ fun App() {
                     composable<CashClosureRecordsDestination> {
                         CashClosureRecordsScreen()
                     }
-                    composable<ProductCategoriesDestination> {
-                        ProductCategoriesScreen()
-                    }
                     composable<ProductCatalogDestination> {
                         ProductCatalogScreen()
                     }
@@ -471,6 +455,9 @@ fun App() {
                     }
                     composable<EmployeesDestination> {
                         com.lasso.lassoapp.screens.employees.EmployeesScreen()
+                    }
+                    composable<ClientsDestination> {
+                        ClientsScreen()
                     }
                     composable<CommissionsDestination> {
                         CommissionsScreen()

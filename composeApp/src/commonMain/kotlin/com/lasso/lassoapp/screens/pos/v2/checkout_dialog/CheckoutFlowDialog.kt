@@ -23,6 +23,7 @@ import com.lasso.lassoapp.screens.pos.SelectedPosItem
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_amount.CheckoutSplitPaymentContent
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodPickerContent
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.register_discount.RegisterDiscountContent
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.success.CheckoutSaleSuccessContent
 import com.lasso.lassoapp.ui.theme.LassoOutlineHairline
 import org.koin.compose.viewmodel.koinViewModel
@@ -35,6 +36,10 @@ fun CheckoutFlowDialog(
 ) {
     val viewModel = koinViewModel<CheckoutDialogViewModelV2>()
     val state by viewModel.state.collectAsState()
+    val appliedDiscount = state.discountAmount
+        ?.coerceIn(0.0, totalPrice.coerceAtLeast(0.0))
+        ?: 0.0
+    val payableTotalPrice = (totalPrice - appliedDiscount).coerceAtLeast(0.0)
 
     remember {
         viewModel.resetCheckoutFlow()
@@ -46,6 +51,7 @@ fun CheckoutFlowDialog(
                 is CheckoutStep.MethodPicker -> onDismiss(false)
                 is CheckoutStep.SplitPayment -> viewModel.navigateToMethodPicker()
                 is CheckoutStep.Success -> onDismiss(true)
+                is CheckoutStep.Discount -> viewModel.navigateToMethodPicker()
             }
         },
     ) {
@@ -70,15 +76,17 @@ fun CheckoutFlowDialog(
                     is CheckoutStep.MethodPicker -> {
                         CheckoutPaymentMethodPickerContent(
                             totalPrice = totalPrice,
+                            discountAmount = state.discountAmount,
                             onClose = { onDismiss(false) },
                             onMethodClicked = viewModel::navigateToSplitPayment,
+                            onRegisterDiscountClicked = viewModel::navigateToRegisterDiscount,
                         )
                     }
 
                     is CheckoutStep.SplitPayment -> {
                         CheckoutSplitPaymentContent(
                             checkoutPaymentMethod = step.checkoutPaymentMethod,
-                            totalPrice = totalPrice,
+                            totalPrice = payableTotalPrice,
                             state = state,
                             onBack = viewModel::navigateToMethodPicker,
                             onClose = { onDismiss(false) },
@@ -96,6 +104,16 @@ fun CheckoutFlowDialog(
                         CheckoutSaleSuccessContent(
                             collectedAmount = step.collectedAmount,
                             onClose = { onDismiss(true) },
+                        )
+                    }
+
+                    CheckoutStep.Discount -> {
+                        RegisterDiscountContent(
+                            totalPrice = totalPrice,
+                            discountAmount = state.discountAmount,
+                            onBack = viewModel::navigateToMethodPicker,
+                            onClose = { onDismiss(false) },
+                            onRegisterDiscount = viewModel::registerDiscount,
                         )
                     }
                 }

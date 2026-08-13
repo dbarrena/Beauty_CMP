@@ -49,6 +49,7 @@ private fun SalesScreenPreview() {
     ) {
         SalesScreenContentV2(
             state = mockState,
+            isAdmin = true,
             onBack = {},
             onReloadSales = {},
             onClearSelectedSale = {},

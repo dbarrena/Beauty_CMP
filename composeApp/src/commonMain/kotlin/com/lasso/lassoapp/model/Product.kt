@@ -10,13 +10,14 @@ data class Product(
     override val type: String = "product",
     val description: String? = null,
     override val price: String,
+    @SerialName("commission_percentage") override val commissionPercentage: String?,
     val cost: String? = null,
     val stock: Int? = null,
     val category: String? = null,
     @SerialName("partner_id") val partnerId: Int? = null,
     @SerialName("created_at") val createdAt: Long? = null,
     @SerialName("updated_at") val updatedAt: Long? = null,
-    @SerialName("category_id") val categoryId: Int? = null,
+    @SerialName("category_id") override val categoryId: Int? = null,
 ) : LassoItem
 
 @Serializable

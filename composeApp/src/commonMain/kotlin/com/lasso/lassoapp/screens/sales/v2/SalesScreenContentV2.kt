@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun SalesScreenContentV2(
     state: SalesScreenStateV2,
+    isAdmin: Boolean,
     onBack: () -> Unit,
     onReloadSales: () -> Unit,
     onClearSelectedSale: () -> Unit,
@@ -125,8 +126,8 @@ internal fun SalesScreenContentV2(
                     item {
                         SalesSummaryCard(
                             total = state.total,
+                            discounts = state.discounts,
                             transactionCount = state.sales.size,
-                            isLoading = state.isLoading,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
@@ -140,6 +141,11 @@ internal fun SalesScreenContentV2(
                     item {
                         SalesPeriodChipsRow(
                             selected = state.periodFilter,
+                            periods = if (isAdmin) {
+                                SalesPeriodFilter.entries
+                            } else {
+                                listOf(SalesPeriodFilter.Today)
+                            },
                             onSelect = { period ->
                                 when (period) {
                                     SalesPeriodFilter.Custom -> showCustomRangeDialog = true
@@ -160,6 +166,7 @@ internal fun SalesScreenContentV2(
                     } else {
                         items(state.sales, key = { it.id }) { sale ->
                             SalesTransactionCard(
+                                isAdmin = isAdmin,
                                 sale = sale,
                                 onEdit = {
                                     onSetSelectedSale(sale)
