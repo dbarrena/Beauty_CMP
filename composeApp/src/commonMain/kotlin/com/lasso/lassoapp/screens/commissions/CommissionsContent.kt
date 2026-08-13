@@ -111,6 +111,7 @@ fun CommissionsContent(
                             quantity = service.quantity,
                             totalSales = service.totalSales,
                             commission = service.commission,
+                            commissionPercentage = service.commissionPercentage,
                             isService = true,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
@@ -121,6 +122,7 @@ fun CommissionsContent(
                             quantity = product.quantity,
                             totalSales = product.totalSales,
                             commission = product.commission,
+                            commissionPercentage = product.commissionPercentage,
                             isService = false,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )

@@ -351,10 +351,8 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
-    EDIT_PRODUCTS_SERVICES,
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,
-    PRODUCT_CATEGORIES,
     SALES_BY_PRODUCT_CATEGORIES,
     EMPLOYEES,
     CLIENTS,

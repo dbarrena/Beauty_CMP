@@ -38,6 +38,7 @@ fun CommissionItemCard(
     quantity: Int,
     totalSales: Double,
     commission: Double,
+    commissionPercentage: Double?,
     isService: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -97,11 +98,25 @@ fun CommissionItemCard(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Comisión",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = LassoTextPlaceholder,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = "Comisión",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = LassoTextPlaceholder,
+                        )
+                        commissionPercentage?.let { percentage ->
+                                Text(
+                                    text = "(${formatPercentage(percentage)}%)",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                        }
+                    }
                     Text(
                         text = formatMoney(commission),
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -114,3 +129,6 @@ fun CommissionItemCard(
         }
     }
 }
+
+private fun formatPercentage(percentage: Double): String =
+    if (percentage % 1.0 == 0.0) percentage.toInt().toString() else percentage.toString()

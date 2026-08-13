@@ -1,19 +1,26 @@
 package com.lasso.lassoapp.screens.clients.dialog
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -54,15 +62,24 @@ fun ClientDialog(
 
     Dialog(onDismissRequest = { if (!isLoading) onDismiss() }) {
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                 Text(
                     text = if (client == null) "Nuevo cliente" else "Editar cliente",
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -70,7 +87,7 @@ fun ClientDialog(
                         fontSize = 20.sp,
                         color = LassoTextPrimary,
                     ),
-                    modifier = Modifier.padding(bottom = 10.dp),
+                    modifier = Modifier.padding(bottom = 24.dp),
                 )
                 ClientField(
                     value = name,
@@ -78,6 +95,7 @@ fun ClientDialog(
                     label = "Nombre *",
                     enabled = !isLoading,
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 ClientField(
                     value = phone,
                     onValueChange = { if (it.length <= 20) phone = it },
@@ -85,6 +103,7 @@ fun ClientDialog(
                     enabled = !isLoading,
                     keyboardType = KeyboardType.Phone,
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 ClientField(
                     value = email,
                     onValueChange = { if (it.length <= 255) email = it },
@@ -92,6 +111,7 @@ fun ClientDialog(
                     enabled = !isLoading,
                     keyboardType = KeyboardType.Email,
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 ClientField(
                     value = notes,
                     onValueChange = { notes = it },
@@ -100,9 +120,10 @@ fun ClientDialog(
                     singleLine = false,
                 )
                 error?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                 }
-                Spacer(Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 Button(
                     onClick = {
                         onSave(
@@ -117,15 +138,16 @@ fun ClientDialog(
                     enabled = isValid && !isLoading,
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = LassoPrimary),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = LassoPrimary,
+                        contentColor = Color.White,
+                    ),
                 ) {
                     if (isLoading) {
-                        Text(
-                            text = "Guardando...",
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp,
-                            ),
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp,
                         )
                     } else {
                         Text(
@@ -137,6 +159,7 @@ fun ClientDialog(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
                 TextButton(
                     onClick = onDismiss,
                     enabled = !isLoading,
@@ -150,6 +173,23 @@ fun ClientDialog(
                             fontSize = 16.sp,
                         ),
                     )
+                }
+                }
+
+                if (!isLoading) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 12.dp, y = (-12).dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = LassoTextMuted.copy(alpha = 0.7f),
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                 }
             }
         }

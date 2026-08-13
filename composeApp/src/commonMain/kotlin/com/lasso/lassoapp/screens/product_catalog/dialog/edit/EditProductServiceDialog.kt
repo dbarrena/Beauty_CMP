@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -16,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +45,9 @@ fun EditProductServiceDialog(
 
     var name by remember { mutableStateOf(lassoItem.name) }
     var price by remember { mutableStateOf(lassoItem.price) }
+    var commissionPercentage by remember {
+        mutableStateOf(lassoItem.commissionPercentage)
+    }
     var selectedCategory by remember { 
         mutableStateOf(categories.find { it.id == (lassoItem as? Product)?.categoryId }) 
     }
@@ -68,6 +75,7 @@ fun EditProductServiceDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight(0.9f)
                 .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -75,7 +83,7 @@ fun EditProductServiceDialog(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(24.dp)
             ) {
                 IconButton(
@@ -93,7 +101,7 @@ fun EditProductServiceDialog(
                 }
 
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -106,6 +114,12 @@ fun EditProductServiceDialog(
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
                     // Nombre Field
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
@@ -120,9 +134,7 @@ fun EditProductServiceDialog(
                         TextField(
                             value = name,
                             onValueChange = { name = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = LassoSurfaceVariant,
                                 unfocusedContainerColor = LassoSurfaceVariant,
@@ -156,9 +168,7 @@ fun EditProductServiceDialog(
                         TextField(
                             value = price,
                             onValueChange = { price = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = LassoSurfaceVariant,
                                 unfocusedContainerColor = LassoSurfaceVariant,
@@ -223,6 +233,46 @@ fun EditProductServiceDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Comisión especial (%)",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = LassoTextPrimary,
+                                fontSize = 14.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = commissionPercentage ?: "",
+                            onValueChange = { commissionPercentage = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = LassoSurfaceVariant,
+                                unfocusedContainerColor = LassoSurfaceVariant,
+                                disabledContainerColor = LassoSurfaceVariant,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                cursorColor = LassoPrimary,
+                                focusedTextColor = LassoTextPrimary,
+                                unfocusedTextColor = LassoTextPrimary
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+                        )
+                        Text(
+                            text = "Opcional. Reemplaza la comisión del empleado solo para este artículo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LassoTextMuted,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     // Tipo Indicator Box
                     Box(
                         modifier = Modifier
@@ -252,6 +302,7 @@ fun EditProductServiceDialog(
                             )
                         }
                     }
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -259,9 +310,9 @@ fun EditProductServiceDialog(
                     Button(
                         onClick = {
                             if (lassoItem is Service) {
-                                viewModel.editService(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
+                                viewModel.editService(lassoItem.copy(name = name, price = price, commissionPercentage = commissionPercentage, categoryId = selectedCategory?.id))
                             } else if (lassoItem is Product) {
-                                viewModel.editProduct(lassoItem.copy(name = name, price = price, categoryId = selectedCategory?.id))
+                                viewModel.editProduct(lassoItem.copy(name = name, price = price, commissionPercentage = commissionPercentage, categoryId = selectedCategory?.id))
                             }
                         },
                         enabled = name.isNotBlank() && price.isNotBlank() && !state.isLoading,

@@ -16,12 +16,9 @@ import com.lasso.lassoapp.screens.employees.EmployeesViewModel
 import com.lasso.lassoapp.screens.home.HomeScreenViewModel
 import com.lasso.lassoapp.screens.login.LoginScreenViewModel
 import com.lasso.lassoapp.screens.pos.PosViewModel
-import com.lasso.lassoapp.screens.pos.checkout.CheckoutDialogViewModel
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
-import com.lasso.lassoapp.screens.product_categories.ProductCategoriesViewModel
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModalViewModel
 import com.lasso.lassoapp.screens.product_catalog.ProductCatalogViewModel
-import com.lasso.lassoapp.screens.product_service.ProductServiceViewModel
 import com.lasso.lassoapp.screens.product_service.dialog.ProductServiceDialogViewModel
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryViewModel
 import com.lasso.lassoapp.screens.sales.SalesScreenViewModel
@@ -54,12 +51,10 @@ val dataModule = module {
 val viewModelModule = module {
     factoryOf(::PosViewModel)
     factoryOf(::ProductServiceDialogViewModel)
-    factoryOf(::CheckoutDialogViewModel)
     factoryOf(::SalesScreenViewModel)
     factoryOf(::SalesScreenViewModelV2)
     factoryOf(::ConfigurationViewModel)
     factoryOf(::CommissionsViewModel)
-    factoryOf(::ProductServiceViewModel)
     factoryOf(::HomeScreenViewModel)
     factoryOf(::AppViewModel)
     factoryOf(::LoginScreenViewModel)
@@ -68,7 +63,6 @@ val viewModelModule = module {
     factoryOf(::SaleDetailsDialogScreenViewModel)
     factoryOf(::CashClosureRecordsScreenViewModel)
     factoryOf(::ProductCategoryModalViewModel)
-    factoryOf(::ProductCategoriesViewModel)
     factoryOf(::ProductCatalogViewModel)
     factoryOf(::SalesByProductCategoryViewModel)
     factoryOf(::EmployeesViewModel)

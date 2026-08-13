@@ -7,6 +7,7 @@ sealed interface LassoItem {
     val id: Int?
     val name: String
     val price: String
+    val commissionPercentage: String?
     val type: String
     val categoryId: Int?
 }
@@ -18,6 +19,7 @@ data class Service(
     override val type: String = "service",
     val description: String? = null,
     override val price: String,
+    @SerialName("commission_percentage") override val commissionPercentage: String?,
     @SerialName("duration_minutes")
     val durationMinutes: Int? = null,
     val category: String? = null,

@@ -24,7 +24,7 @@ import com.lasso.lassoapp.screens.pos.v2.bottom_sheet.PosBottomSheet
 import com.lasso.lassoapp.screens.pos.v2.catalog.PosCatalogGrid
 import com.lasso.lassoapp.screens.pos.v2.header.PosHeader
 import com.lasso.lassoapp.screens.pos.v2.search_bar.PosSearchFilterBar
-import com.lasso.lassoapp.screens.product_service.dialog.ProductDialogScreen
+import com.lasso.lassoapp.screens.product_catalog.dialog.new.NewProductServiceDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -114,12 +114,12 @@ fun PosScreenV2() {
     }
 
     if (isNuevoDialogDisplayed.value) {
-        ProductDialogScreen(
-            lassoItem = null,
+        NewProductServiceDialog(
+            categories = state.value.categories,
             onDismiss = { isNuevoDialogDisplayed.value = false },
-        ) { product ->
+        ) { registeredItem ->
             isNuevoDialogDisplayed.value = false
-            viewModel.addSelectedItem(product)
+            viewModel.addSelectedItem(registeredItem)
             viewModel.getAvailableItems()
         }
     }

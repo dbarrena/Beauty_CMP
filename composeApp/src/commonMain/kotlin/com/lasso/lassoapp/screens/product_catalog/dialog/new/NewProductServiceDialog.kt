@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -16,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
@@ -32,13 +37,14 @@ import org.koin.compose.viewmodel.koinViewModel
 fun NewProductServiceDialog(
     categories: List<ProductCategory>,
     onDismiss: () -> Unit,
-    onResult: () -> Unit,
+    onResult: (LassoItem) -> Unit,
 ) {
     val viewModel = koinViewModel<ProductServiceDialogViewModel>()
     val state by viewModel.state.collectAsState()
 
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
+    var commissionPercentage by remember { mutableStateOf<String?>(null) }
     var selectedCategory by remember { mutableStateOf<ProductCategory?>(null) }
     var showCategoryPicker by remember { mutableStateOf(false) }
 
@@ -47,9 +53,10 @@ fun NewProductServiceDialog(
     }
 
     LaunchedEffect(state.registeredProduct, state.registeredService) {
-        if (state.registeredProduct != null || state.registeredService != null) {
+        val registeredItem = state.registeredProduct ?: state.registeredService
+        if (registeredItem != null) {
             viewModel.resetState()
-            onResult()
+            onResult(registeredItem)
         }
     }
 
@@ -57,6 +64,7 @@ fun NewProductServiceDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight(0.9f)
                 .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -64,7 +72,7 @@ fun NewProductServiceDialog(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(24.dp)
             ) {
                 IconButton(
@@ -82,7 +90,7 @@ fun NewProductServiceDialog(
                 }
 
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -116,6 +124,12 @@ fun NewProductServiceDialog(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
                     // Nombre Field
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
@@ -130,9 +144,7 @@ fun NewProductServiceDialog(
                         TextField(
                             value = name,
                             onValueChange = { name = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = LassoSurfaceVariant,
                                 unfocusedContainerColor = LassoSurfaceVariant,
@@ -166,9 +178,7 @@ fun NewProductServiceDialog(
                         TextField(
                             value = price,
                             onValueChange = { price = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = LassoSurfaceVariant,
                                 unfocusedContainerColor = LassoSurfaceVariant,
@@ -231,6 +241,47 @@ fun NewProductServiceDialog(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Comisión especial (%)",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = LassoTextPrimary,
+                                fontSize = 14.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = commissionPercentage ?: "",
+                            onValueChange = { commissionPercentage = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = LassoSurfaceVariant,
+                                unfocusedContainerColor = LassoSurfaceVariant,
+                                disabledContainerColor = LassoSurfaceVariant,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                cursorColor = LassoPrimary,
+                                focusedTextColor = LassoTextPrimary,
+                                unfocusedTextColor = LassoTextPrimary
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+                        )
+                        Text(
+                            text = "Opcional. Reemplaza la comisión del empleado solo para este artículo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LassoTextMuted,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                    }
+
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Register Button
@@ -241,6 +292,7 @@ fun NewProductServiceDialog(
                                     Service(
                                         name = name,
                                         price = price,
+                                        commissionPercentage = commissionPercentage,
                                         categoryId = selectedCategory?.id
                                     )
                                 )
@@ -249,6 +301,7 @@ fun NewProductServiceDialog(
                                     Product(
                                         name = name,
                                         price = price,
+                                        commissionPercentage = commissionPercentage,
                                         categoryId = selectedCategory?.id
                                     )
                                 )

@@ -10,6 +10,7 @@ data class Product(
     override val type: String = "product",
     val description: String? = null,
     override val price: String,
+    @SerialName("commission_percentage") override val commissionPercentage: String?,
     val cost: String? = null,
     val stock: Int? = null,
     val category: String? = null,

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.LassoItem
-import com.lasso.lassoapp.screens.pos.search.SearchDialogItem
 import com.lasso.lassoapp.screens.product_catalog.ProductServicesTabState
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 

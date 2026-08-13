@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 
 /**
- * Search field styled like [com.lasso.lassoapp.screens.pos.search.SearchDialogItem]:
+ * Search field aligned with the POS catalog search styling:
  * white card, primary border, search icon + inline text — aligned with POS catalog search.
  */
 @Composable
