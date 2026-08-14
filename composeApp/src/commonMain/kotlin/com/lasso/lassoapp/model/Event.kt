@@ -6,6 +6,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
 data class Event(
+    val appointmentId: Int? = null,
     val name: String,
     val color: Color,
     val start: LocalDateTime,

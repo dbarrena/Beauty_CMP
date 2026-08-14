@@ -1,6 +1,8 @@
 package com.lasso.lassoapp.screens.calendar
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -14,9 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,10 +33,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +52,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lasso.lassoapp.model.Employee
+import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
+import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
+import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.utils.formatFullDateSpanish
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -58,6 +63,13 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<CalendarScreenViewModel>()
     val state by viewModel.state.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
+    var selectedEmployeeId by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(state.employeeSchedules) {
+        if (selectedEmployeeId != null && state.employeeSchedules.none { it.id == selectedEmployeeId }) {
+            selectedEmployeeId = null
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -67,9 +79,15 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            if (state.isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
             CalendarHeader(
                 modifier = Modifier.padding(vertical = 16.dp),
-                onAddClick = { /* TODO: Implement add appointment */ }
+                onAddClick = { viewModel.showNewAppointmentDialog() },
             )
 
             // Date Selector
@@ -81,66 +99,107 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 onDatePickerClick = { showDatePicker = true }
             )
 
-            if (state.employees.isEmpty() && !state.isLoading) {
+            if (state.employeeSchedules.isNotEmpty()) {
+                EmployeeFilterPills(
+                    employees = state.employeeSchedules,
+                    selectedEmployeeId = selectedEmployeeId,
+                    onEmployeeSelected = { selectedEmployeeId = it },
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
+
+            if (state.employeeSchedules.isEmpty() && !state.isLoading) {
                 CalendarEmptyState()
             } else {
                 val verticalScrollState = rememberScrollState()
-                val pagerState = rememberPagerState(pageCount = { state.employees.size })
+                val horizontalScrollState = rememberScrollState()
                 val hourHeight = 90.dp
                 val sidebarWidth = 60.dp
-                val headerHeight = 40.dp
+                val headerHeight = if (selectedEmployeeId == null) 58.dp else 42.dp
+                val displayedEmployees = if (selectedEmployeeId == null) {
+                    state.employeeSchedules
+                } else {
+                    state.employeeSchedules.filter { it.id == selectedEmployeeId }
+                }
                 
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 8.dp)
+                        .padding(horizontal = 8.dp, vertical = 12.dp)
                 ) {
-                    val availableWidth = maxWidth
-                    val pagerWidth = availableWidth - sidebarWidth - 16.dp
-                    val columnWidth = if (state.employees.size <= 1) {
-                        pagerWidth
+                    val availableCalendarWidth = maxWidth - sidebarWidth - 16.dp
+                    val columnWidth = if (selectedEmployeeId != null) {
+                        availableCalendarWidth
                     } else {
-                        pagerWidth * 0.85f
+                        maxOf(140.dp, availableCalendarWidth / displayedEmployees.size.coerceAtLeast(1).toFloat())
                     }
 
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        // Sidebar (Fixed horizontally, scrolls vertically with grid)
-                        Column(modifier = Modifier.width(sidebarWidth + 16.dp)) {
-                            Spacer(modifier = Modifier.height(headerHeight))
-                            CalendarHourSidebar(
-                                hourHeight = hourHeight,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 16.dp)
-                                    .verticalScroll(verticalScrollState)
-                            )
-                        }
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 8.dp, vertical = 10.dp)
+                        ) {
+                            Column(modifier = Modifier.width(sidebarWidth)) {
+                                Spacer(modifier = Modifier.height(headerHeight))
+                                CalendarHourSidebar(
+                                    hourHeight = hourHeight,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 8.dp)
+                                        .verticalScroll(
+                                            state = verticalScrollState,
+                                            overscrollEffect = null,
+                                        )
+                                )
+                            }
 
-                        // Employee Columns (Snappy horizontal scroll)
-                        HorizontalPager(
-                            state = pagerState,
-                            pageSize = PageSize.Fixed(pagerWidth),
-                            modifier = Modifier.weight(1f),
-                            beyondViewportPageCount = 1,
-                            key = { state.employees[it].id },
-                            contentPadding = PaddingValues(end = 16.dp)
-                        ) { page ->
-                            val employee = state.employees[page]
-                            Column(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(end = 8.dp)
+                                    .horizontalScroll(horizontalScrollState)
                             ) {
-                                EmployeeHeader(
-                                    employee = employee,
-                                    modifier = Modifier.height(headerHeight).fillMaxWidth()
-                                )
-                                CalendarEvents(
-                                    hourHeight = hourHeight,
-                                    verticalScrollState = verticalScrollState,
-                                    events = state.events.filter { it.employeeId == employee.id },
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                displayedEmployees.forEach { employee ->
+                                    Column(modifier = Modifier.width(columnWidth)) {
+                                        EmployeeHeader(
+                                            employeeName = employee.name,
+                                            appointmentCount = employee.appointments.size,
+                                            showEmployeeName = selectedEmployeeId == null,
+                                            modifier = Modifier
+                                                .height(headerHeight)
+                                                .fillMaxWidth(),
+                                        )
+                                        CalendarEvents(
+                                            hourHeight = hourHeight,
+                                            verticalScrollState = verticalScrollState,
+                                            events = state.events.filter { it.employeeId == employee.id },
+                                            onEditAppointment = { event ->
+                                                val appointment = employee.appointments.firstOrNull {
+                                                    it.id == event.appointmentId
+                                                }
+                                                if (appointment != null) {
+                                                    viewModel.showEditAppointmentDialog(
+                                                        appointment = appointment,
+                                                        employeeId = employee.id,
+                                                    )
+                                                }
+                                            },
+                                            onEmptySlotClick = { startMinutes ->
+                                                viewModel.showNewAppointmentDialog(
+                                                    employeeId = employee.id,
+                                                    date = state.selectedDate,
+                                                    startMinutes = startMinutes,
+                                                )
+                                            },
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -159,29 +218,131 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             }
         )
     }
+
+
+    if (state.isAppointmentDialogDisplayed) {
+        AppointmentDialog(
+            appointment = state.selectedAppointment,
+            appointmentEmployeeId = state.selectedAppointmentEmployeeId,
+            clients = state.clients,
+            employees = state.employees,
+            services = state.services,
+            initialDate = state.initialAppointmentDate ?: state.selectedDate,
+            initialStartMinutes = state.initialAppointmentStartMinutes,
+            preferredClient = state.createdClient,
+            isSaving = state.isSavingAppointment,
+            isDeleting = state.isDeleting,
+            optionsError = state.optionsError ?: state.mutationError,
+            onDismiss = viewModel::hideAppointmentDialog,
+            onNewClient = viewModel::showNewClientDialog,
+            onResult = viewModel::saveAppointment,
+            onDelete = {
+                state.selectedAppointment?.let { viewModel.deleteAppointment(it.id) }
+            },
+        )
+    }
+
+    if (state.isNewClientDialogDisplayed) {
+        ClientDialog(
+            client = null,
+            isLoading = state.isSavingClient,
+            error = state.clientSaveError,
+            onDismiss = viewModel::hideNewClientDialog,
+            onSave = viewModel::createClient,
+        )
+    }
 }
 
 @Composable
 private fun EmployeeHeader(
-    employee: Employee,
+    employeeName: String,
+    appointmentCount: Int,
+    showEmployeeName: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
+        if (showEmployeeName) {
+            Text(
+                text = employeeName,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF353D3C)
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+        }
         Text(
-            text = employee.name,
-            style = MaterialTheme.typography.titleSmall.copy(
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF353D3C)
-            ),
+            text = appointmentCountLabel(appointmentCount),
+            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7E8585)),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
+
+@Composable
+private fun EmployeeFilterPills(
+    employees: List<EmployeeAppointmentSchedule>,
+    selectedEmployeeId: Int?,
+    onEmployeeSelected: (Int?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item {
+            EmployeeFilterPill(
+                label = "Todos",
+                selected = selectedEmployeeId == null,
+                onClick = { onEmployeeSelected(null) },
+            )
+        }
+        items(employees, key = { it.id }) { employee ->
+            EmployeeFilterPill(
+                label = employee.name,
+                selected = selectedEmployeeId == employee.id,
+                onClick = { onEmployeeSelected(employee.id) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmployeeFilterPill(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                color = if (selected) Color(0xFF00CFAE) else Color(0xFFEEF1F4),
+                shape = RoundedCornerShape(50),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 22.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            color = if (selected) Color.White else Color(0xFF89939F),
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+private fun appointmentCountLabel(count: Int): String =
+    if (count == 1) "1 cita" else "$count citas"
 
 @Composable
 private fun CalendarHeader(
