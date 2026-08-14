@@ -23,6 +23,7 @@ import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
+import com.lasso.lassoapp.model.SaleEditApiRequest
 import com.lasso.lassoapp.model.SaleEditDateApiRequest
 import com.lasso.lassoapp.model.SalesByProductCategoryApiResponse
 import com.lasso.lassoapp.model.TopSellersResponse
@@ -107,6 +108,7 @@ interface LassoApi {
     ): List<CommissionCalculationResponse>
 
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
+    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun editService(service: Service): Service
     suspend fun editProduct(product: Product): Product
@@ -475,6 +477,14 @@ class KtorLassoApi(
             e.printStackTrace()
             throw e
         }
+    }
+
+    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse {
+        println("KtorLassoApi: editSale $saleId")
+        return client.post(API_URL + "sales/edit/$saleId") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
     }
 
     override suspend fun editService(service: Service): Service {

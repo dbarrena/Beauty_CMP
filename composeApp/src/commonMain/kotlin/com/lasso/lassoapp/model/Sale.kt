@@ -49,6 +49,7 @@ data class SaleDetailApiResponse(
     @SerialName("updated_at") val updatedAt: Long?,
     val product: Product? = null,
     val service: Service? = null,
+    @SerialName("employee_id") val employeeId: Int? = null,
     @SerialName("employee_name") val employeeName: String? = null,
 )
 
@@ -63,4 +64,11 @@ data class SaleDetailEditApiRequest(
 data class SaleEditDateApiRequest(
     @SerialName("created_at") val createdAt: Long,
     val saleId: Int
+)
+
+@Serializable
+data class SaleEditApiRequest(
+    @SerialName("created_at") val createdAt: Long,
+    @SerialName("client_id") val clientId: Int?,
+    @SerialName("employee_id") val employeeId: Int,
 )
