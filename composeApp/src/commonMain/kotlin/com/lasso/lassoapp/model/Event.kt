@@ -7,7 +7,7 @@ import kotlinx.datetime.toInstant
 
 data class Event(
     val appointmentId: Int? = null,
-    val name: String,
+    val name: String? = null,
     val color: Color,
     val start: LocalDateTime,
     val end: LocalDateTime,

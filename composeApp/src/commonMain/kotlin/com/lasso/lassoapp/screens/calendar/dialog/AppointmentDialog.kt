@@ -40,6 +40,8 @@ import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Service
 import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
+import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
+import com.lasso.lassoapp.screens.product_catalog.dialog.search_service.SearchServiceDialog
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import kotlinx.datetime.LocalDate
@@ -75,6 +77,8 @@ fun AppointmentDialog(
     val formScrollState = rememberScrollState()
     val isBusy = isSaving || isDeleting
     var showDatePicker by remember { mutableStateOf(false) }
+    var showClientSearch by remember { mutableStateOf(false) }
+    var showServiceSearch by remember { mutableStateOf(false) }
 
     LaunchedEffect(optionsError) {
         if (optionsError != null) formScrollState.animateScrollTo(formScrollState.maxValue)
@@ -105,9 +109,9 @@ fun AppointmentDialog(
                     ) {
                         AppointmentClientField(
                             selectedClient = formState.selectedClient,
-                            clients = clients,
                             enabled = !isBusy,
-                            onClientSelected = formState::selectClient,
+                            onSearchClick = { showClientSearch = true },
+                            onClientRemoved = formState::clearClient,
                             onNewClient = onNewClient,
                         )
 
@@ -123,14 +127,11 @@ fun AppointmentDialog(
                         )
 
                         AppointmentFormSpacer()
-                        AppointmentFieldLabel("Servicio")
-                        AppointmentPickerField(
-                            value = formState.selectedService?.name,
-                            placeholder = "Servicio",
-                            options = services,
-                            optionLabel = Service::name,
+                        AppointmentServiceField(
+                            selectedService = formState.selectedService,
                             enabled = !isBusy,
-                            onSelected = formState::selectService,
+                            onSearchClick = { showServiceSearch = true },
+                            onServiceRemoved = formState::clearService,
                         )
 
                         AppointmentFormSpacer()
@@ -211,6 +212,23 @@ fun AppointmentDialog(
                 formState.selectDate(it)
                 showDatePicker = false
             },
+        )
+    }
+
+    if (showClientSearch) {
+        SearchClientDialog(
+            clients = clients,
+            onDismiss = { showClientSearch = false },
+            onClientSelected = formState::selectClient,
+            onNewClient = onNewClient,
+        )
+    }
+
+    if (showServiceSearch) {
+        SearchServiceDialog(
+            services = services,
+            onDismiss = { showServiceSearch = false },
+            onServiceSelected = formState::selectService,
         )
     }
 }

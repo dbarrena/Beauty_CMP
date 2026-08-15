@@ -306,11 +306,11 @@ fun AppointmentCalendarResponse.toEvents(timeZone: TimeZone): List<Event> {
         employee.appointments.map { appointment ->
             Event(
                 appointmentId = appointment.id,
-                name = appointment.client.name,
+                name = appointment.client?.name?.takeIf { it.isNotBlank() },
                 color = colors[employeeIndex % colors.size],
                 start = Instant.fromEpochMilliseconds(appointment.startsAt).toLocalDateTime(timeZone),
                 end = Instant.fromEpochMilliseconds(appointment.endsAt).toLocalDateTime(timeZone),
-                description = appointment.serviceName,
+                description = appointment.serviceName?.takeIf { it.isNotBlank() },
                 employeeId = employee.id,
             )
         }

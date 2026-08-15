@@ -51,12 +51,20 @@ internal class AppointmentFormState(
         selectedClient = client
     }
 
+    fun clearClient() {
+        selectedClient = null
+    }
+
     fun selectEmployee(employee: Employee) {
         selectedEmployee = employee
     }
 
     fun selectService(service: Service) {
         selectedService = service
+    }
+
+    fun clearService() {
+        selectedService = null
     }
 
     fun selectDate(date: LocalDate) {

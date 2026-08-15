@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
@@ -108,25 +107,22 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 )
             }
 
-            if (state.employeeSchedules.isEmpty() && !state.isLoading) {
-                CalendarEmptyState()
+            val verticalScrollState = rememberScrollState()
+            val horizontalScrollState = rememberScrollState()
+            val hourHeight = 90.dp
+            val sidebarWidth = 60.dp
+            val headerHeight = if (selectedEmployeeId == null) 58.dp else 42.dp
+            val displayedEmployees = if (selectedEmployeeId == null) {
+                state.employeeSchedules
             } else {
-                val verticalScrollState = rememberScrollState()
-                val horizontalScrollState = rememberScrollState()
-                val hourHeight = 90.dp
-                val sidebarWidth = 60.dp
-                val headerHeight = if (selectedEmployeeId == null) 58.dp else 42.dp
-                val displayedEmployees = if (selectedEmployeeId == null) {
-                    state.employeeSchedules
-                } else {
-                    state.employeeSchedules.filter { it.id == selectedEmployeeId }
-                }
+                state.employeeSchedules.filter { it.id == selectedEmployeeId }
+            }
                 
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp, vertical = 12.dp)
-                ) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
+            ) {
                     val availableCalendarWidth = maxWidth - sidebarWidth - 16.dp
                     val columnWidth = if (selectedEmployeeId != null) {
                         availableCalendarWidth
@@ -203,7 +199,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -446,29 +441,3 @@ private fun CalendarDateSelector(
     }
 }
 
-@Composable
-private fun CalendarEmptyState() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = Icons.Default.CalendarMonth,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = Color(0xFFE5E7EB)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "No hay citas para este día",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color(0xFF9CA3AF)
-                ),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}

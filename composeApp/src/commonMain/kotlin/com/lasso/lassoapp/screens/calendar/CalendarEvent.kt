@@ -54,17 +54,19 @@ fun CalendarEventItem(
                     vertical = if (isShort) 3.dp else 8.dp,
                 ),
         ) {
-            Text(
-                text = event.name,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF353D3C),
-                    fontSize = if (isShort) 10.sp else 14.sp,
-                    lineHeight = if (isShort) 10.sp else 18.sp,
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            event.name?.let { clientName ->
+                Text(
+                    text = clientName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF353D3C),
+                        fontSize = if (isShort) 10.sp else 14.sp,
+                        lineHeight = if (isShort) 10.sp else 18.sp,
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             event.description?.let { serviceName ->
                 Text(
                     text = serviceName,
