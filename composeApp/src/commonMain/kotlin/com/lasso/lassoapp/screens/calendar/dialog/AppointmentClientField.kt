@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +35,9 @@ import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoSurfaceVariant
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.utils.buildWhatsAppUrl
+import lassoapp.composeapp.generated.resources.Res
+import lassoapp.composeapp.generated.resources.whatsapp_icon
+import org.jetbrains.compose.resources.painterResource
 
 private val WhatsAppGreen = Color(0xFF25D366)
 
@@ -97,7 +99,7 @@ internal fun AppointmentClientField(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = WhatsAppGreen),
                 ) {
                     Icon(
-                        Icons.Default.Phone,
+                        painter = painterResource(Res.drawable.whatsapp_icon),
                         contentDescription = "Abrir WhatsApp",
                         modifier = Modifier.size(24.dp),
                     )
