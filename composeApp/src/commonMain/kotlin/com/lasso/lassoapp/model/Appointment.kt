@@ -12,8 +12,8 @@ data class AppointmentClientSummary(
 @Serializable
 data class CalendarAppointment(
     val id: Int,
-    val client: AppointmentClientSummary,
-    val serviceName: String,
+    val client: AppointmentClientSummary? = null,
+    val serviceName: String? = null,
     val startsAt: Long,
     val endsAt: Long,
     val notes: String? = null,
@@ -36,8 +36,8 @@ data class AppointmentCalendarResponse(
 @Serializable
 data class AppointmentWriteRequest(
     @SerialName("employee_id") val employeeId: Int,
-    @SerialName("client_id") val clientId: Int,
-    @SerialName("service_name") val serviceName: String,
+    @SerialName("client_id") val clientId: Int? = null,
+    @SerialName("service_name") val serviceName: String? = null,
     @SerialName("starts_at") val startsAt: Long,
     @SerialName("ends_at") val endsAt: Long,
     val notes: String? = null,
@@ -45,7 +45,7 @@ data class AppointmentWriteRequest(
 )
 
 fun AppointmentWriteRequest.normalized(): AppointmentWriteRequest = copy(
-    serviceName = serviceName.trim(),
+    serviceName = serviceName?.trim(),
     notes = notes?.trim()?.ifBlank { null },
 )
 
@@ -60,8 +60,8 @@ data class SavedAppointment(
     val id: Int,
     @SerialName("partner_id") val partnerId: Int,
     @SerialName("employee_id") val employeeId: Int,
-    @SerialName("client_id") val clientId: Int,
-    @SerialName("service_name") val serviceName: String,
+    @SerialName("client_id") val clientId: Int? = null,
+    @SerialName("service_name") val serviceName: String? = null,
     @SerialName("starts_at") val startsAt: Long,
     @SerialName("ends_at") val endsAt: Long,
     val notes: String? = null,

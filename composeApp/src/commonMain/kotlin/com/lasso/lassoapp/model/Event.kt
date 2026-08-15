@@ -6,11 +6,13 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
 data class Event(
-    val name: String,
+    val appointmentId: Int? = null,
+    val name: String? = null,
     val color: Color,
     val start: LocalDateTime,
     val end: LocalDateTime,
-    val description: String? = null
+    val description: String? = null,
+    val employeeId: Int? = null
 )
 
 fun minutesBetween(start: LocalDateTime, end: LocalDateTime, timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {

@@ -11,11 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.ParentDataModifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.minutesBetween
+import androidx.compose.foundation.gestures.detectTapGestures
 import kotlin.math.roundToInt
 
 @Composable
@@ -23,6 +25,8 @@ fun CalendarEvents(
     hourHeight: Dp,
     verticalScrollState: ScrollState,
     events: List<Event>,
+    onEditAppointment: (Event) -> Unit = {},
+    onEmptySlotClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val visibleHours = 14 // de 7 a 20 inclusive
@@ -30,18 +34,41 @@ fun CalendarEvents(
 
     Layout(
         modifier = modifier
-            .verticalScroll(verticalScrollState)
+            .pointerInput(events, hourHeight, verticalScrollState.value) {
+                detectTapGestures { position ->
+                    val contentY = position.y + verticalScrollState.value
+                    val halfHourHeight = hourHeight.toPx() / 2f
+                    val slotIndex = (contentY / halfHourHeight).toInt()
+                        .coerceIn(0, visibleHours * 2 - 1)
+                    val slotStart = hourStart * 60 + slotIndex * 30
+                    val slotEnd = slotStart + 30
+                    val isOccupied = events.any { event ->
+                        val eventStart = event.start.hour * 60 + event.start.minute
+                        val eventEnd = event.end.hour * 60 + event.end.minute
+                        slotStart < eventEnd && slotEnd > eventStart
+                    }
+                    if (!isOccupied) {
+                        onEmptySlotClick(slotStart)
+                    }
+                }
+            }
+            .verticalScroll(
+                state = verticalScrollState,
+                overscrollEffect = null,
+            )
             .drawBehind {
                 val lineStroke = 1.dp.toPx()
                 for (i in 0..visibleHours) {
                     val y = i * hourHeight.toPx()
                     // Hour line
-                    drawLine(
-                        Color.LightGray,
-                        start = Offset(0f, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = lineStroke,
-                    )
+                    if(i != 0) {
+                        drawLine(
+                            Color.LightGray,
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = lineStroke,
+                        )
+                    }
                     // 30 min line
                     if (i < visibleHours) {
                         val halfY = y + (hourHeight.toPx() / 2)
@@ -58,7 +85,10 @@ fun CalendarEvents(
         content = {
             events.sortedBy(Event::start).forEach { event ->
                 Box(modifier = Modifier.eventData(event)) {
-                    CalendarEventItem(event)
+                    CalendarEventItem(
+                        event = event,
+                        onEdit = { onEditAppointment(event) },
+                    )
                 }
             }
         },
