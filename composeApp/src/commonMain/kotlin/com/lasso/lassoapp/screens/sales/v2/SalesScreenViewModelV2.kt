@@ -134,9 +134,8 @@ class SalesScreenViewModelV2(private val lassoApi: LassoApi) : ViewModel() {
                 fetchSalesForLocalRange(monday, sunday)
             }
             SalesPeriodFilter.ThisMonth -> {
-                lassoApi.getThisMonthSales()
-                    .sortedByDescending { it.id }
-                    .map { it.copy(formattedDate = it.createdAt.toLocalDateTimeString()) }
+                val today = todayLocal()
+                fetchSalesForLocalRange(LocalDate(today.year, today.month, 1), today)
             }
             SalesPeriodFilter.Custom -> {
                 val start = _state.value.selectedDateStart

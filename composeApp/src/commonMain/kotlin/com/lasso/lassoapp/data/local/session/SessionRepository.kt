@@ -7,15 +7,17 @@ import com.lasso.lassoapp.model.room.Session
 class SessionRepository(
     private val sessionDao: SessionDao
 ) {
-    suspend fun saveSession(employee: Employee) {
+    suspend fun saveSession(employee: Employee, token: String) {
         val sessionEntity = Session(
             employeeId = employee.id,
             partnerId = employee.partnerId,
             partnerName = employee.partners?.name.orEmpty(),
             employeeName = employee.name,
-            employeeRole = employee.role
+            employeeRole = employee.role,
+            token = token,
         )
 
+        sessionDao.deleteAll()
         sessionDao.insert(sessionEntity)
     }
 
@@ -37,11 +39,9 @@ class SessionRepository(
         return sessionDao.getSession()?.employeeId
     }
 
+    suspend fun getToken(): String? = sessionDao.getSession()?.token
+
     suspend fun isLoggedIn(): Boolean {
-        sessionDao.getSession()?.let {
-            return true
-        } ?: run {
-            return false
-        }
+        return !sessionDao.getSession()?.token.isNullOrBlank()
     }
 }

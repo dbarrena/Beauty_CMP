@@ -18,7 +18,7 @@ class AppViewModel(
         viewModelScope.launch {
             val session = sessionRepository.getSession()
             _state.value = AppState(
-                isLoggedIn = session != null,
+                isLoggedIn = !session?.token.isNullOrBlank(),
                 isAdmin = session?.isAdmin ?: false
             )
         }
@@ -28,7 +28,7 @@ class AppViewModel(
         viewModelScope.launch {
             val session = sessionRepository.getSession()
             _state.value = AppState(
-                isLoggedIn = true,
+                isLoggedIn = !session?.token.isNullOrBlank(),
                 isAdmin = session?.isAdmin ?: false
             )
         }

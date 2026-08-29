@@ -38,6 +38,15 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @Serializable
 private data class ApiErrorResponse(val error: String? = null, val message: String? = null)
@@ -66,8 +75,6 @@ interface LassoApi {
     suspend fun deleteAppointment(id: Int): MessageResponse
     suspend fun getServices(): List<Service>
     suspend fun getProducts(): List<Product>
-    suspend fun getSales(): List<SaleApiResponse>
-    suspend fun getThisMonthSales(): List<SaleApiResponse>
     suspend fun getSalesBetweenDates(start: Long, end: Long): List<SaleApiResponse>
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(service: Service): Service
@@ -88,6 +95,7 @@ interface LassoApi {
 
     suspend fun getHomeTopSellers(): TopSellersResponse?
     suspend fun login(login: Login): LoginResponse
+    suspend fun logout()
     suspend fun getOpenCashClosure(): CashClosure?
     suspend fun createCashClosure(): String?
     suspend fun getCashClosureRecords(): List<CashClosureRecordsResponse>
@@ -125,8 +133,10 @@ class KtorLassoApi(
     private val sessionRepository: SessionRepository
 ) : LassoApi {
     companion object {
-        private const val API_URL =
+        private const val LEGACY_API_URL =
             "https://cdn.dbxprts.com:3000/api/"
+        private const val LASSO_API_URL = "https://cdn.dbxprts.com:3000/lasso/api/"
+        private const val SECURE_SALES_URL = LASSO_API_URL + "sales/"
     }
 
     private suspend fun requirePartnerId(): Int = sessionRepository.getPartnerId()
@@ -134,19 +144,19 @@ class KtorLassoApi(
 
     override suspend fun getClients(): List<Client> {
         val partnerId = requirePartnerId()
-        return client.get(API_URL + "clients/all?partnerId=$partnerId").bodyOrThrow()
+        return client.get(LEGACY_API_URL + "clients/all?partnerId=$partnerId").bodyOrThrow()
     }
 
     override suspend fun registerClient(request: ClientWriteRequest): Client {
         val partnerId = requirePartnerId()
-        return client.post(API_URL + "clients/new") {
+        return client.post(LEGACY_API_URL + "clients/new") {
             contentType(ContentType.Application.Json)
             setBody(request.normalized().copy(partnerId = partnerId))
         }.bodyOrThrow()
     }
 
     override suspend fun editClient(id: Int, request: ClientWriteRequest): Client {
-        return client.post(API_URL + "clients/edit") {
+        return client.post(LEGACY_API_URL + "clients/edit") {
             contentType(ContentType.Application.Json)
             setBody(request.normalized().copy(id = id))
         }.bodyOrThrow()
@@ -158,13 +168,13 @@ class KtorLassoApi(
     ): AppointmentCalendarResponse {
         val partnerId = requirePartnerId()
         return client.get(
-            API_URL + "appointments/calendar?partnerId=$partnerId&startEpoch=$startEpoch&endEpoch=$endEpoch"
+            LEGACY_API_URL + "appointments/calendar?partnerId=$partnerId&startEpoch=$startEpoch&endEpoch=$endEpoch"
         ).bodyOrThrow()
     }
 
     override suspend fun createAppointment(request: AppointmentWriteRequest): SavedAppointment {
         val partnerId = requirePartnerId()
-        return client.post(API_URL + "appointments/new") {
+        return client.post(LEGACY_API_URL + "appointments/new") {
             contentType(ContentType.Application.Json)
             setBody(request.normalized().copy(partnerId = partnerId))
         }.bodyOrThrow()
@@ -175,7 +185,7 @@ class KtorLassoApi(
         request: AppointmentWriteRequest,
     ): SavedAppointment {
         val partnerId = requirePartnerId()
-        return client.post(API_URL + "appointments/edit/$id") {
+        return client.post(LEGACY_API_URL + "appointments/edit/$id") {
             contentType(ContentType.Application.Json)
             setBody(request.normalized().copy(partnerId = partnerId))
         }.bodyOrThrow()
@@ -183,14 +193,14 @@ class KtorLassoApi(
 
     override suspend fun deleteAppointment(id: Int): MessageResponse {
         val partnerId = requirePartnerId()
-        return client.delete(API_URL + "appointments/delete/$id?partnerId=$partnerId").bodyOrThrow()
+        return client.delete(LEGACY_API_URL + "appointments/delete/$id?partnerId=$partnerId").bodyOrThrow()
     }
 
     override suspend fun getServices(): List<Service> {
         return try {
             println("KtorBeautyApi: getServices")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "services/all?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "services/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -203,35 +213,10 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getProducts")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "products/all?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "products/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
-            emptyList()
-        }
-    }
-
-    override suspend fun getSales(): List<SaleApiResponse> {
-        return try {
-            println("KtorBeautyApi: getSales")
-            val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "sales/all?partnerId=$partnerId").body()
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            e.printStackTrace()
-            emptyList()
-        }
-    }
-
-    override suspend fun getThisMonthSales(): List<SaleApiResponse> {
-        return try {
-            println("KtorBeautyApi: getServices")
-            val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "sales/current-month?partnerId=$partnerId").body()
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            e.printStackTrace()
-
             emptyList()
         }
     }
@@ -242,9 +227,8 @@ class KtorLassoApi(
     ): List<SaleApiResponse> {
         return try {
             println("KtorBeautyApi: getSales")
-            val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "sales/sales-between?partnerId=$partnerId&startEpoch=$start&endEpoch=$end")
-                .body()
+            client.get(SECURE_SALES_URL + "sales-between?startEpoch=$start&endEpoch=$end")
+                .bodyOrThrow()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -257,7 +241,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: registerProduct")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "products/new") {
+            client.post(LEGACY_API_URL + "products/new") {
                 contentType(ContentType.Application.Json)
                 setBody(product.copy(partnerId = partnerId))
             }.body<Product>()
@@ -273,7 +257,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: registerService")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "services/new") {
+            client.post(LEGACY_API_URL + "services/new") {
                 contentType(ContentType.Application.Json)
                 setBody(service.copy(partnerId = partnerId))
             }.body<Service>()
@@ -287,12 +271,10 @@ class KtorLassoApi(
     override suspend fun registerSale(sale: Sale): Sale {
         return try {
             println("KtorBeautyApi: registerSale")
-            val partnerId = sessionRepository.getPartnerId() ?: 0
-
-            client.post(API_URL + "sales/new") {
+            client.post(SECURE_SALES_URL + "new") {
                 contentType(ContentType.Application.Json)
-                setBody(sale.copy(partnerId = partnerId))
-            }.body<Sale>()
+                setBody(sale.copy(partnerId = null))
+            }.bodyOrThrow<Sale>()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -305,7 +287,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: registerEmployee")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "employees/add") {
+            client.post(LEGACY_API_URL + "employees/add") {
                 contentType(ContentType.Application.Json)
                 setBody(employee.copy(partnerId = partnerId))
             }.body<Employee>()
@@ -319,7 +301,7 @@ class KtorLassoApi(
     override suspend fun getSale(id: Int): SaleApiResponse? {
         return try {
             println("KtorBeautyApi: getSale $id")
-            client.get(API_URL + "sales/get/$id").body()
+            client.get(SECURE_SALES_URL + "get/$id").bodyOrThrow()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -330,7 +312,7 @@ class KtorLassoApi(
     override suspend fun getEmployeeById(id: Int): Employee? {
         return try {
             println("KtorBeautyApi: getEmployeeById")
-            client.get(API_URL + "employees/get/" + id).body()
+            client.get(LEGACY_API_URL + "employees/get/" + id).body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -342,7 +324,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getEmployees")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "employees/all?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "employees/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -361,7 +343,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getHome")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "home?partnerId=$partnerId&startMonthEpoch=$startMonthEpoch&endMonthEpoch=$endMonthEpoch&startDayEpoch=$startDayEpoch&endDayEpoch=$endDayEpoch&startWeekEpoch=$startWeekEpoch&endWeekEpoch=$endWeekEpoch")
+            client.get(LEGACY_API_URL + "home?partnerId=$partnerId&startMonthEpoch=$startMonthEpoch&endMonthEpoch=$endMonthEpoch&startDayEpoch=$startDayEpoch&endDayEpoch=$endDayEpoch&startWeekEpoch=$startWeekEpoch&endWeekEpoch=$endWeekEpoch")
                 .body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
@@ -374,7 +356,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getHomeTopSellers")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "home/top-sellers?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "home/top-sellers?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -387,10 +369,10 @@ class KtorLassoApi(
     ): LoginResponse {
         return try {
             println("KtorBeautyApi: login")
-            client.post(API_URL + "auth/login") {
+            client.post(LASSO_API_URL + "auth/login") {
                 contentType(ContentType.Application.Json)
                 setBody(login)
-            }.body<LoginResponse>()
+            }.bodyOrThrow<LoginResponse>()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -398,11 +380,15 @@ class KtorLassoApi(
         }
     }
 
+    override suspend fun logout() {
+        client.post(LASSO_API_URL + "auth/logout").bodyOrThrow<MessageResponse>()
+    }
+
     override suspend fun getOpenCashClosure(): CashClosure? {
         return try {
             println("KtorBeautyApi: getCashClosure")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "cash_closure/open?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "cash_closure/open?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -412,8 +398,8 @@ class KtorLassoApi(
 
     override suspend fun deleteSale(saleId: Int): String? {
         return try {
-            println("KtorBeautyApi: deleteSaleDetail")
-            client.delete(API_URL + "sales/delete/$saleId").body()
+            println("KtorBeautyApi: deleteSale")
+            client.delete(SECURE_SALES_URL + "delete/$saleId").bodyOrThrow<MessageResponse>().message
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -424,7 +410,7 @@ class KtorLassoApi(
     override suspend fun deleteSaleDetail(saleDetailId: Int): String? {
         return try {
             println("KtorBeautyApi: deleteSaleDetail")
-            client.delete(API_URL + "sales/delete/detail/$saleDetailId").body()
+            client.delete(SECURE_SALES_URL + "delete/detail/$saleDetailId").bodyOrThrow<MessageResponse>().message
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -436,7 +422,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: disableService")
 
-            client.post(API_URL + "services/disable") {
+            client.post(LEGACY_API_URL + "services/disable") {
                 contentType(ContentType.Application.Json)
                 setBody(service)
             }.body()
@@ -451,7 +437,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: disableProducts")
 
-            client.post(API_URL + "products/disable") {
+            client.post(LEGACY_API_URL + "products/disable") {
                 contentType(ContentType.Application.Json)
                 setBody(product)
             }.body()
@@ -466,10 +452,10 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: editSaleDetail")
 
-            client.post(API_URL + "sales/edit/detail") {
+            client.post(SECURE_SALES_URL + "edit/detail") {
                 contentType(ContentType.Application.Json)
                 setBody(saleDetailEditApiRequest)
-            }.body()
+            }.bodyOrThrow<MessageResponse>().message
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -482,7 +468,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: editService")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "services/edit") {
+            client.post(LEGACY_API_URL + "services/edit") {
                 contentType(ContentType.Application.Json)
                 setBody(service)
             }.body<Service>()
@@ -498,7 +484,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: editProduct")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "products/edit") {
+            client.post(LEGACY_API_URL + "products/edit") {
                 contentType(ContentType.Application.Json)
                 setBody(product)
             }.body<Product>()
@@ -512,7 +498,7 @@ class KtorLassoApi(
     override suspend fun editEmployee(employee: Employee): String? {
         return try {
             println("KtorBeautyApi: editEmployee")
-            client.post(API_URL + "employees/edit/${employee.id}") {
+            client.post(LEGACY_API_URL + "employees/edit/${employee.id}") {
                 contentType(ContentType.Application.Json)
                 setBody(employee)
             }.body()
@@ -527,7 +513,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getCashClosure")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.post(API_URL + "cash_closure/create") {
+            client.post(LEGACY_API_URL + "cash_closure/create") {
                 contentType(ContentType.Application.Json)
                 setBody(CreateCashClosureRequest(partnerId, ""))
             }.body()
@@ -542,7 +528,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getCashClosure")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "cash_closure/all?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "cash_closure/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -553,10 +539,10 @@ class KtorLassoApi(
     override suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String? {
         return try {
             println("KtorBeautyApi: editSaleDate")
-            client.post(API_URL + "sales/edit/date/${saleEditDateRequest.saleId}") {
+            client.post(SECURE_SALES_URL + "edit/${saleEditDateRequest.saleId}") {
                 contentType(ContentType.Application.Json)
                 setBody(saleEditDateRequest)
-            }.body()
+            }.bodyOrThrow<MessageResponse>().message
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -568,7 +554,7 @@ class KtorLassoApi(
         return try {
             println("KtorBeautyApi: getProductCategories")
             val partnerId = sessionRepository.getPartnerId() ?: 0
-            client.get(API_URL + "product_categories/all?partnerId=$partnerId").body()
+            client.get(LEGACY_API_URL + "product_categories/all?partnerId=$partnerId").body()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -581,7 +567,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: registerProductCategory")
             val partnerId = sessionRepository.getPartnerId() ?: 0
 
-            client.post(API_URL + "product_categories/new") {
+            client.post(LEGACY_API_URL + "product_categories/new") {
                 contentType(ContentType.Application.Json)
                 setBody(productCategory.copy(partnerId = partnerId))
             }.body<ProductCategory>()
@@ -601,7 +587,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: getSalesByProductCategory")
             val partnerId = sessionRepository.getPartnerId() ?: 0
             client.get(
-                API_URL + "reports/products-by-category?" +
+                LEGACY_API_URL + "reports/products-by-category?" +
                         "partnerId=$partnerId" +
                         "&startEpoch=$start" +
                         "&endEpoch=$end" +
@@ -624,7 +610,7 @@ class KtorLassoApi(
             println("KtorBeautyApi: calculateCommissions")
             val partnerId = sessionRepository.getPartnerId() ?: 0
             client.get(
-                API_URL + "commissions/calculate?" +
+                LEGACY_API_URL + "commissions/calculate?" +
                         "partnerId=$partnerId" +
                         "&employeeId=$employeeId" +
                         "&startEpoch=$start" +
@@ -635,5 +621,16 @@ class KtorLassoApi(
             e.printStackTrace()
             emptyList()
         }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun currentMonthRange(): Pair<Long, Long> {
+        val timeZone = TimeZone.currentSystemDefault()
+        val currentDate = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
+            .toLocalDateTime(timeZone)
+            .date
+        val startDate = LocalDate(currentDate.year, currentDate.month, 1)
+        return startDate.atStartOfDayIn(timeZone).toEpochMilliseconds() to
+            startDate.plus(1, DateTimeUnit.MONTH).atStartOfDayIn(timeZone).toEpochMilliseconds()
     }
 }

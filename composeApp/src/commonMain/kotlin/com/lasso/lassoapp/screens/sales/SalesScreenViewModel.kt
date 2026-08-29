@@ -15,6 +15,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToLong
 import kotlin.time.ExperimentalTime
 import kotlinx.datetime.*
+import kotlin.time.Clock
 
 class SalesScreenViewModel(private val lassoApi: LassoApi) : ViewModel() {
     private val _state = MutableStateFlow(SalesScreenState())
@@ -28,9 +29,17 @@ class SalesScreenViewModel(private val lassoApi: LassoApi) : ViewModel() {
     @OptIn(ExperimentalTime::class)
     fun getThisMonthSales() {
         _state.value = _state.value.copy(isLoading = true)
+        val timeZone = TimeZone.currentSystemDefault()
+        val today = Clock.System.now().toLocalDateTime(timeZone).date
+        val firstDayOfMonth = LocalDate(today.year, today.month, 1)
+        val start = firstDayOfMonth.atStartOfDayIn(timeZone).toEpochMilliseconds()
+        val end = firstDayOfMonth
+            .plus(1, DateTimeUnit.MONTH)
+            .atStartOfDayIn(timeZone)
+            .toEpochMilliseconds()
 
         viewModelScope.launch {
-            val sales = lassoApi.getThisMonthSales()
+            val sales = lassoApi.getSalesBetweenDates(start, end)
                 .sortedByDescending { it.id }
                 .map {
                     it.copy(

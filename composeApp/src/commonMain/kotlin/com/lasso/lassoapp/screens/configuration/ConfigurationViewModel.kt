@@ -28,18 +28,9 @@ class ConfigurationViewModel(private val lassoApi: LassoApi, private val session
 
     fun logout() {
         viewModelScope.launch {
+            runCatching { lassoApi.logout() }
             sessionRepository.removeSession()
             _state.value = _state.value.copy(logoutEventCompleted = true)
-        }
-    }
-
-    fun getSessionByEmployeeId(employeeId: Int) {
-        viewModelScope.launch {
-            lassoApi.getEmployeeById(employeeId)?.let {
-                sessionRepository.saveSession(it)
-            }
-
-            _state.value = _state.value.copy(session = sessionRepository.getSession())
         }
     }
 

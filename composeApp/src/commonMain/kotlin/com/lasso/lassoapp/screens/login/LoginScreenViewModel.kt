@@ -23,13 +23,14 @@ class LoginScreenViewModel(
 
             val loginResult = lassoApi.login(Login(username, password))
 
-            loginResult.employee?.let {
-                println("DIEGO: login result $it")
-                sessionRepository.saveSession(it)
+            val employee = loginResult.employee
+            val token = loginResult.token
+            if (employee != null && !token.isNullOrBlank()) {
+                sessionRepository.saveSession(employee, token)
                 onLoginSuccess()
-            } ?: run {
+            } else {
                 _state.value = _state.value.copy(
-                    error = loginResult.error ?: "Unknown error",
+                    error = loginResult.error ?: "No se recibió un token de sesión válido",
                     isLoading = false
                 )
             }

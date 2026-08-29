@@ -10,7 +10,9 @@ data class Login(
 
 @Serializable
 data class LoginResponse(
+    val success: Boolean? = null,
     val message: String? = null,
+    val token: String? = null,
     val employee: Employee? = null,
     val error: String? = null
 )

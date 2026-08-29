@@ -26,7 +26,10 @@ import com.lasso.lassoapp.screens.sales.v2.SalesScreenViewModelV2
 import com.lasso.lassoapp.screens.sales.detail.SaleDetailsDialogScreenViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.plugin
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
@@ -35,16 +38,25 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 val dataModule = module {
+    single<SessionRepository> { SessionRepository(get()) }
+
     single {
         val json = Json { ignoreUnknownKeys = true }
-        HttpClient {
+        val sessionRepository: SessionRepository = get()
+        val client = HttpClient {
             install(ContentNegotiation) {
                 json(json, contentType = ContentType.Application.Json)
             }
         }
+        client.plugin(HttpSend).intercept { request ->
+            sessionRepository.getToken()?.let { token ->
+                request.headers.append(HttpHeaders.Authorization, "Bearer $token")
+            }
+            execute(request)
+        }
+        client
     }
 
-    single<SessionRepository> { SessionRepository(get()) }
     single<LassoApi> { KtorLassoApi(get(), get()) }
 }
 
