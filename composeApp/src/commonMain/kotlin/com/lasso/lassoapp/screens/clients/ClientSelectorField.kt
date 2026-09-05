@@ -1,4 +1,4 @@
-package com.lasso.lassoapp.screens.calendar.dialog
+package com.lasso.lassoapp.screens.clients
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -42,15 +42,16 @@ import org.jetbrains.compose.resources.painterResource
 private val WhatsAppGreen = Color(0xFF25D366)
 
 @Composable
-internal fun AppointmentClientField(
+fun ClientSelectorField(
     selectedClient: Client?,
     enabled: Boolean,
     onSearchClick: () -> Unit,
     onClientRemoved: () -> Unit,
     onNewClient: () -> Unit,
+    label: String = "Cliente (opcional)",
 ) {
     val uriHandler = LocalUriHandler.current
-    AppointmentFieldLabel("Cliente (opcional)")
+    ClientSelectorLabel(label)
     if (selectedClient != null) {
         val whatsAppUrl = selectedClient.phone?.let {
             buildWhatsAppUrl(phone = it, message = "Hola ${selectedClient.name}")
@@ -143,9 +144,7 @@ internal fun AppointmentClientField(
         Button(
             onClick = onNewClient,
             enabled = enabled,
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
+            modifier = Modifier.weight(1f).height(48.dp),
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = LassoPrimary),
             contentPadding = PaddingValues(horizontal = 12.dp),
@@ -153,4 +152,15 @@ internal fun AppointmentClientField(
             Text("Nuevo", fontSize = 14.sp)
         }
     }
+}
+
+@Composable
+private fun ClientSelectorLabel(text: String) {
+    Text(
+        text = text,
+        color = com.lasso.lassoapp.ui.theme.LassoTextPrimary,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        modifier = Modifier.padding(bottom = 7.dp),
+    )
 }

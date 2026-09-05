@@ -66,6 +66,9 @@ import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
+import com.lasso.lassoapp.screens.clients.ClientSelectorField
+import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
+import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
 import com.lasso.lassoapp.screens.sales.detail.edit_dialog.SaleDetailEditDialogScreen
 import com.lasso.lassoapp.screens.utils.formatDdMmYyyy
 import com.lasso.lassoapp.ui.theme.LassoPrimary
@@ -78,6 +81,8 @@ import com.lasso.lassoapp.utils.formatCurrency
 import com.lasso.lassoapp.utils.parseCurrency
 import org.koin.compose.viewmodel.koinViewModel
 
+private val SaleDetailCardBackground = Color(0xFFE2F8F5)
+
 @Composable
 fun SaleDetailsDialogScreen(
     sale: SaleApiResponse,
@@ -89,6 +94,7 @@ fun SaleDetailsDialogScreen(
     var detailPendingDelete by remember { mutableStateOf<SaleDetailApiResponse?>(null) }
     var confirmSaleDelete by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showClientSearch by remember(sale.id) { mutableStateOf(false) }
 
     LaunchedEffect(sale.id) { viewModel.setSale(sale) }
 
@@ -126,9 +132,16 @@ fun SaleDetailsDialogScreen(
                                 .fillMaxWidth()
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            //verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
-                            ParentFields(state, onClientSelected = viewModel::selectClient, onEmployeeSelected = viewModel::selectEmployee, onDateClick = { showDatePicker = true })
+                            ParentFields(
+                                state = state,
+                                onClientSearchClick = { showClientSearch = true },
+                                onClientRemoved = { viewModel.selectClient(null) },
+                                onNewClient = viewModel::showNewClientDialog,
+                                onEmployeeSelected = viewModel::selectEmployee,
+                                onDateClick = { showDatePicker = true },
+                            )
                             if (state.isLoadingOptions) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -140,14 +153,17 @@ fun SaleDetailsDialogScreen(
                                     Text("Cargando datos de la venta…", color = LassoTextMuted, fontSize = 13.sp)
                                 }
                             }
+                            Spacer(Modifier.height(8.dp))
                             SaleDetailsSection(
                                 details = currentSale.saleDetails,
                                 enabled = !state.isBusy && !state.isLoadingOptions,
                                 onEdit = { editingDetail = it },
-                                onDelete = { detailPendingDelete = it },
                             )
+                            Spacer(Modifier.height(8.dp))
                             PaymentsSection(currentSale.payments)
+                            Spacer(Modifier.height(8.dp))
                             SaleTotalsCard(currentSale)
+                            Spacer(Modifier.height(8.dp))
                             state.error?.let { error ->
                                 Text(
                                     text = error,
@@ -227,13 +243,34 @@ fun SaleDetailsDialogScreen(
         }
     }
 
+    if (showClientSearch) {
+        SearchClientDialog(
+            clients = state.clients,
+            onDismiss = { showClientSearch = false },
+            onClientSelected = { viewModel.selectClient(it.id) },
+            onNewClient = viewModel::showNewClientDialog,
+        )
+    }
+
+    if (state.isNewClientDialogDisplayed) {
+        ClientDialog(
+            client = null,
+            isLoading = state.isSavingClient,
+            error = state.clientSaveError,
+            onDismiss = viewModel::hideNewClientDialog,
+            onSave = viewModel::createClient,
+        )
+    }
+
     editingDetail?.let { detail ->
         SaleDetailEditDialogScreen(
             selectedSaleDetail = detail,
             isLoading = state.isDetailOperationRunning,
+            error = state.error,
             onConfirmEditChanges = { request ->
                 viewModel.editSaleDetail(request) { editingDetail = null }
             },
+            onDelete = { detailPendingDelete = detail },
             onDismiss = { editingDetail = null },
         )
     }
@@ -244,7 +281,10 @@ fun SaleDetailsDialogScreen(
             message = "¿Eliminar ${detail.displayName()} de esta venta?",
             enabled = !state.isDetailOperationRunning,
             onConfirm = {
-                viewModel.deleteSaleDetail(detail) { detailPendingDelete = null }
+                viewModel.deleteSaleDetail(detail) {
+                    detailPendingDelete = null
+                    onDismiss(true)
+                }
             },
             onDismiss = { detailPendingDelete = null },
         )
@@ -264,39 +304,37 @@ fun SaleDetailsDialogScreen(
 @Composable
 private fun ParentFields(
     state: SalesDetailScreenState,
-    onClientSelected: (Int?) -> Unit,
+    onClientSearchClick: () -> Unit,
+    onClientRemoved: () -> Unit,
+    onNewClient: () -> Unit,
     onEmployeeSelected: (Int) -> Unit,
     onDateClick: () -> Unit,
 ) {
     val draft = state.draft ?: return
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column(Modifier.weight(1f)) {
-            FieldLabel("Cliente")
-            PickerField(
-                value = draft.clientId?.let { id -> state.clients.firstOrNull { it.id == id }?.name ?: "Cliente #$id" } ?: "Sin cliente",
-                options = listOf(null to "Sin cliente") + state.clients.map { it.id to it.name },
-                enabled = !state.isBusy && !state.isLoadingOptions,
-                onSelected = onClientSelected,
-            )
-        }
-        Column(Modifier.weight(1f)) {
-            FieldLabel("Empleado")
-            PickerField(
-                value = draft.employeeId?.let { id -> state.employees.firstOrNull { it.id == id }?.name } ?: "Seleccionar",
-                options = state.employees.map { it.id to it.name },
-                enabled = !state.isBusy && !state.isLoadingOptions,
-                onSelected = { it?.let(onEmployeeSelected) },
-            )
-        }
-    }
-    Spacer(Modifier.height(12.dp))
+    val enabled = !state.isBusy && !state.isLoadingOptions
+    ClientSelectorField(
+        selectedClient = draft.clientId?.let { id -> state.clients.firstOrNull { it.id == id } },
+        enabled = enabled,
+        onSearchClick = onClientSearchClick,
+        onClientRemoved = onClientRemoved,
+        onNewClient = onNewClient,
+    )
+    Spacer(Modifier.height(14.dp))
+    FieldLabel("Empleado")
+    PickerField(
+        value = draft.employeeId?.let { id -> state.employees.firstOrNull { it.id == id }?.name } ?: "Seleccionar",
+        options = state.employees.map { it.id to it.name },
+        enabled = enabled,
+        onSelected = { it?.let(onEmployeeSelected) },
+    )
+    Spacer(Modifier.height(14.dp))
     FieldLabel("Fecha")
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
             .background(LassoSurfaceVariant, RoundedCornerShape(24.dp))
-            .clickable(enabled = !state.isBusy && !state.isLoadingOptions, onClick = onDateClick)
+            .clickable(enabled = enabled, onClick = onDateClick)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -346,34 +384,30 @@ private fun SaleDetailsSection(
     details: List<SaleDetailApiResponse>,
     enabled: Boolean,
     onEdit: (SaleDetailApiResponse) -> Unit,
-    onDelete: (SaleDetailApiResponse) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         FieldLabel("Artículos")
         details.forEach { detail ->
             Card(
-                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp),
+                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 96.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = LassoSurfaceVariant),
+                colors = CardDefaults.cardColors(containerColor = SaleDetailCardBackground),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text(detail.displayName(), color = LassoTextPrimary, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(detail.displayName(), color = LassoTextPrimary, fontWeight = FontWeight.SemiBold)
                         Text("Cantidad: ${detail.quantity}", color = LassoTextMuted, fontSize = 13.sp)
+                        Text(
+                            "Precio unitario: ${detail.price.parseCurrency().formatCurrency(includeSymbol = true)}",
+                            color = LassoTextMuted,
+                            fontSize = 13.sp,
+                        )
                     }
-                    Text(
-                        (detail.price.parseCurrency() * detail.quantity).formatCurrency(includeSymbol = true),
-                        color = LassoPrimary,
-                        fontWeight = FontWeight.Bold,
-                    )
                     IconButton(onClick = { onEdit(detail) }, enabled = enabled) {
                         Icon(Icons.Default.Edit, contentDescription = "Editar artículo", tint = LassoPrimary)
-                    }
-                    IconButton(onClick = { onDelete(detail) }, enabled = enabled) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar artículo", tint = LassoTertiary)
                     }
                 }
             }
@@ -390,7 +424,7 @@ private fun PaymentsSection(payments: List<PaymentApiResponse>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 56.dp)
-                    .background(LassoSurfaceVariant, RoundedCornerShape(16.dp))
+                    .background(SaleDetailCardBackground, RoundedCornerShape(24.dp))
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -432,7 +466,13 @@ private fun TotalRow(label: String, value: String, color: Color = LassoTextMuted
 
 @Composable
 private fun FieldLabel(text: String) {
-    Text(text, color = LassoTextPrimary, fontSize = 15.sp, modifier = Modifier.padding(bottom = 6.dp))
+    Text(
+        text = text,
+        color = LassoTextPrimary,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        modifier = Modifier.padding(bottom = 7.dp),
+    )
 }
 
 @Composable

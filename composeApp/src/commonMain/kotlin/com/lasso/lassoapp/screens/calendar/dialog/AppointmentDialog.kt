@@ -40,6 +40,7 @@ import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.Service
 import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
+import com.lasso.lassoapp.screens.clients.ClientSelectorField
 import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.search_service.SearchServiceDialog
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
@@ -107,7 +108,7 @@ fun AppointmentDialog(
                             .weight(1f)
                             .verticalScroll(formScrollState),
                     ) {
-                        AppointmentClientField(
+                        ClientSelectorField(
                             selectedClient = formState.selectedClient,
                             enabled = !isBusy,
                             onSearchClick = { showClientSearch = true },

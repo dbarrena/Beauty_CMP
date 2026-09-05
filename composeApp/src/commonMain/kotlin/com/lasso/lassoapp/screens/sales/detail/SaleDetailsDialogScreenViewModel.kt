@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.Client
+import com.lasso.lassoapp.model.ClientWriteRequest
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
@@ -79,6 +80,41 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
         _state.update { state -> state.copy(draft = state.draft?.copy(date = date)) }
     }
 
+    fun showNewClientDialog() {
+        _state.update { it.copy(isNewClientDialogDisplayed = true, clientSaveError = null) }
+    }
+
+    fun hideNewClientDialog() {
+        if (_state.value.isSavingClient) return
+        _state.update { it.copy(isNewClientDialogDisplayed = false, clientSaveError = null) }
+    }
+
+    fun createClient(request: ClientWriteRequest) {
+        if (_state.value.isSavingClient) return
+        viewModelScope.launch {
+            _state.update { it.copy(isSavingClient = true, clientSaveError = null) }
+            runCatching { lassoApi.registerClient(request) }
+                .onSuccess { client ->
+                    _state.update { state ->
+                        state.copy(
+                            clients = (state.clients + client).distinctBy(Client::id).sortedBy(Client::name),
+                            draft = state.draft?.copy(clientId = client.id),
+                            isSavingClient = false,
+                            isNewClientDialogDisplayed = false,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _state.update {
+                        it.copy(
+                            isSavingClient = false,
+                            clientSaveError = throwable.message ?: "No se pudo guardar el cliente.",
+                        )
+                    }
+                }
+        }
+    }
+
     @OptIn(ExperimentalTime::class)
     fun saveParent(onSaved: () -> Unit) {
         val currentState = _state.value
@@ -96,11 +132,9 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
                         employeeId = employeeId,
                     ),
                 )
-            }.onSuccess { updatedSale ->
+            }.onSuccess {
                 _state.update {
                     it.copy(
-                        sale = updatedSale,
-                        draft = updatedSale.toDraft(),
                         isSavingParent = false,
                         dismissShouldReload = true,
                         error = null,
@@ -226,6 +260,9 @@ data class SalesDetailScreenState(
     val isSavingParent: Boolean = false,
     val isDetailOperationRunning: Boolean = false,
     val isDeletingSale: Boolean = false,
+    val isNewClientDialogDisplayed: Boolean = false,
+    val isSavingClient: Boolean = false,
+    val clientSaveError: String? = null,
     val dismissShouldReload: Boolean = false,
     val error: String? = null,
 ) {

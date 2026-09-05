@@ -1,18 +1,22 @@
 package com.lasso.lassoapp.screens.sales.detail.edit_dialog
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -21,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +45,7 @@ import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
 import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.ui.theme.LassoTertiary
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 
@@ -47,7 +53,9 @@ import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 fun SaleDetailEditDialogScreen(
     selectedSaleDetail: SaleDetailApiResponse,
     isLoading: Boolean,
+    error: String?,
     onConfirmEditChanges: (SaleDetailEditApiRequest) -> Unit,
+    onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     var quantity by remember(selectedSaleDetail.id) {
@@ -104,30 +112,59 @@ fun SaleDetailEditDialogScreen(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     )
+                    error?.let {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = it,
+                            color = LassoTertiary,
+                            fontSize = 14.sp,
+                        )
+                    }
                     Spacer(Modifier.height(20.dp))
-                    Button(
-                        onClick = {
-                            onConfirmEditChanges(
-                                SaleDetailEditApiRequest(
-                                    id = selectedSaleDetail.id,
-                                    quantity = requireNotNull(parsedQuantity),
-                                    price = requireNotNull(parsedPrice),
-                                ),
-                            )
-                        },
-                        enabled = isValid && !isLoading,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = LassoPrimary),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
+                        Button(
+                            onClick = {
+                                onConfirmEditChanges(
+                                    SaleDetailEditApiRequest(
+                                        id = selectedSaleDetail.id,
+                                        quantity = requireNotNull(parsedQuantity),
+                                        price = requireNotNull(parsedPrice),
+                                    ),
+                                )
+                            },
+                            enabled = isValid && !isLoading,
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = LassoPrimary),
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Text("Guardar", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                            }
+                        }
+                        OutlinedButton(
+                            onClick = onDelete,
+                            enabled = !isLoading,
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            border = BorderStroke(1.dp, LassoTertiary),
+                            contentPadding = PaddingValues(0.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = LassoTertiary),
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Eliminar artículo",
                                 modifier = Modifier.size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp,
                             )
-                        } else {
-                            Text("Guardar", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         }
                     }
                     TextButton(

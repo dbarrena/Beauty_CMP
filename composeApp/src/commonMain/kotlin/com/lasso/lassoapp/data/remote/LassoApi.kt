@@ -116,7 +116,7 @@ interface LassoApi {
     ): List<CommissionCalculationResponse>
 
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
-    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse
+    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun editService(service: Service): Service
     suspend fun editProduct(product: Product): Product
@@ -465,7 +465,7 @@ class KtorLassoApi(
         }
     }
 
-    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse {
+    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String {
         println("KtorLassoApi: editSale $saleId")
         return client.post(API_URL + "sales/edit/$saleId") {
             contentType(ContentType.Application.Json)
@@ -511,7 +511,7 @@ class KtorLassoApi(
             client.post(LEGACY_API_URL + "employees/edit/${employee.id}") {
                 contentType(ContentType.Application.Json)
                 setBody(employee)
-            }.body()
+            }.bodyOrThrow()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
