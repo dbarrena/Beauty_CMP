@@ -55,6 +55,7 @@ fun SalesTransactionCard(
     isAdmin: Boolean,
 ) {
     val discount = sale.discountAmountValue()
+    val clientLabel = sale.clientName?.takeIf(String::isNotBlank) ?: sale.clientId?.let { "Cliente #$it" }
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -86,9 +87,9 @@ fun SalesTransactionCard(
                         )
                     }
                     Spacer(Modifier.height(6.dp))
-                    sale.clientId?.let { id ->
+                    clientLabel?.let { name ->
                         Text(
-                            text = "Cliente #$id",
+                            text = name,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurface,
                         )

@@ -467,7 +467,7 @@ class KtorLassoApi(
 
     override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String {
         println("KtorLassoApi: editSale $saleId")
-        return client.post(API_URL + "sales/edit/$saleId") {
+        return client.post(SECURE_SALES_URL + "edit/$saleId") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.bodyOrThrow()
