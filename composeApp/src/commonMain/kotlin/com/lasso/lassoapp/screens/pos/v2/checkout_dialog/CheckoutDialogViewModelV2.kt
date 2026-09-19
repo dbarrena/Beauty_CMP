@@ -94,6 +94,8 @@ class CheckoutDialogViewModelV2(
     }
 
     fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<PosPayment>) {
+        if (_state.value.isLoading) return
+
         val selectedEmployeeId = _state.value.selectedEmployee?.id
         val saleDetails = items.map { selectedPosItem ->
             val item = selectedPosItem.lassoItem
@@ -106,8 +108,8 @@ class CheckoutDialogViewModelV2(
                 employeeId = selectedEmployeeId
             )
         }
+        _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val payments = unprocessedPayments.map {
                     Payment(

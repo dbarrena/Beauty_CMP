@@ -49,8 +49,6 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.jetbrains.kotlinx.datetime)
-            implementation(libs.kmp.searchable.dropdown)
-
             implementation(libs.navigation.compose)
             implementation(libs.lifecycle.runtime.compose)
             implementation(libs.material.icons.extended)
@@ -79,12 +77,12 @@ room {
 
 android {
     namespace = "com.lasso.lassoapp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lasso.lassoapp"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 13
         versionName = "1.5.4"
     }
@@ -95,7 +93,8 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
     compileOptions {
