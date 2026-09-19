@@ -70,7 +70,7 @@ class HomeScreenViewModel(
                     startWeekEpoch = startWeekEpoch,
                     endWeekEpoch = endWeekEpoch
                 )
-                // v2 dashboard does not show top sellers; skip getHomeTopSellers to save traffic.
+                // The secure dashboard contract contains the metrics used by the v2 screen.
                 _state.value =
                     _state.value.copy(
                         home = home,
