@@ -79,7 +79,7 @@ interface LassoApi {
     suspend fun getSalesBetweenDates(start: Long, end: Long): List<SaleApiResponse>
     suspend fun registerProduct(product: Product): Product
     suspend fun registerService(service: Service): Service
-    suspend fun registerSale(sale: Sale): Sale
+    suspend fun registerSale(sale: Sale): SaleApiResponse
     suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee
 
     suspend fun getSale(id: Int): SaleApiResponse?
@@ -270,13 +270,13 @@ class KtorLassoApi(
         }
     }
 
-    override suspend fun registerSale(sale: Sale): Sale {
+    override suspend fun registerSale(sale: Sale): SaleApiResponse {
         return try {
             println("KtorBeautyApi: registerSale")
             client.post(SECURE_SALES_URL + "new") {
                 contentType(ContentType.Application.Json)
                 setBody(sale.copy(partnerId = null))
-            }.bodyOrThrow<Sale>()
+            }.bodyOrThrow<SaleApiResponse>()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -467,7 +467,7 @@ class KtorLassoApi(
 
     override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse {
         println("KtorLassoApi: editSale $saleId")
-        return client.post(API_URL + "sales/edit/$saleId") {
+        return client.post(SECURE_SALES_URL + "sales/edit/$saleId") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.bodyOrThrow()

@@ -72,4 +72,5 @@ data class SaleEditApiRequest(
     @SerialName("created_at") val createdAt: Long,
     @SerialName("client_id") val clientId: Int?,
     @SerialName("employee_id") val employeeId: Int,
+    val payments: List<Payment>? = null,
 )

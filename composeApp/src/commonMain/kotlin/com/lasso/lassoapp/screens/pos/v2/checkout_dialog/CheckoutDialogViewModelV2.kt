@@ -93,7 +93,7 @@ class CheckoutDialogViewModelV2(
         _state.update { it.copy(selectedEmployee = employee) }
     }
 
-    fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<PosPayment>) {
+    fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<CheckoutPayment>) {
         val selectedEmployeeId = _state.value.selectedEmployee?.id
         val saleDetails = items.map { selectedPosItem ->
             val item = selectedPosItem.lassoItem
@@ -150,8 +150,4 @@ class CheckoutDialogViewModelV2(
         val discountAmount: Double? = null
     )
 
-    data class PosPayment(
-        val paymentType: CheckoutPaymentMethod,
-        val total: Double
-    )
 }

@@ -70,6 +70,7 @@ import com.lasso.lassoapp.screens.clients.ClientSelectorField
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
 import com.lasso.lassoapp.screens.sales.detail.edit_dialog.SaleDetailEditDialogScreen
+import com.lasso.lassoapp.screens.sales.detail.edit_dialog.EditSalePaymentsDialog
 import com.lasso.lassoapp.screens.utils.formatDdMmYyyy
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoSecondary
@@ -95,6 +96,7 @@ fun SaleDetailsDialogScreen(
     var confirmSaleDelete by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showClientSearch by remember(sale.id) { mutableStateOf(false) }
+    var showPaymentEditor by remember(sale.id) { mutableStateOf(false) }
 
     LaunchedEffect(sale.id) { viewModel.setSale(sale) }
 
@@ -160,7 +162,7 @@ fun SaleDetailsDialogScreen(
                                 onEdit = { editingDetail = it },
                             )
                             Spacer(Modifier.height(8.dp))
-                            PaymentsSection(currentSale.payments)
+                            PaymentsSection(currentSale.payments, enabled = !state.isBusy, onEdit = { showPaymentEditor = true })
                             Spacer(Modifier.height(8.dp))
                             SaleTotalsCard(currentSale)
                             Spacer(Modifier.height(8.dp))
@@ -213,7 +215,7 @@ fun SaleDetailsDialogScreen(
                             enabled = !state.isBusy,
                             modifier = Modifier.fillMaxWidth().height(48.dp),
                         ) {
-                            Text("Cancelar", color = LassoTextMuted, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                            Text("Cerrar", color = LassoTextMuted, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         }
                     }
 
@@ -259,6 +261,17 @@ fun SaleDetailsDialogScreen(
             error = state.clientSaveError,
             onDismiss = viewModel::hideNewClientDialog,
             onSave = viewModel::createClient,
+        )
+    }
+
+    if (showPaymentEditor) state.sale?.let { currentSale ->
+        EditSalePaymentsDialog(
+            payments = currentSale.payments,
+            total = currentSale.netTotal(),
+            isSaving = state.isSavingPayments,
+            error = state.paymentSaveError,
+            onDismiss = { if (!state.isSavingPayments) showPaymentEditor = false },
+            onSave = { payments -> viewModel.savePayments(payments) { showPaymentEditor = false } },
         )
     }
 
@@ -416,9 +429,14 @@ private fun SaleDetailsSection(
 }
 
 @Composable
-private fun PaymentsSection(payments: List<PaymentApiResponse>) {
+private fun PaymentsSection(payments: List<PaymentApiResponse>, enabled: Boolean, onEdit: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FieldLabel("Métodos de pago")
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            FieldLabel("Métodos de pago")
+            TextButton(onClick = onEdit, enabled = enabled) {
+                Text("Editar", color = LassoPrimary, fontWeight = FontWeight.SemiBold)
+            }
+        }
         payments.forEach { payment ->
             Row(
                 modifier = Modifier
@@ -436,6 +454,9 @@ private fun PaymentsSection(payments: List<PaymentApiResponse>) {
         }
     }
 }
+
+private fun SaleApiResponse.netTotal(): Double =
+    (total.parseCurrency() - (discountAmount?.parseCurrency() ?: 0.0)).coerceAtLeast(0.0)
 
 @Composable
 private fun SaleTotalsCard(sale: SaleApiResponse) {

@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.model.ClientWriteRequest
 import com.lasso.lassoapp.model.Employee
+import com.lasso.lassoapp.model.Payment
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
@@ -173,6 +174,48 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
         }
     }
 
+    @OptIn(ExperimentalTime::class)
+    fun savePayments(payments: List<Payment>, onSaved: () -> Unit) {
+        val currentState = _state.value
+        val sale = currentState.sale ?: return
+        val draft = currentState.draft ?: return
+        val employeeId = draft.employeeId ?: sale.saleDetails.firstOrNull()?.employeeId ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isSavingPayments = true, paymentSaveError = null) }
+            runCatching {
+                lassoApi.editSale(
+                    saleId = sale.id,
+                    request = SaleEditApiRequest(
+                        createdAt = sale.createdAt.withDate(draft.date),
+                        clientId = draft.clientId,
+                        employeeId = employeeId,
+                        payments = payments,
+                    ),
+                )
+                lassoApi.getSale(sale.id) ?: error("No se pudo actualizar la venta.")
+            }.onSuccess { refreshedSale ->
+                _state.update {
+                    it.copy(
+                        sale = refreshedSale,
+                        draft = refreshedSale.toDraft(),
+                        isSavingPayments = false,
+                        paymentSaveError = null,
+                        dismissShouldReload = true,
+                    )
+                }
+                onSaved()
+            }.onFailure { throwable ->
+                _state.update {
+                    it.copy(
+                        isSavingPayments = false,
+                        paymentSaveError = throwable.message ?: "No se pudieron guardar los pagos.",
+                    )
+                }
+            }
+        }
+    }
+
     fun deleteSaleDetail(detail: SaleDetailApiResponse, onDeleted: () -> Unit) {
         viewModelScope.launch {
             _state.update { it.copy(isDetailOperationRunning = true, error = null) }
@@ -263,11 +306,13 @@ data class SalesDetailScreenState(
     val isNewClientDialogDisplayed: Boolean = false,
     val isSavingClient: Boolean = false,
     val clientSaveError: String? = null,
+    val isSavingPayments: Boolean = false,
+    val paymentSaveError: String? = null,
     val dismissShouldReload: Boolean = false,
     val error: String? = null,
 ) {
     val isBusy: Boolean
-        get() = isSavingParent || isDetailOperationRunning || isDeletingSale
+        get() = isSavingParent || isDetailOperationRunning || isDeletingSale || isSavingPayments
 
     val hasParentChanges: Boolean
         get() {
