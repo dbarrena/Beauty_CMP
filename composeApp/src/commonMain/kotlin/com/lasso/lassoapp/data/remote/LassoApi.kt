@@ -116,7 +116,7 @@ interface LassoApi {
     ): List<CommissionCalculationResponse>
 
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
-    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String
+    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun editService(service: Service): Service
     suspend fun editProduct(product: Product): Product
@@ -465,9 +465,9 @@ class KtorLassoApi(
         }
     }
 
-    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String {
+    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): SaleApiResponse {
         println("KtorLassoApi: editSale $saleId")
-        return client.post(SECURE_SALES_URL + "edit/$saleId") {
+        return client.post(API_URL + "sales/edit/$saleId") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.bodyOrThrow()
