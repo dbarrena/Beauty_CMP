@@ -129,7 +129,7 @@ class ProductCatalogViewModel(
                 }
 
                 is Product -> {
-                    lassoApi.diableProduct(item)
+                    lassoApi.disableProduct(item)
                 }
             }
             hideDeleteProductServiceConfirmation()

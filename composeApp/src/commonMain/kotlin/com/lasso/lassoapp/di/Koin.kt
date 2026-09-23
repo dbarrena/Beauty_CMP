@@ -56,7 +56,7 @@ val dataModule = module {
         client
     }
 
-    single<LassoApi> { KtorLassoApi(get(), get()) }
+    single<LassoApi> { KtorLassoApi(get()) }
 }
 
 val viewModelModule = module {

@@ -181,6 +181,15 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: 
                 )
             }
 
+            state.value.error?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(

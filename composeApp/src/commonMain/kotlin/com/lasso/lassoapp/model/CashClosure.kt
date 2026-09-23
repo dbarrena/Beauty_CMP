@@ -19,8 +19,7 @@ data class CashClosureItem(
 
 @Serializable
 data class CreateCashClosureRequest(
-    val partnerId: Int,
-    val notes: String
+    val notes: String = "",
 )
 
 @Serializable
