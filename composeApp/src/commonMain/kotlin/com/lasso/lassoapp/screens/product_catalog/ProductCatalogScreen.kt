@@ -2,6 +2,9 @@ package com.lasso.lassoapp.screens.product_catalog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
 import com.lasso.lassoapp.screens.product_catalog.dialog.delete.DeleteProductConfirmationDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.edit.EditProductServiceDialog
@@ -56,5 +59,16 @@ fun ProductCatalogScreen() {
         ) {
             viewModel.onCategorySaved()
         }
+    }
+
+    state.value.operationError?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::clearOperationError,
+            title = { Text("No se pudo desactivar") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = viewModel::clearOperationError) { Text("Aceptar") }
+            },
+        )
     }
 }

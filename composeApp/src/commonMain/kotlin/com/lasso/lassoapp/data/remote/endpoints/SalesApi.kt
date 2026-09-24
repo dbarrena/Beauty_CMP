@@ -7,7 +7,9 @@ import com.lasso.lassoapp.model.MessageResponse
 import com.lasso.lassoapp.model.Sale
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
+import com.lasso.lassoapp.model.SaleEditApiRequest
 import com.lasso.lassoapp.model.SaleEditDateApiRequest
+import com.lasso.lassoapp.model.SalePaymentsEditApiRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -22,6 +24,8 @@ interface SalesApi {
     suspend fun getSalesBetweenDates(start: Long, end: Long): List<SaleApiResponse>
     suspend fun registerSale(sale: Sale): SaleApiResponse
     suspend fun getSale(id: Int): SaleApiResponse?
+    suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String
+    suspend fun editSalePayments(saleId: Int, request: SalePaymentsEditApiRequest): String
     suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String?
     suspend fun editSaleDetail(saleDetailEditApiRequest: SaleDetailEditApiRequest): String?
     suspend fun deleteSale(saleId: Int): String?
@@ -43,6 +47,18 @@ internal class KtorSalesApi(private val client: HttpClient) : SalesApi {
     override suspend fun getSale(id: Int): SaleApiResponse? = recoverWith(null) {
         client.get(SALES_URL + "get/$id").bodyOrThrow()
     }
+
+    override suspend fun editSale(saleId: Int, request: SaleEditApiRequest): String =
+        client.post(SALES_URL + "edit/$saleId") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow<MessageResponse>().message
+
+    override suspend fun editSalePayments(saleId: Int, request: SalePaymentsEditApiRequest): String =
+        client.post(SALES_URL + "edit/$saleId") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow<MessageResponse>().message
 
     override suspend fun editSaleDate(saleEditDateRequest: SaleEditDateApiRequest): String? =
         recoverWith(null) {

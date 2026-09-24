@@ -68,6 +68,7 @@ import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 import lassoapp.composeapp.generated.resources.sales_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.roundToLong
 
 @Composable
 fun CheckoutSplitPaymentContent(
@@ -90,10 +91,12 @@ fun CheckoutSplitPaymentContent(
     var anticipo by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Advance)) }
     var showEmployeePicker by remember { mutableStateOf(false) }
 
-    val sumEntered = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
-        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo).sumOf { parseMoney(it) }
+    val enteredCents = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
+        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo)
+            .sumOf { (parseMoney(it) * 100).roundToLong() }
     }
-    val remaining = (totalPrice - sumEntered).coerceAtLeast(0.0)
+    val totalCents = (totalPrice * 100).roundToLong()
+    val remaining = (totalCents - enteredCents).coerceAtLeast(0L) / 100.0
 
     LaunchedEffect(checkoutPaymentMethod, totalPrice, initialPayments) {
         if (initialPayments.isNotEmpty()) return@LaunchedEffect
@@ -407,7 +410,7 @@ fun CheckoutSplitPaymentContent(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    enabled = remaining == 0.0 && !state.isLoading,
+                    enabled = enteredCents == totalCents && !state.isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LassoPrimary,
                         contentColor = Color.White,

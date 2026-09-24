@@ -334,6 +334,9 @@ fun NewProductServiceDialog(
                         }
                     }
 
+                    state.error?.let { error ->
+                        Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Cancel Button

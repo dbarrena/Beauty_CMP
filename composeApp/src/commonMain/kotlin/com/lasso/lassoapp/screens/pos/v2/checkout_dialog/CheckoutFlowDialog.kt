@@ -47,6 +47,7 @@ fun CheckoutFlowDialog(
 
     Dialog(
         onDismissRequest = {
+            if (state.isLoading) return@Dialog
             when (state.step) {
                 is CheckoutStep.MethodPicker -> onDismiss(false)
                 is CheckoutStep.SplitPayment -> viewModel.navigateToMethodPicker()
@@ -77,7 +78,7 @@ fun CheckoutFlowDialog(
                         CheckoutPaymentMethodPickerContent(
                             totalPrice = totalPrice,
                             discountAmount = state.discountAmount,
-                            onClose = { onDismiss(false) },
+                            onClose = { if (!state.isLoading) onDismiss(false) },
                             onMethodClicked = viewModel::navigateToSplitPayment,
                             onRegisterDiscountClicked = viewModel::navigateToRegisterDiscount,
                         )
@@ -89,7 +90,7 @@ fun CheckoutFlowDialog(
                             totalPrice = payableTotalPrice,
                             state = state,
                             onBack = viewModel::navigateToMethodPicker,
-                            onClose = { onDismiss(false) },
+                            onClose = { if (!state.isLoading) onDismiss(false) },
                             onSelectEmployee = viewModel::setSelectedEmployee,
                             onRegisterSale = { payments ->
                                 viewModel.registerSale(
@@ -112,7 +113,7 @@ fun CheckoutFlowDialog(
                             totalPrice = totalPrice,
                             discountAmount = state.discountAmount,
                             onBack = viewModel::navigateToMethodPicker,
-                            onClose = { onDismiss(false) },
+                            onClose = { if (!state.isLoading) onDismiss(false) },
                             onRegisterDiscount = viewModel::registerDiscount,
                         )
                     }

@@ -11,6 +11,7 @@ import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
 import com.lasso.lassoapp.model.SaleDetailEditApiRequest
 import com.lasso.lassoapp.model.SaleEditApiRequest
+import com.lasso.lassoapp.model.SalePaymentsEditApiRequest
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,6 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
     val state: StateFlow<SalesDetailScreenState> = _state.asStateFlow()
 
     fun setSale(sale: SaleApiResponse) {
-        if (_state.value.sale?.id == sale.id) return
         _state.value = SalesDetailScreenState(
             sale = sale,
             draft = sale.toDraft(),
@@ -40,14 +40,16 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
     }
 
     private fun loadOptions() {
+        val saleId = _state.value.sale?.id ?: return
         viewModelScope.launch {
             runCatching {
                 val clients = async { lassoApi.getClients() }
                 val employees = async { lassoApi.getEmployees() }
-                val refreshedSale = async { _state.value.sale?.id?.let { lassoApi.getSale(it) } }
+                val refreshedSale = async { lassoApi.getSale(saleId) }
                 Triple(clients.await(), employees.await(), refreshedSale.await())
             }.onSuccess { (clients, employees, refreshedSale) ->
                 _state.update {
+                    if (it.sale?.id != saleId) return@update it
                     val authoritativeSale = refreshedSale ?: it.sale
                     it.copy(
                         sale = authoritativeSale,
@@ -60,6 +62,7 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
                 }
             }.onFailure { throwable ->
                 _state.update {
+                    if (it.sale?.id != saleId) return@update it
                     it.copy(
                         isLoadingOptions = false,
                         error = throwable.message ?: "No se pudieron cargar clientes y empleados.",
@@ -121,7 +124,6 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
         val currentState = _state.value
         val sale = currentState.sale ?: return
         val draft = currentState.draft ?: return
-        val employeeId = draft.employeeId ?: return
         viewModelScope.launch {
             _state.update { it.copy(isSavingParent = true, error = null) }
             runCatching {
@@ -130,7 +132,7 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
                     request = SaleEditApiRequest(
                         createdAt = sale.createdAt.withDate(draft.date),
                         clientId = draft.clientId,
-                        employeeId = employeeId,
+                        employeeId = draft.employeeId?.takeIf { it != sale.commonEmployeeId() },
                     ),
                 )
             }.onSuccess {
@@ -178,27 +180,19 @@ class SaleDetailsDialogScreenViewModel(private val lassoApi: LassoApi) : ViewMod
     fun savePayments(payments: List<Payment>, onSaved: () -> Unit) {
         val currentState = _state.value
         val sale = currentState.sale ?: return
-        val draft = currentState.draft ?: return
-        val employeeId = draft.employeeId ?: sale.saleDetails.firstOrNull()?.employeeId ?: return
-
         viewModelScope.launch {
             _state.update { it.copy(isSavingPayments = true, paymentSaveError = null) }
             runCatching {
-                lassoApi.editSale(
+                lassoApi.editSalePayments(
                     saleId = sale.id,
-                    request = SaleEditApiRequest(
-                        createdAt = sale.createdAt.withDate(draft.date),
-                        clientId = draft.clientId,
-                        employeeId = employeeId,
-                        payments = payments,
-                    ),
+                    request = SalePaymentsEditApiRequest(payments),
                 )
                 lassoApi.getSale(sale.id) ?: error("No se pudo actualizar la venta.")
             }.onSuccess { refreshedSale ->
                 _state.update {
                     it.copy(
                         sale = refreshedSale,
-                        draft = refreshedSale.toDraft(),
+                        draft = if (it.hasParentChanges) it.draft else refreshedSale.toDraft(),
                         isSavingPayments = false,
                         paymentSaveError = null,
                         dismissShouldReload = true,
@@ -324,7 +318,7 @@ data class SalesDetailScreenState(
         }
 
     val canSaveParent: Boolean
-        get() = !isBusy && !isLoadingOptions && draft?.employeeId != null && hasParentChanges
+        get() = !isBusy && !isLoadingOptions && hasParentChanges
 }
 
 @OptIn(ExperimentalTime::class)

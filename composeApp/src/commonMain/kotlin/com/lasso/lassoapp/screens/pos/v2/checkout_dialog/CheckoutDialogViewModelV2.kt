@@ -23,6 +23,7 @@ class CheckoutDialogViewModelV2(
     val state: StateFlow<CheckoutDialogState> = _state.asStateFlow()
 
     fun navigateToMethodPicker() {
+        if (_state.value.isLoading) return
         _state.update {
             it.copy(step = CheckoutStep.MethodPicker, error = null)
         }

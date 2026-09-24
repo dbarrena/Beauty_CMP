@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,33 +24,57 @@ class ProductServiceDialogViewModel(
 
     fun registerProduct(product: Product) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-            val registeredProduct = lassoApi.registerProduct(product)
-            _state.value = _state.value.copy(registeredProduct = registeredProduct, isLoading = false)
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val registeredProduct = lassoApi.registerProduct(product)
+                _state.value = _state.value.copy(registeredProduct = registeredProduct, isLoading = false)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = error.message ?: "No se pudo guardar el producto")
+            }
         }
     }
 
     fun registerService(service: Service) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-            val registeredService = lassoApi.registerService(service)
-            _state.value = _state.value.copy(registeredService = registeredService, isLoading = false)
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val registeredService = lassoApi.registerService(service)
+                _state.value = _state.value.copy(registeredService = registeredService, isLoading = false)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = error.message ?: "No se pudo guardar el servicio")
+            }
         }
     }
 
     fun editProduct(product: Product) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-            val registeredProduct = lassoApi.editProduct(product)
-            _state.value = _state.value.copy(editedProduct = registeredProduct, isLoading = false)
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val registeredProduct = lassoApi.editProduct(product)
+                _state.value = _state.value.copy(editedProduct = registeredProduct, isLoading = false)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = error.message ?: "No se pudo actualizar el producto")
+            }
         }
     }
 
     fun editService(service: Service) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-            val registeredService = lassoApi.editService(service)
-            _state.value = _state.value.copy(editedService = registeredService, isLoading = false)
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val registeredService = lassoApi.editService(service)
+                _state.value = _state.value.copy(editedService = registeredService, isLoading = false)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = error.message ?: "No se pudo actualizar el servicio")
+            }
         }
     }
 
@@ -60,6 +85,7 @@ class ProductServiceDialogViewModel(
             registeredService = null,
             editedProduct = null,
             editedService = null,
+            error = null,
             dialogType = DialogType.SERVICE
         )
     }
@@ -84,6 +110,7 @@ class ProductServiceDialogViewModel(
 
 data class ProductDialogState(
     val isLoading: Boolean = false,
+    val error: String? = null,
     val productCategories: List<ProductCategory> = emptyList(),
     val registeredProduct: Product? = null,
     val registeredService: Service? = null,

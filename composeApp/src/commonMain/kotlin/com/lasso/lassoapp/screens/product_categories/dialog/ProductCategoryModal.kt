@@ -93,6 +93,9 @@ private fun ProductCategoryModalContent(
                 )
                 viewModel.registerProductCategory(productCategory)
             }
+            state.value.error?.let { error ->
+                Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 
@@ -108,6 +111,7 @@ private fun ProductCategoryModalContent(
 private fun ProductDialogButton(isLoading: Boolean, onClick: () -> Unit) {
     Button(
         onClick = onClick,
+        enabled = !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
