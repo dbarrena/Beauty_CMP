@@ -7,7 +7,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Figma-aligned sales history UI (summary, payment breakdown, period chips, rich cards).
- * Legacy fallback: `com.lasso.lassoapp.screens.sales.SalesScreen` + `SalesScreenViewModel`.
  */
 @Composable
 fun SalesScreenV2(

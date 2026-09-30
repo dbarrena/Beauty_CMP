@@ -13,3 +13,8 @@ sealed class CheckoutPaymentMethod(val display: String, val key: String) {
 
     data object Multiple : CheckoutPaymentMethod("Multiples Pagos", "")
 }
+
+data class CheckoutPayment(
+    val paymentType: CheckoutPaymentMethod,
+    val total: Double,
+)

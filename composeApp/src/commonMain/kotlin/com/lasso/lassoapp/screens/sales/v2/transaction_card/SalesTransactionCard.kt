@@ -55,6 +55,7 @@ fun SalesTransactionCard(
     isAdmin: Boolean,
 ) {
     val discount = sale.discountAmountValue()
+    val clientLabel = sale.clientName?.takeIf(String::isNotBlank) ?: sale.clientId?.let { "Cliente #$it" }
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -86,41 +87,43 @@ fun SalesTransactionCard(
                         )
                     }
                     Spacer(Modifier.height(6.dp))
-                    sale.clientId?.let { id ->
+                    clientLabel?.let { name ->
                         Text(
-                            text = "Cliente #$id",
+                            text = name,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Spacer(Modifier.height(4.dp))
                     }
-                    sale.saleDetails[0].employeeName?.let { employeeName ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = LassoTextPlaceholder,
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = employeeName,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = LassoTextPlaceholder,
-                            )
-                        }
+                    if (sale.saleDetails.isNotEmpty()) {
+                        sale.saleDetails.firstOrNull()?.employeeName?.let { employeeName ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Filled.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = LassoTextPlaceholder,
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = employeeName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LassoTextPlaceholder,
+                                )
+                            }
 
-                        Spacer(Modifier.height(8.dp))
-                    }
-                    sale.saleDetails.forEach { detail ->
-                        val line = detailLineLabel(detail)
-                        if (line.isNotBlank()) {
-                            Text(
-                                modifier = Modifier.padding(start = 4.dp),
-                                text = "• $line",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = LassoTextPlaceholder,
-                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        sale.saleDetails.forEach { detail ->
+                            val line = detailLineLabel(detail)
+                            if (line.isNotBlank()) {
+                                Text(
+                                    modifier = Modifier.padding(start = 4.dp),
+                                    text = "• $line",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LassoTextPlaceholder,
+                                )
+                            }
                         }
                     }
                 }

@@ -23,6 +23,7 @@ class CheckoutDialogViewModelV2(
     val state: StateFlow<CheckoutDialogState> = _state.asStateFlow()
 
     fun navigateToMethodPicker() {
+        if (_state.value.isLoading) return
         _state.update {
             it.copy(step = CheckoutStep.MethodPicker, error = null)
         }
@@ -93,7 +94,7 @@ class CheckoutDialogViewModelV2(
         _state.update { it.copy(selectedEmployee = employee) }
     }
 
-    fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<PosPayment>) {
+    fun registerSale(items: List<SelectedPosItem>, unprocessedPayments: List<CheckoutPayment>) {
         if (_state.value.isLoading) return
 
         val selectedEmployeeId = _state.value.selectedEmployee?.id
@@ -152,8 +153,4 @@ class CheckoutDialogViewModelV2(
         val discountAmount: Double? = null
     )
 
-    data class PosPayment(
-        val paymentType: CheckoutPaymentMethod,
-        val total: Double
-    )
 }

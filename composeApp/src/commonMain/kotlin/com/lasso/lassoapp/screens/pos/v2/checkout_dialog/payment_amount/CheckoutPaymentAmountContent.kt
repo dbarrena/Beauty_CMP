@@ -49,6 +49,7 @@ import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.screens.commissions.components.EmployeeSelector
 import com.lasso.lassoapp.screens.commissions.dialog.EmployeePickerDialog
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPayment
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodColors
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
@@ -67,31 +68,38 @@ import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 import lassoapp.composeapp.generated.resources.sales_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.roundToLong
 
 @Composable
-internal fun CheckoutSplitPaymentContent(
+fun CheckoutSplitPaymentContent(
     totalPrice: Double,
     onBack: () -> Unit,
     onClose: () -> Unit,
-    onRegisterSale: (payments: List<CheckoutDialogViewModelV2.PosPayment>) -> Unit,
+    onRegisterSale: (payments: List<CheckoutPayment>) -> Unit,
     onSelectEmployee: (Employee) -> Unit,
     modifier: Modifier = Modifier,
     checkoutPaymentMethod: CheckoutPaymentMethod,
     state: CheckoutDialogViewModelV2.CheckoutDialogState,
+    title: String = "Registrar Venta",
+    showEmployeeSelector: Boolean = true,
+    initialPayments: List<CheckoutPayment> = emptyList(),
 ) {
-    var efectivo by remember { mutableStateOf("") }
-    var tarjetaDebito by remember { mutableStateOf("") }
-    var transferencia by remember { mutableStateOf("") }
-    var otro by remember { mutableStateOf("") }
-    var anticipo by remember { mutableStateOf("") }
+    var efectivo by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Cash)) }
+    var tarjetaDebito by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Card)) }
+    var transferencia by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Transfer)) }
+    var otro by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Other)) }
+    var anticipo by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Advance)) }
     var showEmployeePicker by remember { mutableStateOf(false) }
 
-    val sumEntered = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
-        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo).sumOf { parseMoney(it) }
+    val enteredCents = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
+        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo)
+            .sumOf { (parseMoney(it) * 100).roundToLong() }
     }
-    val remaining = (totalPrice - sumEntered).coerceAtLeast(0.0)
+    val totalCents = (totalPrice * 100).roundToLong()
+    val remaining = (totalCents - enteredCents).coerceAtLeast(0L) / 100.0
 
-    LaunchedEffect(checkoutPaymentMethod, totalPrice) {
+    LaunchedEffect(checkoutPaymentMethod, totalPrice, initialPayments) {
+        if (initialPayments.isNotEmpty()) return@LaunchedEffect
         when (checkoutPaymentMethod) {
             CheckoutPaymentMethod.Cash -> {
                 efectivo = totalPrice.toPosMoneyString()
@@ -164,7 +172,7 @@ internal fun CheckoutSplitPaymentContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Registrar Venta",
+                    text = title,
                     color = CheckoutPaymentMethodTokens.titleColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -228,14 +236,15 @@ internal fun CheckoutSplitPaymentContent(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    EmployeeSelector(
-                        selectedEmployee = state.selectedEmployee,
-                        onClick = { showEmployeePicker = true },
-                        enabled = state.canSelectEmployee,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
+                    if (showEmployeeSelector) {
+                        EmployeeSelector(
+                            selectedEmployee = state.selectedEmployee,
+                            onClick = { showEmployeePicker = true },
+                            enabled = state.canSelectEmployee,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
 
                     when (checkoutPaymentMethod) {
                         CheckoutPaymentMethod.Cash -> {
@@ -343,12 +352,12 @@ internal fun CheckoutSplitPaymentContent(
             ) {
                 Button(
                     onClick = {
-                        val payments = mutableListOf<CheckoutDialogViewModelV2.PosPayment>()
+                            val payments = mutableListOf<CheckoutPayment>()
 
                         if (efectivo.isNotEmpty()) {
                             val total = parseMoney(efectivo)
                             payments.add(
-                                CheckoutDialogViewModelV2.PosPayment(
+                                CheckoutPayment(
                                     paymentType = CheckoutPaymentMethod.Cash,
                                     total = total
                                 )
@@ -358,7 +367,7 @@ internal fun CheckoutSplitPaymentContent(
                         if (tarjetaDebito.isNotEmpty()) {
                             val total = parseMoney(tarjetaDebito)
                             payments.add(
-                                CheckoutDialogViewModelV2.PosPayment(
+                                CheckoutPayment(
                                     paymentType = CheckoutPaymentMethod.Card,
                                     total = total
                                 )
@@ -368,7 +377,7 @@ internal fun CheckoutSplitPaymentContent(
                         if (transferencia.isNotEmpty()) {
                             val total = parseMoney(transferencia)
                             payments.add(
-                                CheckoutDialogViewModelV2.PosPayment(
+                                CheckoutPayment(
                                     paymentType = CheckoutPaymentMethod.Transfer,
                                     total = total
                                 )
@@ -378,7 +387,7 @@ internal fun CheckoutSplitPaymentContent(
                         if (otro.isNotEmpty()) {
                             val total = parseMoney(otro)
                             payments.add(
-                                CheckoutDialogViewModelV2.PosPayment(
+                                CheckoutPayment(
                                     paymentType = CheckoutPaymentMethod.Other,
                                     total = total
                                 )
@@ -388,7 +397,7 @@ internal fun CheckoutSplitPaymentContent(
                         if (anticipo.isNotEmpty()) {
                             val total = parseMoney(anticipo)
                             payments.add(
-                                CheckoutDialogViewModelV2.PosPayment(
+                                CheckoutPayment(
                                     paymentType = CheckoutPaymentMethod.Advance,
                                     total = total
                                 )
@@ -401,7 +410,7 @@ internal fun CheckoutSplitPaymentContent(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    enabled = remaining == 0.0 && !state.isLoading,
+                    enabled = enteredCents == totalCents && !state.isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LassoPrimary,
                         contentColor = Color.White,
@@ -432,7 +441,7 @@ internal fun CheckoutSplitPaymentContent(
     }
     
     EmployeePickerDialog(
-        isVisible = showEmployeePicker,
+        isVisible = showEmployeeSelector && showEmployeePicker,
         employees = state.employees,
         isLoading = state.isLoading,
         onDismiss = { showEmployeePicker = false }
@@ -441,6 +450,9 @@ internal fun CheckoutSplitPaymentContent(
         showEmployeePicker = false
     }
 }
+
+private fun List<CheckoutPayment>.amountFor(method: CheckoutPaymentMethod): String =
+    filter { it.paymentType == method }.sumOf(CheckoutPayment::total).takeIf { it > 0.0 }?.toPosMoneyString().orEmpty()
 
 @Composable
 internal fun SplitPaymentRow(

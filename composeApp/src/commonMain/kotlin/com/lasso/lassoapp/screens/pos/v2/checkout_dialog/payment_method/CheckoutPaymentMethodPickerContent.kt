@@ -37,9 +37,11 @@ import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 
 @Composable
-internal fun CheckoutPaymentMethodPickerContent(
+fun CheckoutPaymentMethodPickerContent(
     totalPrice: Double,
     discountAmount: Double? = null,
+    title: String = "Registrar Venta",
+    showDiscountAction: Boolean = true,
     onClose: () -> Unit,
     onMethodClicked: (checkoutPaymentMethod: CheckoutPaymentMethod) -> Unit,
     onRegisterDiscountClicked: () -> Unit,
@@ -64,7 +66,7 @@ internal fun CheckoutPaymentMethodPickerContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Registrar Venta",
+                    text = title,
                     color = CheckoutPaymentMethodTokens.titleColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -209,7 +211,7 @@ internal fun CheckoutPaymentMethodPickerContent(
                         ),
                         onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
                     )
-                    CheckoutPaymentMethodRow(
+                    if (showDiscountAction) CheckoutPaymentMethodRow(
                         label = "Aplicar Descuento",
                         style = PaymentMethodStyle(
                             rowStyle = PaymentMethodRowStyle(

@@ -8,6 +8,7 @@ import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -122,19 +123,29 @@ class ProductCatalogViewModel(
 
     fun deleteProductService() {
         val item = _state.value.productsServices.selectedItem ?: return
+        if (_state.value.isDeleting) return
         viewModelScope.launch {
-            when (item) {
-                is Service ->{
-                    lassoApi.disableService(item)
+            _state.value = _state.value.copy(isDeleting = true, operationError = null)
+            try {
+                when (item) {
+                    is Service -> lassoApi.disableService(item)
+                    is Product -> lassoApi.disableProduct(item)
                 }
-
-                is Product -> {
-                    lassoApi.disableProduct(item)
-                }
+                hideDeleteProductServiceConfirmation()
+                refreshProductServices()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                hideDeleteProductServiceConfirmation()
+                _state.value = _state.value.copy(operationError = error.message ?: "No se pudo desactivar el artículo")
+            } finally {
+                _state.value = _state.value.copy(isDeleting = false)
             }
-            hideDeleteProductServiceConfirmation()
-            refreshProductServices()
         }
+    }
+
+    fun clearOperationError() {
+        _state.value = _state.value.copy(operationError = null)
     }
 
     fun showCategoryDialog(item: ProductCategory? = null) {

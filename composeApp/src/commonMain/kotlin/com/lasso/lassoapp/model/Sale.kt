@@ -30,6 +30,7 @@ data class SaleApiResponse(
     @SerialName("discount_amount") val discountAmount: String? = null,
     val formattedDate: String? = null,
     @SerialName("client_id") val clientId: Int? = null,
+    @SerialName("client_name") val clientName: String? = null,
     @SerialName("partner_id") val partnerId: Int,
     @SerialName("created_at") val createdAt: Long,
     @SerialName("updated_at") val updatedAt: Long?,
@@ -49,6 +50,7 @@ data class SaleDetailApiResponse(
     @SerialName("updated_at") val updatedAt: Long?,
     val product: Product? = null,
     val service: Service? = null,
+    @SerialName("employee_id") val employeeId: Int? = null,
     @SerialName("employee_name") val employeeName: String? = null,
 )
 
@@ -64,3 +66,13 @@ data class SaleEditDateApiRequest(
     @SerialName("created_at") val createdAt: Long,
     val saleId: Int
 )
+
+@Serializable
+data class SaleEditApiRequest(
+    @SerialName("created_at") val createdAt: Long,
+    @SerialName("client_id") val clientId: Int?,
+    @SerialName("employee_id") val employeeId: Int? = null,
+)
+
+@Serializable
+data class SalePaymentsEditApiRequest(val payments: List<Payment>)

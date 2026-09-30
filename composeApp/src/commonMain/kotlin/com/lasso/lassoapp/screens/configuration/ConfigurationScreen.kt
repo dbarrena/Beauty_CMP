@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -182,6 +183,15 @@ fun ConfigurationScreenContent(
                         containerColor = LassoPrimary.copy(alpha = 0.1f),
                         iconTint = LassoPrimary,
                         onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.CLIENTS) }
+                    )
+
+                    ConfigurationTile(
+                        title = "Productos y servicios",
+                        subtitle = "Administra tu catálogo",
+                        icon = Icons.Default.Inventory2,
+                        containerColor = LassoSecondary.copy(alpha = 0.1f),
+                        iconTint = LassoSecondary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.PRODUCT_CATALOG) }
                     )
 
                     ConfigurationTile(
@@ -351,6 +361,7 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
+    PRODUCT_CATALOG,
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,
     SALES_BY_PRODUCT_CATEGORIES,

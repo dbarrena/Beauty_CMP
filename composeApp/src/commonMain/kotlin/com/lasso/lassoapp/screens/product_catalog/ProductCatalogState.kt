@@ -12,6 +12,8 @@ data class ProductCatalogState(
     val selectedTab: ProductCatalogTab = ProductCatalogTab.PRODUCTS_SERVICES,
     val productsServices: ProductServicesTabState = ProductServicesTabState(),
     val categories: CategoriesTabState = CategoriesTabState(),
+    val operationError: String? = null,
+    val isDeleting: Boolean = false,
 )
 
 data class ProductServicesTabState(
