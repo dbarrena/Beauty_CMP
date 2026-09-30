@@ -58,7 +58,6 @@ import kotlinx.serialization.Serializable
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.agenda_icon
 import lassoapp.composeapp.generated.resources.bell_icon
-import lassoapp.composeapp.generated.resources.catalog
 import lassoapp.composeapp.generated.resources.home_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
 import lassoapp.composeapp.generated.resources.sales_icon
@@ -250,14 +249,13 @@ fun App() {
                                     ),
                                     alwaysShowLabel = false
                                 )
-                                if (state.value.isAdmin) {
-                                    NavigationBarItem(
+                                NavigationBarItem(
                                         icon = {
                                             Icon(
                                                 modifier = Modifier.size(22.dp),
-                                                painter = painterResource(Res.drawable.catalog),
+                                                painter = painterResource(Res.drawable.agenda_icon),
                                                 contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.route == ProductCatalogDestination::class.qualifiedName } == true)
+                                                tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
                                                     MaterialTheme.colorScheme.primary
                                                 else
                                                     MaterialTheme.colorScheme.onSurfaceVariant
@@ -265,20 +263,19 @@ fun App() {
                                         },
                                         label = {
                                             Text(
-                                                "Catálogo",
+                                                "Agenda",
                                                 color = MaterialTheme.colorScheme.primary
                                             )
                                         },
-                                        selected = currentDestination?.hierarchy?.any { it.route == ProductCatalogDestination::class.qualifiedName } == true,
+                                        selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
                                         onClick = {
-                                            navController.navigate(ProductCatalogDestination)
+                                            navController.navigate(CalendarDestination)
                                         },
                                         colors = NavigationBarItemDefaults.colors(
                                             indicatorColor = Color.Transparent
                                         ),
                                         alwaysShowLabel = false
                                     )
-                                }
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
@@ -429,6 +426,10 @@ fun App() {
                                 ConfigurationScreenRoutes.COMMISSIONS -> {
                                     navController.navigate(CommissionsDestination)
                                 }
+
+                                ConfigurationScreenRoutes.PRODUCT_CATALOG -> {
+                                    navController.navigate(ProductCatalogDestination)
+                                }
                             }
                         }
                     }
@@ -474,6 +475,5 @@ fun isRootDestination(destination: NavDestination?): Boolean {
             route == PosDestination::class.qualifiedName ||
             route == SalesDestination::class.qualifiedName ||
             route == ConfigurationDestination::class.qualifiedName ||
-            route == CalendarDestination::class.qualifiedName ||
-            route == ProductCatalogDestination::class.qualifiedName
+            route == CalendarDestination::class.qualifiedName
 }

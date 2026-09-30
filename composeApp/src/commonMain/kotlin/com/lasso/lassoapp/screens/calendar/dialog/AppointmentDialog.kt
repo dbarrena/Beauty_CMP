@@ -114,6 +114,7 @@ fun AppointmentDialog(
                             onSearchClick = { showClientSearch = true },
                             onClientRemoved = formState::clearClient,
                             onNewClient = onNewClient,
+                            showWhatsAppAction = appointment != null,
                         )
 
                         AppointmentFormSpacer()

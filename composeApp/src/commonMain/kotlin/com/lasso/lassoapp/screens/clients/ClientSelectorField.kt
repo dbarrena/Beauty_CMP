@@ -49,11 +49,12 @@ fun ClientSelectorField(
     onClientRemoved: () -> Unit,
     onNewClient: () -> Unit,
     label: String = "Cliente (opcional)",
+    showWhatsAppAction: Boolean = false,
 ) {
     val uriHandler = LocalUriHandler.current
     ClientSelectorLabel(label)
     if (selectedClient != null) {
-        val whatsAppUrl = selectedClient.phone?.let {
+        val whatsAppUrl = selectedClient.phone?.takeIf { showWhatsAppAction }?.let {
             buildWhatsAppUrl(phone = it, message = "Hola ${selectedClient.name}")
         }
         Row(
