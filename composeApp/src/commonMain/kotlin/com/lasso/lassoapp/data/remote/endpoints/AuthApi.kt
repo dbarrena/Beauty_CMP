@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.remote.bodyOrThrow
 import com.lasso.lassoapp.model.Login
 import com.lasso.lassoapp.model.LoginResponse
 import com.lasso.lassoapp.model.MessageResponse
+import com.lasso.lassoapp.model.RegistrationRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
@@ -15,6 +16,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 interface AuthApi {
+    suspend fun register(request: RegistrationRequest): MessageResponse
     suspend fun login(login: Login): LoginResponse
     suspend fun logout()
 }
@@ -31,6 +33,12 @@ internal class KtorAuthApi(private val client: HttpClient) : AuthApi {
         }
         return response.bodyOrThrow()
     }
+
+    override suspend fun register(request: RegistrationRequest): MessageResponse =
+        client.post(LASSO_API_URL + "auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
 
     override suspend fun logout() {
         client.post(LASSO_API_URL + "auth/logout").bodyOrThrow<MessageResponse>()

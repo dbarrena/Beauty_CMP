@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +49,7 @@ import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
+import com.lasso.lassoapp.screens.register.RegisterScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_catalog.ProductCatalogScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
@@ -83,6 +85,9 @@ data class DetailDestination(val objectId: Int)
 
 @Serializable
 object LoginDestination
+
+@Serializable
+object RegisterDestination
 
 @Serializable
 object CalendarDestination
@@ -364,7 +369,7 @@ fun App() {
                 NavHost(
                     navController = navController,
                     startDestination = startDestination,
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
                     enterTransition = {
                         fadeIn()
                     },
@@ -434,10 +439,15 @@ fun App() {
                         }
                     }
                     composable<LoginDestination> {
-                        LoginScreen {
+                        LoginScreen(onRegister = {
+                            navController.navigate(RegisterDestination) { launchSingleTop = true }
+                        }) {
                             viewModel.setLoggedIn()
                             navController.navigate(HomeDestination)
                         }
+                    }
+                    composable<RegisterDestination> {
+                        RegisterScreen(onLogin = { navController.popBackStack() })
                     }
                     composable<CalendarDestination> {
                         CalendarScreen()

@@ -33,14 +33,14 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(onRegister: () -> Unit, onLoginSuccess: () -> Unit) {
     val viewModel = koinViewModel<LoginScreenViewModel>()
 
-    LoginScreenContent(viewModel, onLoginSuccess)
+    LoginScreenContent(viewModel, onRegister, onLoginSuccess)
 }
 
 @Composable
-private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: () -> Unit) {
+private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -> Unit, onLoginSuccess: () -> Unit) {
     val state = viewModel.state.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -207,7 +207,7 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onLoginSuccess: 
                     color = LassoTextMuted,
                     fontSize = 14.sp
                 ),
-                modifier = Modifier.clickable { /* Handle register */ }
+                modifier = Modifier.clickable(enabled = !state.value.isLoading, onClick = onRegister)
             )
         }
     }
