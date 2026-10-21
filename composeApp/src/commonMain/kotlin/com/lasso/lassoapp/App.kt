@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -132,20 +133,20 @@ fun App() {
 
         val onBackNavigation: () -> Unit = { navController.popBackStack() }
 
-        val titleText: String = when (currentDestination?.route) {
-            HomeDestination::class.qualifiedName -> "Inicio"
-            PosDestination::class.qualifiedName -> "Punto de Venta"
-            SalesDestination::class.qualifiedName -> "Ventas"
-            ConfigurationDestination::class.qualifiedName -> "Herramientas"
-            DetailDestination::class.qualifiedName -> "Detalle"
-            CalendarDestination::class.qualifiedName -> "Calendario de citas"
-            CashClosureDestination::class.qualifiedName -> "Corte de caja"
-            CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
-            ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
-            SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
-            EmployeesDestination::class.qualifiedName -> "Empleados"
-            ClientsDestination::class.qualifiedName -> "Clientes"
-            CommissionsDestination::class.qualifiedName -> "Comisiones"
+        val titleText: String = when {
+            currentDestination?.hasRoute<HomeDestination>() == true -> "Inicio"
+            currentDestination?.hasRoute<PosDestination>() == true -> "Punto de Venta"
+            currentDestination?.hasRoute<SalesDestination>() == true -> "Ventas"
+            currentDestination?.hasRoute<ConfigurationDestination>() == true -> "Herramientas"
+            currentDestination?.hasRoute<DetailDestination>() == true -> "Detalle"
+            currentDestination?.hasRoute<CalendarDestination>() == true -> "Calendario de citas"
+            currentDestination?.hasRoute<CashClosureDestination>() == true -> "Corte de caja"
+            currentDestination?.hasRoute<CashClosureRecordsDestination>() == true -> "Registro cortes de caja"
+            currentDestination?.hasRoute<ProductCatalogDestination>() == true -> "Productos y Servicios"
+            currentDestination?.hasRoute<SalesByProductCategoriesDestination>() == true -> "Ventas por Categoria"
+            currentDestination?.hasRoute<EmployeesDestination>() == true -> "Empleados"
+            currentDestination?.hasRoute<ClientsDestination>() == true -> "Clientes"
+            currentDestination?.hasRoute<CommissionsDestination>() == true -> "Comisiones"
             else -> ""
         }
 
@@ -233,7 +234,7 @@ fun App() {
                                             modifier = Modifier.size(22.dp),
                                             painter = painterResource(Res.drawable.home_icon),
                                             contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true)
+                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<HomeDestination>() } == true)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -245,7 +246,7 @@ fun App() {
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },
-                                    selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
+                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<HomeDestination>() } == true,
                                     onClick = {
                                         navController.navigate(HomeDestination)
                                     },
@@ -260,7 +261,7 @@ fun App() {
                                                 modifier = Modifier.size(22.dp),
                                                 painter = painterResource(Res.drawable.agenda_icon),
                                                 contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
+                                                tint = if (currentDestination?.hierarchy?.any { it.hasRoute<CalendarDestination>() } == true)
                                                     MaterialTheme.colorScheme.primary
                                                 else
                                                     MaterialTheme.colorScheme.onSurfaceVariant
@@ -272,7 +273,7 @@ fun App() {
                                                 color = MaterialTheme.colorScheme.primary
                                             )
                                         },
-                                        selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
+                                        selected = currentDestination?.hierarchy?.any { it.hasRoute<CalendarDestination>() } == true,
                                         onClick = {
                                             navController.navigate(CalendarDestination)
                                         },
@@ -287,7 +288,7 @@ fun App() {
                                             modifier = Modifier.size(22.dp),
                                             painter = painterResource(Res.drawable.shopping_cart_icon),
                                             contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true)
+                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<PosDestination>() } == true)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -299,7 +300,7 @@ fun App() {
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },
-                                    selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
+                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<PosDestination>() } == true,
                                     onClick = {
                                         navController.navigate(PosDestination)
                                     },
@@ -314,7 +315,7 @@ fun App() {
                                             modifier = Modifier.size(22.dp),
                                             painter = painterResource(Res.drawable.sales_icon),
                                             contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
+                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<SalesDestination>() } == true)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -326,7 +327,7 @@ fun App() {
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },
-                                    selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
+                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<SalesDestination>() } == true,
                                     onClick = { navController.navigate(SalesDestination) },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent
@@ -339,7 +340,7 @@ fun App() {
                                             modifier = Modifier.size(22.dp),
                                             imageVector = Icons.Default.Apps,
                                             contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true)
+                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<ConfigurationDestination>() } == true)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -351,7 +352,7 @@ fun App() {
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     },
-                                    selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
+                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<ConfigurationDestination>() } == true,
                                     onClick = {
                                         navController.navigate(ConfigurationDestination)
                                     },
@@ -480,10 +481,9 @@ fun App() {
 }
 
 fun isRootDestination(destination: NavDestination?): Boolean {
-    val route = destination?.route
-    return route == HomeDestination::class.qualifiedName ||
-            route == PosDestination::class.qualifiedName ||
-            route == SalesDestination::class.qualifiedName ||
-            route == ConfigurationDestination::class.qualifiedName ||
-            route == CalendarDestination::class.qualifiedName
+    return destination?.hasRoute<HomeDestination>() == true ||
+            destination?.hasRoute<PosDestination>() == true ||
+            destination?.hasRoute<SalesDestination>() == true ||
+            destination?.hasRoute<ConfigurationDestination>() == true ||
+            destination?.hasRoute<CalendarDestination>() == true
 }
