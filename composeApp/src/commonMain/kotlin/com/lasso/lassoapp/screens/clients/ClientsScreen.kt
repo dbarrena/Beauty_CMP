@@ -3,7 +3,6 @@ package com.lasso.lassoapp.screens.clients
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import com.lasso.lassoapp.ui.theme.LassoPrimary

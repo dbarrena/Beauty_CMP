@@ -92,6 +92,7 @@ fun EmployeePickerDialog(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .weight(1f, fill = false)
                                 .heightIn(max = 320.dp)
                         ) {
                             items(

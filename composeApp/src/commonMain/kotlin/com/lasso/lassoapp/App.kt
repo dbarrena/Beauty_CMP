@@ -5,36 +5,27 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,7 +38,6 @@ import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.clients.ClientsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
-import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.register.RegisterScreen
@@ -59,12 +49,8 @@ import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
 import kotlinx.serialization.Serializable
 import lassoapp.composeapp.generated.resources.Res
-import lassoapp.composeapp.generated.resources.agenda_icon
 import lassoapp.composeapp.generated.resources.bell_icon
-import lassoapp.composeapp.generated.resources.home_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
-import lassoapp.composeapp.generated.resources.sales_icon
-import lassoapp.composeapp.generated.resources.shopping_cart_icon
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -215,152 +201,21 @@ fun App() {
                     }
                 },
                 bottomBar = {
-                    //AnimatedVisibility(visible = showBottomNav) {
                     if (showBottomNav && isLoggedIn) {
-                        Column {
-                            Divider(
-                                thickness = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant
-                            )
-                            NavigationBar(
-                                modifier = Modifier.height(105.dp),
-                                containerColor = Color.White,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            ) {
-                                NavigationBarItem(
-                                    modifier = Modifier.padding(8.dp),
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.home_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<HomeDestination>() } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Inicio",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<HomeDestination>() } == true,
-                                    onClick = {
-                                        navController.navigate(HomeDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                modifier = Modifier.size(22.dp),
-                                                painter = painterResource(Res.drawable.agenda_icon),
-                                                contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.hasRoute<CalendarDestination>() } == true)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                "Agenda",
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        selected = currentDestination?.hierarchy?.any { it.hasRoute<CalendarDestination>() } == true,
-                                        onClick = {
-                                            navController.navigate(CalendarDestination)
-                                        },
-                                        colors = NavigationBarItemDefaults.colors(
-                                            indicatorColor = Color.Transparent
-                                        ),
-                                        alwaysShowLabel = false
-                                    )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.shopping_cart_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<PosDestination>() } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Venta",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<PosDestination>() } == true,
-                                    onClick = {
-                                        navController.navigate(PosDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.sales_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<SalesDestination>() } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Ventas",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<SalesDestination>() } == true,
-                                    onClick = { navController.navigate(SalesDestination) },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            imageVector = Icons.Default.Apps,
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.hasRoute<ConfigurationDestination>() } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Mas",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.hasRoute<ConfigurationDestination>() } == true,
-                                    onClick = {
-                                        navController.navigate(ConfigurationDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
+                        val selectedTab = when {
+                            currentDestination?.hasRoute<CalendarDestination>() == true -> MainTab.Calendar
+                            currentDestination?.hasRoute<PosDestination>() == true -> MainTab.Pos
+                            currentDestination?.hasRoute<SalesDestination>() == true -> MainTab.Sales
+                            currentDestination?.hasRoute<ConfigurationDestination>() == true -> MainTab.Configuration
+                            else -> MainTab.Home
+                        }
+                        MainNavigationBar(selectedTab) { tab ->
+                            when (tab) {
+                                MainTab.Home -> navController.navigate(HomeDestination)
+                                MainTab.Calendar -> navController.navigate(CalendarDestination)
+                                MainTab.Pos -> navController.navigate(PosDestination)
+                                MainTab.Sales -> navController.navigate(SalesDestination)
+                                MainTab.Configuration -> navController.navigate(ConfigurationDestination)
                             }
                         }
                     }
@@ -386,7 +241,6 @@ fun App() {
                             onNavigateToCashClosure = { navController.navigate(CashClosureDestination) },
                             onNavigateToCommissions = { navController.navigate(CommissionsDestination) },
                         )
-                        //HomeScreen()
                     }
                     composable<PosDestination> {
                         PosScreenV2()

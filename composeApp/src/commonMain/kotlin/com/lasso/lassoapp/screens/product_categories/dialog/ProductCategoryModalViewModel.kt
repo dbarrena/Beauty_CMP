@@ -3,9 +3,7 @@ package com.lasso.lassoapp.screens.product_categories.dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
-import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
-import com.lasso.lassoapp.model.Service
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

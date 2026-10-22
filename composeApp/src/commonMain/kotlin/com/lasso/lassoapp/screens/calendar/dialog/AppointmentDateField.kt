@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,10 +35,10 @@ internal fun AppointmentDateField(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .background(LassoSurfaceVariant, RoundedCornerShape(24.dp))
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         Row(
@@ -46,7 +46,7 @@ internal fun AppointmentDateField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(date.formatDdMmYyyy(), color = LassoTextPrimary, fontSize = 16.sp)
+            Text(date.formatDdMmYyyy(), color = LassoTextPrimary, fontSize = 16.sp, modifier = Modifier.weight(1f))
             Icon(
                 Icons.Default.CalendarMonth,
                 contentDescription = "Seleccionar fecha",

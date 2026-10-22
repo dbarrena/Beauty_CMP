@@ -79,7 +79,7 @@ val viewModelModule = module {
     factoryOf(::SalesByProductCategoryViewModel)
     factoryOf(::EmployeesViewModel)
     factoryOf(::ClientsViewModel)
-    factoryOf(::CheckoutDialogViewModelV2)
+    factory { CheckoutDialogViewModelV2(get(), get()) }
 }
 
 fun daoModule() = module {

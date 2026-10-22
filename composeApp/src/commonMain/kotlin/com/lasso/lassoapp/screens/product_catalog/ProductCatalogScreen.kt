@@ -1,14 +1,14 @@
 package com.lasso.lassoapp.screens.product_catalog
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import com.lasso.lassoapp.screens.product_catalog.dialog.delete.DeleteProductConfirmationDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.edit.EditProductServiceDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.new.NewProductServiceDialog
+import com.lasso.lassoapp.screens.product_categories.dialog.ProductCategoryModal
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

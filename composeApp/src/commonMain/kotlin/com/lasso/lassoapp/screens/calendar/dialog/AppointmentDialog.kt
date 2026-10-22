@@ -1,23 +1,13 @@
 package com.lasso.lassoapp.screens.calendar.dialog
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -27,13 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.AppointmentWriteRequest
 import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.Client
@@ -43,6 +31,8 @@ import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
 import com.lasso.lassoapp.screens.clients.ClientSelectorField
 import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
 import com.lasso.lassoapp.screens.product_catalog.dialog.search_service.SearchServiceDialog
+import com.lasso.lassoapp.screens.utils.DialogContentScaffold
+import com.lasso.lassoapp.screens.utils.LassoDialogFrame
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import kotlinx.datetime.LocalDate
@@ -65,16 +55,17 @@ fun AppointmentDialog(
     onResult: (AppointmentWriteRequest) -> Unit,
     onDelete: () -> Unit,
 ) {
-    val formState = rememberAppointmentFormState(
-        appointment = appointment,
-        appointmentEmployeeId = appointmentEmployeeId,
-        clients = clients,
-        employees = employees,
-        services = services,
-        initialDate = initialDate,
-        initialStartMinutes = initialStartMinutes,
-        preferredClient = preferredClient,
-    )
+    val formState =
+        rememberAppointmentFormState(
+            appointment = appointment,
+            appointmentEmployeeId = appointmentEmployeeId,
+            clients = clients,
+            employees = employees,
+            services = services,
+            initialDate = initialDate,
+            initialStartMinutes = initialStartMinutes,
+            preferredClient = preferredClient,
+        )
     val formScrollState = rememberScrollState()
     val isBusy = isSaving || isDeleting
     var showDatePicker by remember { mutableStateOf(false) }
@@ -85,87 +76,20 @@ fun AppointmentDialog(
         if (optionsError != null) formScrollState.animateScrollTo(formScrollState.maxValue)
     }
 
-    Dialog(onDismissRequest = { if (!isBusy) onDismiss() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        ) {
-            Box(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    AppointmentDialogTitle(isEditing = appointment != null)
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(formScrollState),
-                    ) {
-                        ClientSelectorField(
-                            selectedClient = formState.selectedClient,
-                            enabled = !isBusy,
-                            onSearchClick = { showClientSearch = true },
-                            onClientRemoved = formState::clearClient,
-                            onNewClient = onNewClient,
-                            showWhatsAppAction = appointment != null,
-                        )
-
-                        AppointmentFormSpacer()
-                        AppointmentFieldLabel("Empleado")
-                        AppointmentPickerField(
-                            value = formState.selectedEmployee?.name,
-                            placeholder = "Empleado",
-                            options = employees,
-                            optionLabel = Employee::name,
-                            enabled = !isBusy,
-                            onSelected = formState::selectEmployee,
-                        )
-
-                        AppointmentFormSpacer()
-                        AppointmentServiceField(
-                            selectedService = formState.selectedService,
-                            enabled = !isBusy,
-                            onSearchClick = { showServiceSearch = true },
-                            onServiceRemoved = formState::clearService,
-                        )
-
-                        AppointmentFormSpacer()
-                        AppointmentDateField(
-                            date = formState.selectedDate,
-                            enabled = !isBusy,
-                            onClick = { showDatePicker = true },
-                        )
-
-                        AppointmentFormSpacer()
-                        AppointmentTimeRangeField(
-                            startMinutes = formState.startMinutes,
-                            endMinutes = formState.endMinutes,
-                            enabled = !isBusy,
-                            onStartSelected = formState::selectStartMinutes,
-                            onEndSelected = formState::selectEndMinutes,
-                        )
-
-                        AppointmentFormSpacer()
-                        AppointmentNotesField(
-                            notes = formState.notes,
-                            enabled = !isBusy,
-                            onNotesChanged = formState::updateNotes,
-                        )
-
-                        optionsError?.let {
-                            Spacer(Modifier.height(8.dp))
-                            Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
+    LassoDialogFrame(
+        onDismiss = { if (!isBusy) onDismiss() },
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        expanded = true,
+    ) {
+        DialogContentScaffold(
+            onClose = onDismiss,
+            closeEnabled = !isBusy,
+            scroll = formScrollState,
+            modifier = Modifier.fillMaxSize(),
+            header = { AppointmentDialogTitle(isEditing = appointment != null) },
+            actions = {
+                Column {
                     AppointmentDialogActions(
                         isEditing = appointment != null,
                         isValid = formState.isValid,
@@ -178,7 +102,7 @@ fun AppointmentDialog(
                     TextButton(
                         onClick = onDismiss,
                         enabled = !isBusy,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     ) {
                         Text(
                             "Cancelar",
@@ -188,20 +112,62 @@ fun AppointmentDialog(
                         )
                     }
                 }
+            },
+        ) {
+            ClientSelectorField(
+                selectedClient = formState.selectedClient,
+                enabled = !isBusy,
+                onSearchClick = { showClientSearch = true },
+                onClientRemoved = formState::clearClient,
+                onNewClient = onNewClient,
+                showWhatsAppAction = appointment != null,
+            )
 
-                if (!isBusy) {
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Cerrar",
-                            tint = LassoTextMuted.copy(alpha = 0.7f),
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
+            AppointmentFormSpacer()
+            AppointmentFieldLabel("Empleado")
+            AppointmentPickerField(
+                value = formState.selectedEmployee?.name,
+                placeholder = "Empleado",
+                options = employees,
+                optionLabel = Employee::name,
+                enabled = !isBusy,
+                onSelected = formState::selectEmployee,
+            )
+
+            AppointmentFormSpacer()
+            AppointmentServiceField(
+                selectedService = formState.selectedService,
+                enabled = !isBusy,
+                onSearchClick = { showServiceSearch = true },
+                onServiceRemoved = formState::clearService,
+            )
+
+            AppointmentFormSpacer()
+            AppointmentDateField(
+                date = formState.selectedDate,
+                enabled = !isBusy,
+                onClick = { showDatePicker = true },
+            )
+
+            AppointmentFormSpacer()
+            AppointmentTimeRangeField(
+                startMinutes = formState.startMinutes,
+                endMinutes = formState.endMinutes,
+                enabled = !isBusy,
+                onStartSelected = formState::selectStartMinutes,
+                onEndSelected = formState::selectEndMinutes,
+            )
+
+            AppointmentFormSpacer()
+            AppointmentNotesField(
+                notes = formState.notes,
+                enabled = !isBusy,
+                onNotesChanged = formState::updateNotes,
+            )
+
+            optionsError?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
             }
         }
     }
@@ -239,11 +205,13 @@ fun AppointmentDialog(
 private fun AppointmentDialogTitle(isEditing: Boolean) {
     Text(
         text = if (isEditing) "Editar cita" else "Nueva cita",
-        style = MaterialTheme.typography.titleLarge.copy(
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            color = LassoTextPrimary,
-        ),
-        modifier = Modifier.padding(bottom = 24.dp),
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        style =
+            MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = LassoTextPrimary,
+            ),
+        modifier = Modifier.fillMaxWidth(),
     )
 }

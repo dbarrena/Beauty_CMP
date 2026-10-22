@@ -2,7 +2,7 @@ package com.lasso.lassoapp.screens.calendar.dialog
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +37,7 @@ internal fun AppointmentServiceField(
 
     if (selectedService != null) {
         Surface(
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             shape = RoundedCornerShape(24.dp),
             color = LassoPrimary,
         ) {
@@ -70,12 +70,12 @@ internal fun AppointmentServiceField(
     Surface(
         onClick = onSearchClick,
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().height(48.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         shape = RoundedCornerShape(24.dp),
         color = LassoSurfaceVariant,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

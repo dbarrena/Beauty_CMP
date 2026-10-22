@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.ProductCategory
-import com.lasso.lassoapp.screens.product_service.dialog.ProductServiceDialogViewModel
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import org.koin.compose.viewmodel.koinViewModel
 
