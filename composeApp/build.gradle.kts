@@ -93,8 +93,8 @@ android {
         applicationId = "com.lasso.lassoapp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.5.4"
+        versionCode = 16
+        versionName = "1.5.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
