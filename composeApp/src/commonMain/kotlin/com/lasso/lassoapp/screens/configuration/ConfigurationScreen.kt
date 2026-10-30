@@ -101,6 +101,14 @@ fun ConfigurationScreenContent(
 
             // Menu Options
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ConfigurationTile(
+                    title = "Perfil",
+                    subtitle = "Datos personales y contraseña",
+                    icon = Icons.Default.Person,
+                    containerColor = LassoPrimary.copy(alpha = 0.1f),
+                    iconTint = LassoPrimary,
+                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.PROFILE) }
+                )
                 if (isAdmin) {
                     // Disabled until reportes is ready
                     /*ConfigurationTile(
@@ -357,6 +365,7 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
+    PROFILE,
     PRODUCT_CATALOG,
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,

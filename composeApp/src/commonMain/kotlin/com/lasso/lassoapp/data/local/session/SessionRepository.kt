@@ -27,6 +27,12 @@ class SessionRepository(
         return session
     }
 
+    suspend fun updateProfile(employee: Employee) {
+        val session = sessionDao.getSession() ?: return
+        if (session.employeeId != employee.id) return
+        sessionDao.insert(session.copy(employeeName = employee.name, employeeRole = employee.role))
+    }
+
     suspend fun removeSession() {
         sessionDao.deleteAll()
     }

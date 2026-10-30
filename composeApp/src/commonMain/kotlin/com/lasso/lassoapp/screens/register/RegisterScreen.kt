@@ -235,7 +235,7 @@ private fun RegisterScreenContent(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RegistrationTextField(
+internal fun RegistrationTextField(
     label: String,
     value: String,
     placeholder: String,

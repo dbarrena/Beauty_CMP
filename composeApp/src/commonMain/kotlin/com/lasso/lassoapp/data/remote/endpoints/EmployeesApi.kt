@@ -15,10 +15,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 interface EmployeesApi {
+    suspend fun getProfile(id: Int): Employee
+    suspend fun updateProfile(id: Int, request: ProfileUpdateRequest): Employee
     suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee
     suspend fun getEmployees(): List<Employee>
     suspend fun editEmployee(employee: Employee): Employee
 }
+
+@Serializable
+data class ProfileUpdateRequest(
+    val name: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+)
 
 @Serializable
 private data class EmployeeEditRequest(
@@ -31,6 +40,16 @@ private data class EmployeeEditRequest(
 )
 
 internal class KtorEmployeesApi(private val client: HttpClient) : EmployeesApi {
+    override suspend fun getProfile(id: Int): Employee =
+        client.get(LASSO_API_URL + "employees/all").bodyOrThrow<List<Employee>>()
+            .firstOrNull { it.id == id } ?: error("No se pudo encontrar tu perfil.")
+
+    override suspend fun updateProfile(id: Int, request: ProfileUpdateRequest): Employee =
+        client.post(LASSO_API_URL + "employees/edit/$id") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
+
     override suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee =
         client.post(LASSO_API_URL + "employees/add") {
             contentType(ContentType.Application.Json)

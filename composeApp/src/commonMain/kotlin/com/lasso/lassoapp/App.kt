@@ -41,6 +41,7 @@ import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
 import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.register.RegisterScreen
+import com.lasso.lassoapp.screens.profile.ProfileScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_catalog.ProductCatalogScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
@@ -66,6 +67,9 @@ object SalesDestination
 
 @Serializable
 object ConfigurationDestination
+
+@Serializable
+object ProfileDestination
 
 @Serializable
 data class DetailDestination(val objectId: Int)
@@ -133,6 +137,7 @@ fun App() {
             currentDestination?.hasRoute<EmployeesDestination>() == true -> "Empleados"
             currentDestination?.hasRoute<ClientsDestination>() == true -> "Clientes"
             currentDestination?.hasRoute<CommissionsDestination>() == true -> "Comisiones"
+            currentDestination?.hasRoute<ProfileDestination>() == true -> "Perfil"
             else -> ""
         }
 
@@ -263,6 +268,9 @@ fun App() {
                             }
                         ) { destination ->
                             when (destination) {
+                                ConfigurationScreenRoutes.PROFILE -> {
+                                    navController.navigate(ProfileDestination)
+                                }
                                 ConfigurationScreenRoutes.CASH_CLOSURE -> {
                                     navController.navigate(CashClosureDestination)
                                 }
@@ -303,6 +311,15 @@ fun App() {
                     }
                     composable<RegisterDestination> {
                         RegisterScreen(onLogin = { navController.popBackStack() })
+                    }
+                    composable<ProfileDestination> {
+                        ProfileScreen(onLoggedOut = {
+                            viewModel.setLoggedOut()
+                            navController.navigate(LoginDestination) {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        })
                     }
                     composable<CalendarDestination> {
                         CalendarScreen()
