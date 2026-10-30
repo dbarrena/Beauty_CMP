@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lasso.lassoapp.model.AppointmentWriteRequest
+import com.lasso.lassoapp.model.AppointmentServiceSummary
 import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.model.Employee
@@ -23,7 +24,7 @@ import kotlinx.datetime.toLocalDateTime
 internal class AppointmentFormState(
     initialClient: Client?,
     initialEmployee: Employee?,
-    initialService: Service?,
+    initialServices: List<AppointmentServiceSummary>,
     initialDate: LocalDate,
     initialStartMinutes: Int,
     initialEndMinutes: Int,
@@ -33,7 +34,7 @@ internal class AppointmentFormState(
         private set
     var selectedEmployee by mutableStateOf(initialEmployee)
         private set
-    var selectedService by mutableStateOf(initialService)
+    var selectedServices by mutableStateOf(initialServices.distinctBy { it.id })
         private set
     var selectedDate by mutableStateOf(initialDate)
         private set
@@ -60,11 +61,14 @@ internal class AppointmentFormState(
     }
 
     fun selectService(service: Service) {
-        selectedService = service
+        val id = service.id?.takeIf { it > 0 } ?: return
+        if (selectedServices.none { it.id == id }) {
+            selectedServices = selectedServices + AppointmentServiceSummary(id, service.name)
+        }
     }
 
-    fun clearService() {
-        selectedService = null
+    fun removeService(serviceId: Int) {
+        selectedServices = selectedServices.filterNot { it.id == serviceId }
     }
 
     fun selectDate(date: LocalDate) {
@@ -95,14 +99,10 @@ internal class AppointmentFormState(
         if (employee != null && selectedEmployee == null) selectedEmployee = employee
     }
 
-    fun useServiceIfMissing(service: Service?) {
-        if (service != null && selectedService == null) selectedService = service
-    }
-
     fun toRequest(): AppointmentWriteRequest = AppointmentWriteRequest(
         employeeId = requireNotNull(selectedEmployee).id,
         clientId = selectedClient?.id,
-        serviceName = selectedService?.name,
+        serviceIds = selectedServices.map { it.id },
         startsAt = selectedDate.atMinutes(startMinutes),
         endsAt = selectedDate.atMinutes(endMinutes),
         notes = notes.trim().ifBlank { null },
@@ -115,7 +115,6 @@ internal fun rememberAppointmentFormState(
     appointmentEmployeeId: Int?,
     clients: List<Client>,
     employees: List<Employee>,
-    services: List<Service>,
     initialDate: LocalDate,
     initialStartMinutes: Int?,
     preferredClient: Client?,
@@ -128,7 +127,7 @@ internal fun rememberAppointmentFormState(
         AppointmentFormState(
             initialClient = clients.firstOrNull { it.id == appointment?.client?.id },
             initialEmployee = employees.firstOrNull { it.id == appointmentEmployeeId },
-            initialService = services.firstOrNull { it.name == appointment?.serviceName },
+            initialServices = appointment?.services.orEmpty(),
             initialDate = appointmentStart?.date ?: initialDate,
             initialStartMinutes = appointmentStart?.minutesOfDay ?: defaultStart,
             initialEndMinutes = appointmentEnd?.minutesOfDay
@@ -145,9 +144,6 @@ internal fun rememberAppointmentFormState(
     }
     LaunchedEffect(appointmentEmployeeId, employees) {
         state.useEmployeeIfMissing(employees.firstOrNull { it.id == appointmentEmployeeId })
-    }
-    LaunchedEffect(appointment?.id, services) {
-        state.useServiceIfMissing(services.firstOrNull { it.name == appointment?.serviceName })
     }
 
     return state

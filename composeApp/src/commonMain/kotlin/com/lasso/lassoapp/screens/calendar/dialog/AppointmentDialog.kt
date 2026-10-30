@@ -61,7 +61,6 @@ fun AppointmentDialog(
             appointmentEmployeeId = appointmentEmployeeId,
             clients = clients,
             employees = employees,
-            services = services,
             initialDate = initialDate,
             initialStartMinutes = initialStartMinutes,
             preferredClient = preferredClient,
@@ -136,10 +135,10 @@ fun AppointmentDialog(
 
             AppointmentFormSpacer()
             AppointmentServiceField(
-                selectedService = formState.selectedService,
+                selectedServices = formState.selectedServices,
                 enabled = !isBusy,
                 onSearchClick = { showServiceSearch = true },
-                onServiceRemoved = formState::clearService,
+                onServiceRemoved = formState::removeService,
             )
 
             AppointmentFormSpacer()
@@ -194,7 +193,10 @@ fun AppointmentDialog(
 
     if (showServiceSearch) {
         SearchServiceDialog(
-            services = services,
+            services = services.filter { service ->
+                service.id != null && service.id > 0 &&
+                    formState.selectedServices.none { it.id == service.id }
+            },
             onDismiss = { showServiceSearch = false },
             onServiceSelected = formState::selectService,
         )

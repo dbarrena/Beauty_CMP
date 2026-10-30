@@ -310,7 +310,8 @@ fun AppointmentCalendarResponse.toEvents(timeZone: TimeZone): List<Event> {
                 color = colors[employeeIndex % colors.size],
                 start = Instant.fromEpochMilliseconds(appointment.startsAt).toLocalDateTime(timeZone),
                 end = Instant.fromEpochMilliseconds(appointment.endsAt).toLocalDateTime(timeZone),
-                description = appointment.serviceName?.takeIf { it.isNotBlank() },
+                description = appointment.services.map { it.name }.filter { it.isNotBlank() }
+                    .joinToString(", ").takeIf { it.isNotBlank() },
                 employeeId = employee.id,
             )
         }
