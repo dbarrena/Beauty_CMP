@@ -45,9 +45,13 @@ class AccessibilityLayoutTest {
         var selected by mutableStateOf(MainTab.Home)
         compose.setContent {
             Theme(scale) {
-                Box(Modifier.width(320.dp)) { MainNavigationBar(selected) { selected = it } }
+                Box(Modifier.width(320.dp).testTag("mainNavigation")) {
+                    MainNavigationBar(selected) { selected = it }
+                }
             }
         }
+        // The original 105 dp bar includes system insets, plus the 1 dp divider.
+        compose.onNodeWithTag("mainNavigation").assertHeightIsEqualTo(106.dp)
         for (font in listOf(1f, 1.8f, 2f)) {
             compose.runOnIdle { scale = font }
             for (tab in MainTab.entries) {

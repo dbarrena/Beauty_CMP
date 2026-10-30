@@ -3,6 +3,7 @@ package com.lasso.lassoapp
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.agenda_icon
@@ -51,12 +53,27 @@ fun MainNavigationBar(selectedTab: MainTab, onSelect: (MainTab) -> Unit) {
         }
     val labelWidth = with(density) { labelSize.width.toDp() }
     val labelHeight = with(density) { labelSize.height.toDp() }
-    val itemHeight = maxOf(80.dp, 22.dp + labelHeight + 24.dp)
+    val baselineLabelHeight =
+        remember(selectedTab, labelStyle, density.density, resolver, measurer) {
+            measurer.measure(
+                selectedTab.label,
+                labelStyle,
+                softWrap = false,
+                density = Density(density.density, fontScale = 1f),
+            ).size.height
+        }
+    val extraLabelHeight = with(density) {
+        (labelSize.height - baselineLabelHeight).coerceAtLeast(0).toDp()
+    }
+    // The original 105 dp includes system insets. Grow only for enlarged labels;
+    // an 80 dp minimum on the inner items adds height on top of those insets.
+    val barHeight = 105.dp + extraLabelHeight
+    val itemHeight = maxOf(48.dp, 22.dp + labelHeight + 16.dp)
 
     Column {
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         NavigationBar(
-            modifier = Modifier.heightIn(min = 105.dp),
+            modifier = Modifier.height(barHeight),
             containerColor = Color.White,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
