@@ -25,9 +25,10 @@ class ProfileTest {
         var requests = mutableListOf<ProfileUpdateRequest>()
         var gate: CompletableDeferred<Unit>? = null
         var remembered: Employee? = null
+        var loadedEmployee = employee
         override suspend fun load(): Employee {
             if (loadFails) error("Sin conexión")
-            return employee
+            return loadedEmployee
         }
         override suspend fun update(id: Int, request: ProfileUpdateRequest): Employee {
             assertEquals(employee.id, id)
@@ -38,6 +39,17 @@ class ProfileTest {
         }
         override suspend fun rememberProfile(employee: Employee) { remembered = employee }
         override suspend fun logout() {}
+        var savedBranches = emptyList<Session>()
+        var branchLoginFails = false
+        var branchLoginCalls = 0
+        var switchedPartner: Int? = null
+        override suspend fun branches() = savedBranches
+        override suspend fun addBranch(email: String, password: String) {
+            branchLoginCalls++
+            if (branchLoginFails) error("Correo o contraseña incorrectos.")
+            savedBranches = listOf(Session(2, 3, 8, "Sucursal Centro", "Ana", "administrador", "branch-token"))
+        }
+        override suspend fun switchBranch(partnerId: Int) { switchedPartner = partnerId }
     }
 
     private fun profileTest(block: suspend TestScope.(FakeRepository, ProfileViewModel) -> Unit) = runTest {
@@ -144,6 +156,46 @@ class ProfileTest {
     }
 
     @Test
+    fun branchLoginFailurePreservesProfileAndSuccessClearsPassword() = profileTest { repository, model ->
+        repository.loadedEmployee = employee.copy(role = "administrador")
+        model.loadProfile()
+        runCurrent()
+        model.openDialog(ProfileDialog.Branch)
+        assertEquals("", model.state.value.email)
+        model.updateField(ProfileField.Email, "branch@example.com")
+        model.updateField(ProfileField.Password, "secret")
+        repository.branchLoginFails = true
+        model.save()
+        runCurrent()
+        assertEquals(ProfileDialog.Branch, model.state.value.dialog)
+        assertTrue(model.state.value.branches.isEmpty())
+        assertEquals(repository.loadedEmployee, model.state.value.employee)
+        assertNotNull(model.state.value.error)
+        repository.branchLoginFails = false
+        model.save()
+        model.save()
+        runCurrent()
+        assertEquals(2, repository.branchLoginCalls)
+        assertNull(model.state.value.dialog)
+        assertEquals("", model.state.value.password)
+        assertEquals("Sucursal Centro", model.state.value.branches.single().partnerName)
+        model.switchBranch(999)
+        runCurrent()
+        assertNull(repository.switchedPartner)
+        model.switchBranch(3)
+        runCurrent()
+        assertEquals(3, repository.switchedPartner)
+        assertTrue(model.state.value.branchChanged)
+    }
+
+    @Test
+    fun employeeCannotOpenBranchLogin() = profileTest { repository, model ->
+        model.openDialog(ProfileDialog.Branch)
+        assertNull(model.state.value.dialog)
+        assertEquals(0, repository.branchLoginCalls)
+    }
+
+    @Test
     fun updatingCachedProfilePreservesTheSessionTokenAndBusiness() = runTest {
         val original = Session(id = 1, partnerId = 2, employeeId = 7, partnerName = "Estética", employeeName = "Ana",
             employeeRole = "empleado", token = "existing-session-token")
@@ -151,6 +203,7 @@ class ProfileTest {
         val dao = object : SessionDao {
             override suspend fun insert(session: Session): Long { saved = session; return session.id.toLong() }
             override suspend fun getSession() = saved
+            override suspend fun getSessions() = listOf(saved)
             override suspend fun deleteAll(): Int = error("Updating a profile must preserve the session")
         }
         val repository = SessionRepository(dao)

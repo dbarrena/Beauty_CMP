@@ -313,7 +313,13 @@ fun App() {
                         RegisterScreen(onLogin = { navController.popBackStack() })
                     }
                     composable<ProfileDestination> {
-                        ProfileScreen(onLoggedOut = {
+                        ProfileScreen(onBranchChanged = {
+                            viewModel.setLoggedIn()
+                            navController.navigate(HomeDestination) {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }, onLoggedOut = {
                             viewModel.setLoggedOut()
                             navController.navigate(LoginDestination) {
                                 popUpTo(navController.graph.id) { inclusive = true }

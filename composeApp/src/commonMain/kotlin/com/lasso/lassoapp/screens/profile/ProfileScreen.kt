@@ -10,8 +10,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,11 +35,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProfileScreen(onLoggedOut: () -> Unit) {
+fun ProfileScreen(onLoggedOut: () -> Unit, onBranchChanged: () -> Unit) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val state by viewModel.state.collectAsState()
     LaunchedEffect(state.loggedOut) { if (state.loggedOut) onLoggedOut() }
-    ProfileScreenContent(state, viewModel::openDialog, viewModel::logout, viewModel::loadProfile)
+    LaunchedEffect(state.branchChanged) { if (state.branchChanged) onBranchChanged() }
+    ProfileScreenContent(state, viewModel::openDialog, viewModel::logout, viewModel::loadProfile, viewModel::switchBranch)
     if (state.dialog != null) {
         ProfileFormDialog(state, viewModel::updateField, viewModel::save, viewModel::dismissDialog)
     }
@@ -50,6 +52,7 @@ internal fun ProfileScreenContent(
     onOpenDialog: (ProfileDialog) -> Unit,
     onLogout: () -> Unit,
     onRetry: () -> Unit,
+    onSwitchBranch: (Int) -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().background(LassoPageBackground)
@@ -91,7 +94,7 @@ internal fun ProfileScreenContent(
                     ProfileDetail("Cargo", roleLabel(employee.role), Icons.Outlined.WorkOutline)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
-                            onClick = { onOpenDialog(ProfileDialog.Edit) }, enabled = !state.isLoggingOut,
+                            onClick = { onOpenDialog(ProfileDialog.Edit) }, enabled = !state.isLoggingOut && !state.isSaving,
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoPrimary),
@@ -101,7 +104,7 @@ internal fun ProfileScreenContent(
                                 maxLines = 1, softWrap = false, textAlign = TextAlign.Center)
                         }
                         OutlinedButton(
-                            onClick = { onOpenDialog(ProfileDialog.Password) }, enabled = !state.isLoggingOut,
+                            onClick = { onOpenDialog(ProfileDialog.Password) }, enabled = !state.isLoggingOut && !state.isSaving,
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(14.dp),
@@ -115,6 +118,45 @@ internal fun ProfileScreenContent(
                                 Text("Cambiar contraseña", fontSize = 12.sp, fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.sp, maxLines = 1, softWrap = false)
                             }
+                        }
+                    }
+                }
+            }
+        }
+        val isAdmin = state.employee?.role.equals("administrador", ignoreCase = true)
+        if (isAdmin || state.branches.isNotEmpty()) {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column {
+                    Text("Sucursales", style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold, color = LassoTextPrimary)
+                    Text("Gestiona el negocio en el que trabajas.", style = MaterialTheme.typography.bodyMedium,
+                        color = LassoTextMuted)
+                }
+                if (isAdmin) {
+                    BranchActionButton("Agregar sucursal", !state.isSaving && !state.isLoggingOut && !state.isLoading,
+                        { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add)
+                }
+                state.branches.forEach { branch ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = LassoSurface),
+                        border = BorderStroke(1.dp, LassoOutlineHairline),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Box(Modifier.size(48.dp).background(LassoSecondary.copy(alpha = 0.14f), RoundedCornerShape(14.dp)),
+                                    contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Outlined.Storefront, null, Modifier.size(24.dp), tint = LassoSecondary)
+                                }
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(branch.partnerName.ifBlank { "Sucursal ${branch.partnerId}" },
+                                        style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = LassoTextPrimary)
+                                    Text("Sucursal guardada", style = MaterialTheme.typography.bodySmall, color = LassoGray)
+                                }
+                            }
+                            BranchActionButton("Cambiar a esta sucursal", !state.isSaving && !state.isLoggingOut && !state.isLoading,
+                                { onSwitchBranch(branch.partnerId) }, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }
@@ -138,6 +180,29 @@ internal fun ProfileScreenContent(
             Spacer(Modifier.width(8.dp))
             Text(if (state.isLoggingOut) "Cerrando sesión..." else "Cerrar sesión")
         }
+    }
+}
+
+@Composable
+private fun BranchActionButton(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+) {
+    OutlinedButton(
+        onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
+        shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoSecondary),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Color.Black),
+    ) {
+        icon?.let {
+            Icon(it, null, Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center)
     }
 }
 
@@ -170,6 +235,7 @@ internal fun ProfileFormDialog(
     onDismiss: () -> Unit,
 ) {
     val editing = state.dialog == ProfileDialog.Edit
+    val addingBranch = state.dialog == ProfileDialog.Branch
     LassoDialogFrame(
         onDismiss = { if (!state.isSaving) onDismiss() },
         shape = RoundedCornerShape(16.dp), color = Color.White,
@@ -177,19 +243,23 @@ internal fun ProfileFormDialog(
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (editing) "Editar perfil" else "Cambiar contraseña", Modifier.weight(1f),
+                    Text(if (addingBranch) "Agregar sucursal" else if (editing) "Editar perfil" else "Cambiar contraseña", Modifier.weight(1f),
                         style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = LassoTextPrimary)
                     IconButton(onClick = onDismiss, enabled = !state.isSaving) {
                         Icon(Icons.Default.Close, "Cerrar", tint = LassoTextMuted)
                     }
                 }
-                val fields = if (editing) listOf(ProfileField.Name, ProfileField.Email)
+                if (addingBranch) Text("Inicia sesión con la cuenta de la sucursal que quieres agregar.",
+                    color = LassoTextPrimary, style = MaterialTheme.typography.bodyMedium)
+                val fields = if (addingBranch) listOf(ProfileField.Email, ProfileField.Password)
+                    else if (editing) listOf(ProfileField.Name, ProfileField.Email)
                     else listOf(ProfileField.Password, ProfileField.ConfirmPassword)
                 fields.forEach { field ->
                     val (label, value, placeholder) = when (field) {
                         ProfileField.Name -> Triple("Nombre", state.name, "Tu nombre completo")
                         ProfileField.Email -> Triple("Correo electrónico", state.email, "nombre@correo.com")
-                        ProfileField.Password -> Triple("Nueva contraseña", state.password, "Mínimo 8 caracteres")
+                        ProfileField.Password -> if (addingBranch) Triple("Contraseña", state.password, "Tu contraseña")
+                            else Triple("Nueva contraseña", state.password, "Mínimo 8 caracteres")
                         ProfileField.ConfirmPassword -> Triple("Confirmar nueva contraseña", state.confirmPassword, "Repite tu contraseña")
                     }
                     RegistrationTextField(
@@ -222,7 +292,8 @@ internal fun ProfileFormDialog(
                         CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (state.isSaving) "Guardando..." else if (editing) "Guardar cambios" else "Actualizar contraseña")
+                    Text(if (state.isSaving) { if (addingBranch) "Iniciando sesión..." else "Guardando..." }
+                        else if (addingBranch) "Iniciar sesión" else if (editing) "Guardar cambios" else "Actualizar contraseña")
                 }
             }
     }

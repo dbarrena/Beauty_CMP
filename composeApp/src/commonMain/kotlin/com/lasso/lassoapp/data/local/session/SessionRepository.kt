@@ -17,13 +17,25 @@ class SessionRepository(
             token = token,
         )
 
-        sessionDao.deleteAll()
-        sessionDao.insert(sessionEntity)
+        sessionDao.replaceSession(sessionEntity)
     }
+
+    suspend fun getBranches(): List<Session> = sessionDao.getSessions().drop(1)
+
+    suspend fun addBranch(employee: Employee, token: String) {
+        require(sessionDao.getSession()?.isAdmin == true) { "Solo los administradores pueden agregar sucursales." }
+        require(token.isNotBlank()) { "No se recibió un token de sesión válido." }
+        sessionDao.rememberBranch(Session(
+            partnerId = employee.partnerId, employeeId = employee.id,
+            partnerName = employee.partners?.name.orEmpty(), employeeName = employee.name,
+            employeeRole = employee.role, token = token,
+        ))
+    }
+
+    suspend fun switchBranch(partnerId: Int) = sessionDao.switchBranch(partnerId)
 
     suspend fun getSession(): Session? {
         val session = sessionDao.getSession()
-        println("session: $session")
         return session
     }
 
