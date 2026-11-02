@@ -38,12 +38,21 @@ class ComisionesPdfUtil {
                 CommissionPdfRow(it.name, it.quantity, it.totalSales, it.commissionPercentage, it.commission)
             },
         )
+        val employeeName = calculation.employee.name
+            .map { if (it in "\\/:*?\"<>|" || it.isISOControl()) ' ' else it }
+            .joinToString("")
+            .replace(Regex("\\s+"), " ")
+            .trim(' ', '.')
+            .ifEmpty { "Colaborador" }
         return ComisionesPdfFile(
-            "Lasso_Comisiones_${calculation.employee.id}_${periodStart}_${periodEnd}.pdf",
+            "Comisiones $employeeName - ${periodStart.fileLabel()} a ${periodEnd.fileLabel()}.pdf",
             renderer.render(statement),
         )
     }
 }
+
+private fun LocalDate.fileLabel(): String =
+    "${day.toString().padStart(2, '0')}-${(month.ordinal + 1).toString().padStart(2, '0')}-${year.toString().padStart(4, '0')}"
 
 private fun LocalDate.label(): String {
     val months = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")

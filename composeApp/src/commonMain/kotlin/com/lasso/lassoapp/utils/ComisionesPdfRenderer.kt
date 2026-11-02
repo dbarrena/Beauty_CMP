@@ -51,9 +51,9 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
         text("Productos", 314.0, y + 105, 10.0, color = muted)
         text(money(data.productCommission), 541.0, y + 105, 11.0, true, right = true)
         y += 147
-        section("Servicios", data.services, data.serviceSales, data.serviceCommission, "0.0 0.820 0.678")
+        section("Servicios", data.services, data.serviceCommission, "0.0 0.820 0.678")
         y += 12
-        section("Productos", data.products, data.productSales, data.productCommission, "1.0 0.478 0.373")
+        section("Productos", data.products, data.productCommission, "1.0 0.478 0.373")
         pages.forEachIndexed { i, p ->
             lineOn(p, 36.0, 789.0, 559.0, 789.0)
             textOn(p, "Generado con Lasso", 36.0, 808.0, 8.0, color = muted)
@@ -86,7 +86,7 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
 
     private fun ensure(height: Double) { if (y + height > 764) newPage() }
 
-    private fun section(title: String, rows: List<CommissionPdfRow>, sales: Double, commission: Double, accent: String) {
+    private fun section(title: String, rows: List<CommissionPdfRow>, commission: Double, accent: String) {
         ensure(109.0)
         sectionHeader(title, accent)
         if (rows.isEmpty()) {
@@ -95,7 +95,7 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
         }
         rows.forEachIndexed { rowIndex, row ->
             // Split even a single unusually long name across pages without dropping content.
-            val lines = wrap(row.name, 214.0, 10.0, false)
+            val lines = wrap(row.name, 360.0, 10.0, false)
             val fullHeight = maxOf(32.0, lines.size * 14.0 + 16)
             if (fullHeight <= 550 && y + fullHeight > 764) {
                 newPage()
@@ -109,9 +109,7 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
                 rect(36.0, y, 523.0, height, if (rowIndex % 2 == 0) "0.973 0.973 0.980" else "1 1 1")
                 for (i in 0 until count) text(lines[index + i], 48.0, y + 22 + i * 14, 10.0)
                 if (index == 0) {
-                    text(row.quantity.toString(), 302.0, y + 22, 9.0, right = true)
-                    text(money(row.sales), 397.0, y + 22, 9.0, right = true)
-                    text(row.percentage?.let { "${number(it)}%" } ?: "Variable", 461.0, y + 22, 9.0, right = true)
+                    text(row.quantity.toString(), 461.0, y + 22, 9.0, right = true)
                     text(money(row.commission), 548.0, y + 22, 9.0, true, right = true)
                 }
                 y += height
@@ -121,7 +119,6 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
         ensure(32.0)
         line(36.0, y, 559.0, y)
         text("Subtotal ${title.lowercase()}", 48.0, y + 21, 10.0, true)
-        text(money(sales), 397.0, y + 21, 9.0, right = true)
         text(money(commission), 548.0, y + 21, 10.0, true, right = true)
         y += 28
     }
@@ -131,9 +128,7 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
         text(title, 48.0, y + 15, 13.0, true)
         y += 31
         text("CONCEPTO", 48.0, y + 11, 7.0, true, color = muted)
-        text("CANT.", 302.0, y + 11, 7.0, true, right = true, color = muted)
-        text("VENTAS", 397.0, y + 11, 7.0, true, right = true, color = muted)
-        text("TASA", 461.0, y + 11, 7.0, true, right = true, color = muted)
+        text("CANT.", 461.0, y + 11, 7.0, true, right = true, color = muted)
         text("COMISIÓN", 548.0, y + 11, 7.0, true, right = true, color = muted)
         y += 21
     }
@@ -176,7 +171,6 @@ internal class ComisionesPdfRenderer(regular: ByteArray, bold: ByteArray, privat
 }
 
 private fun n(value: Double): String = ((value * 1000).roundToLong() / 1000.0).toString()
-private fun number(value: Double): String = if (value == value.toLong().toDouble()) value.toLong().toString() else n(value)
 private fun money(value: Double): String {
     val cents = (kotlin.math.abs(value) * 100).roundToLong()
     val whole = (cents / 100).toString().reversed().chunked(3).joinToString(",").reversed()
