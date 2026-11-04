@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.employees.dialog.edit.EditEmployeeDialog
 import com.lasso.lassoapp.screens.employees.dialog.new.NewEmployeeDialog
+import com.lasso.lassoapp.screens.employees.dialog.edit.DisableEmployeeConfirmationDialog
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
@@ -130,9 +131,22 @@ fun EmployeesScreen() {
         if (employee != null) {
             EditEmployeeDialog(
                 employee = employee,
-                isLoading = state.isUpdating,
+                isLoading = state.isUpdating || state.isDisabling,
                 onDismiss = { viewModel.hideEditEmployeeDialog() },
+                onDisable = viewModel::showDisableConfirmation,
                 onEdit = { viewModel.editEmployee(it) }
+            )
+        }
+    }
+
+    if (state.isDisableConfirmationDisplayed) {
+        state.selectedEmployee?.let { employee ->
+            DisableEmployeeConfirmationDialog(
+                employeeName = employee.name,
+                isLoading = state.isDisabling,
+                error = state.disableError,
+                onDismiss = viewModel::hideDisableConfirmation,
+                onConfirm = viewModel::disableEmployee
             )
         }
     }

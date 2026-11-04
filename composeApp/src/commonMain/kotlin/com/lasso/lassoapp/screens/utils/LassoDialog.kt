@@ -97,15 +97,22 @@ internal fun DialogContentScaffold(
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth().padding(start = 4.dp, top = 24.dp, end = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             if (onBack != null) {
                 TextButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Volver")
                 }
+            } else {
+                Spacer(Modifier.width(48.dp))
             }
-            Spacer(Modifier.weight(1f))
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                header()
+            }
             IconButton(onClick = onClose, enabled = closeEnabled) {
                 Icon(
                     Icons.Default.Close,
@@ -117,11 +124,7 @@ internal fun DialogContentScaffold(
         AdaptiveScrollContent(
             scroll = scroll,
             modifier = Modifier.weight(1f, fill = false),
-            header = {
-                Box(Modifier.padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 24.dp)) {
-                    header()
-                }
-            },
+            header = {},
             actions =
                 actions?.let { action ->
                     {

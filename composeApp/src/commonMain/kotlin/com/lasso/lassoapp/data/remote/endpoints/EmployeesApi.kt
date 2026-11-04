@@ -5,6 +5,7 @@ import com.lasso.lassoapp.data.remote.bodyOrThrow
 import com.lasso.lassoapp.data.remote.recoverWith
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.EmployeeRegistrationRequest
+import com.lasso.lassoapp.model.MessageResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -20,6 +21,7 @@ interface EmployeesApi {
     suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee
     suspend fun getEmployees(): List<Employee>
     suspend fun editEmployee(employee: Employee): Employee
+    suspend fun disableEmployee(id: Int): String?
 }
 
 @Serializable
@@ -40,6 +42,12 @@ private data class EmployeeEditRequest(
 )
 
 internal class KtorEmployeesApi(private val client: HttpClient) : EmployeesApi {
+    override suspend fun disableEmployee(id: Int): String? =
+        client.post(LASSO_API_URL + "employees/disable") {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("id" to id))
+        }.bodyOrThrow<MessageResponse>().message
+
     override suspend fun getProfile(id: Int): Employee =
         client.get(LASSO_API_URL + "employees/all").bodyOrThrow<List<Employee>>()
             .firstOrNull { it.id == id } ?: error("No se pudo encontrar tu perfil.")

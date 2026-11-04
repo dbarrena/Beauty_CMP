@@ -79,7 +79,7 @@ val viewModelModule = module {
     factoryOf(::ProductCategoryModalViewModel)
     factoryOf(::ProductCatalogViewModel)
     factoryOf(::SalesByProductCategoryViewModel)
-    factoryOf(::EmployeesViewModel)
+    factory { EmployeesViewModel(get<LassoApi>()) }
     factoryOf(::ClientsViewModel)
     factory { CheckoutDialogViewModelV2(get(), get()) }
 }

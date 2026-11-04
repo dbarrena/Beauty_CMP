@@ -181,20 +181,22 @@ fun NewEmployeeDialog(
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
                             EmployeeField(
-                                label = "Comisión Prod. (%)",
+                                label = "Comisión Prod. (%) *",
                                 value = productCommission,
                                 onValueChange = { productCommission = it },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isLoading
+                                enabled = !isLoading,
+                                error = if (productCommission.isBlank()) "Campo obligatorio" else null
                             )
                         }
                         Box(modifier = Modifier.weight(1f)) {
                             EmployeeField(
-                                label = "Comisión Serv. (%)",
+                                label = "Comisión Serv. (%) *",
                                 value = serviceCommission,
                                 onValueChange = { serviceCommission = it },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isLoading
+                                enabled = !isLoading,
+                                error = if (serviceCommission.isBlank()) "Campo obligatorio" else null
                             )
                         }
                     }
@@ -214,7 +216,8 @@ fun NewEmployeeDialog(
                             )
                             onRegister(request)
                         },
-                        enabled = name.isNotBlank() && email.isNotBlank() && !isLoading,
+                        enabled = name.isNotBlank() && email.isNotBlank() &&
+                            productCommission.isNotBlank() && serviceCommission.isNotBlank() && !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
@@ -288,7 +291,8 @@ fun EmployeeField(
     value: String,
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    error: String? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -307,6 +311,7 @@ fun EmployeeField(
                 .fillMaxWidth()
                 .height(48.dp),
             enabled = enabled,
+            isError = error != null,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = LassoSurfaceVariant,
                 unfocusedContainerColor = LassoSurfaceVariant,
@@ -323,5 +328,12 @@ fun EmployeeField(
             textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
             keyboardOptions = keyboardOptions
         )
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }

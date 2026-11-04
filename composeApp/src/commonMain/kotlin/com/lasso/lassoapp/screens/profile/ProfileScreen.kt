@@ -127,19 +127,23 @@ internal fun ProfileScreenContent(
         if (isAdmin || state.branches.isNotEmpty()) {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column {
-                    Text("Sucursales", style = MaterialTheme.typography.headlineMedium,
+                    Text("Sucursales", modifier = Modifier.padding(top = 16.dp), style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold, color = LassoTextPrimary)
-                    Text("Gestiona el negocio en el que trabajas.", style = MaterialTheme.typography.bodyMedium,
+                    Text("Gestiona multiples sucursales.", style = MaterialTheme.typography.bodyMedium,
                         color = LassoTextMuted)
                 }
                 if (isAdmin) {
                     BranchActionButton("Agregar sucursal", !state.isSaving && !state.isLoggingOut && !state.isLoading,
-                        { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add)
+                        { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add,
+                        containerColor = LassoSecondaryLight.copy(alpha = 0.45f).compositeOver(Color.White),
+                        contentColor = Color.Black)
                 }
                 state.branches.forEach { branch ->
                     Card(
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = LassoSurface),
+                        colors = CardDefaults.cardColors(
+                            containerColor = LassoSecondaryLight.copy(alpha = 0.45f).compositeOver(Color.White),
+                        ),
                         border = BorderStroke(1.dp, LassoOutlineHairline),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     ) {
@@ -190,18 +194,21 @@ private fun BranchActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black,
+    fontWeight: FontWeight = FontWeight.Normal,
 ) {
     OutlinedButton(
         onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
         shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoSecondary),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Color.Black),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = containerColor, contentColor = contentColor),
     ) {
         icon?.let {
             Icon(it, null, Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
         }
-        Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Normal,
+        Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = fontWeight,
             textAlign = TextAlign.Center)
     }
 }

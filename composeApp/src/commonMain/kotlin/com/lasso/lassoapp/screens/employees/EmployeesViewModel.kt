@@ -2,25 +2,29 @@ package com.lasso.lassoapp.screens.employees
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lasso.lassoapp.data.remote.LassoApi
+import com.lasso.lassoapp.data.remote.endpoints.EmployeesApi
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.EmployeeRegistrationRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class EmployeesState(
     val employees: List<Employee> = emptyList(),
     val isLoading: Boolean = false,
     val isRegistering: Boolean = false,
     val isUpdating: Boolean = false,
+    val isDisabling: Boolean = false,
+    val isDisableConfirmationDisplayed: Boolean = false,
+    val disableError: String? = null,
     val isNewEmployeeDialogDisplayed: Boolean = false,
     val selectedEmployee: Employee? = null,
     val isEditEmployeeDialogDisplayed: Boolean = false
 )
 
-class EmployeesViewModel(private val lassoApi: LassoApi) : ViewModel() {
+class EmployeesViewModel(private val lassoApi: EmployeesApi) : ViewModel() {
     private val _state = MutableStateFlow(EmployeesState())
     val state: StateFlow<EmployeesState> = _state.asStateFlow()
 
@@ -54,7 +58,43 @@ class EmployeesViewModel(private val lassoApi: LassoApi) : ViewModel() {
     }
 
     fun hideEditEmployeeDialog() {
+        if (_state.value.isDisabling) return
         _state.value = _state.value.copy(selectedEmployee = null, isEditEmployeeDialogDisplayed = false)
+    }
+
+    fun showDisableConfirmation() {
+        if (_state.value.selectedEmployee == null || _state.value.isUpdating || _state.value.isDisabling) return
+        _state.value = _state.value.copy(isDisableConfirmationDisplayed = true, disableError = null)
+    }
+
+    fun hideDisableConfirmation() {
+        if (_state.value.isDisabling) return
+        _state.value = _state.value.copy(isDisableConfirmationDisplayed = false, disableError = null)
+    }
+
+    fun disableEmployee() {
+        val current = _state.value
+        val employee = current.selectedEmployee ?: return
+        if (!current.isDisableConfirmationDisplayed || current.isDisabling || current.isUpdating) return
+        _state.value = current.copy(isDisabling = true, disableError = null)
+        viewModelScope.launch {
+            try {
+                lassoApi.disableEmployee(employee.id)
+                _state.value = _state.value.copy(
+                    employees = _state.value.employees.filterNot { it.id == employee.id },
+                    selectedEmployee = null,
+                    isEditEmployeeDialogDisplayed = false,
+                    isDisableConfirmationDisplayed = false
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                _state.value = _state.value.copy(
+                    disableError = e.message ?: "No se pudo desactivar al empleado. Intenta de nuevo."
+                )
+            } finally {
+                _state.value = _state.value.copy(isDisabling = false)
+            }
+        }
     }
 
     fun onEmployeeSaved() {
