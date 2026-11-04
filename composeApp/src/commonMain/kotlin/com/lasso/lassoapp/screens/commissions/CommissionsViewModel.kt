@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -36,9 +38,12 @@ data class CommissionsState(
     val serviceCommission: Double = 0.0,
     val productCommission: Double = 0.0,
     val transactionCount: Int = 0,
+    val reportPeriodStart: LocalDate? = null,
+    val reportPeriodEnd: LocalDate? = null,
 )
 
 class CommissionsViewModel(private val lassoApi: LassoApi) : ViewModel() {
+    private var calculationJob: Job? = null
     private val _state = MutableStateFlow(CommissionsState())
     val state: StateFlow<CommissionsState> = _state.asStateFlow()
 
@@ -92,11 +97,15 @@ class CommissionsViewModel(private val lassoApi: LassoApi) : ViewModel() {
     private fun loadCommissions() {
         val employeeId = _state.value.selectedEmployee?.id ?: return
         val period = _state.value.periodFilter
+        val range = getEpochRangeForPeriod(period)
+        calculationJob?.cancel()
+        _state.value = _state.value.copy(
+            isLoading = true, commissions = emptyList(), reportPeriodStart = null, reportPeriodEnd = null,
+            totalCommission = 0.0, serviceCommission = 0.0, productCommission = 0.0, transactionCount = 0,
+        )
         
-        viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
+        calculationJob = viewModelScope.launch {
             runCatching {
-                val range = getEpochRangeForPeriod(period)
                 lassoApi.calculateCommissions(employeeId, range.first, range.second)
             }.onSuccess { result ->
                 val totalComm = result.sumOf { it.totalCommission }
@@ -110,9 +119,12 @@ class CommissionsViewModel(private val lassoApi: LassoApi) : ViewModel() {
                     serviceCommission = serviceComm,
                     productCommission = productComm,
                     transactionCount = transCount,
+                    reportPeriodStart = Instant.fromEpochMilliseconds(range.first).toLocalDateTime(TimeZone.currentSystemDefault()).date,
+                    reportPeriodEnd = Instant.fromEpochMilliseconds(range.second - 1).toLocalDateTime(TimeZone.currentSystemDefault()).date,
                     isLoading = false
                 )
             }.onFailure {
+                if (it is CancellationException) throw it
                 it.printStackTrace()
                 _state.value = _state.value.copy(isLoading = false)
             }

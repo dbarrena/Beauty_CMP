@@ -8,9 +8,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +43,9 @@ fun CommissionsContent(
     onSelectEmployee: (Employee) -> Unit,
     onLoadForPeriod: (SalesPeriodFilter) -> Unit,
     onApplyCustomDateRange: (Long?, Long?) -> Unit,
+    onSharePdf: () -> Unit = {},
+    isExporting: Boolean = false,
+    exportError: String? = null,
 ) {
     var showEmployeePicker by remember { mutableStateOf(false) }
     var showCustomRangeDialog by remember { mutableStateOf(false) }
@@ -86,6 +98,23 @@ fun CommissionsContent(
                         },
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
+                }
+
+                item {
+                    Button(
+                        onClick = onSharePdf,
+                        enabled = !state.isLoading && !isExporting && state.reportPeriodStart != null &&
+                            state.reportPeriodEnd != null && state.commissions.count { it.employee.id == state.selectedEmployee?.id } == 1,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (isExporting) "Generando PDF…" else "Compartir PDF")
+                    }
+                    exportError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp))
+                    }
                 }
 
                 state.commissions.forEach { response ->
