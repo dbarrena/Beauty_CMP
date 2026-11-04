@@ -8,9 +8,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -42,7 +41,7 @@ internal fun CheckoutPaymentMethodRow(
     val interactionSource = remember { MutableInteractionSource() }
     val rowModifier = modifier
         .fillMaxWidth()
-        .height(style.rowStyle.rowHeight)
+        .heightIn(min = style.rowStyle.rowHeight)
         .clip(shape)
         .then(
             if (style.rowStyle.borderColor != null) {
@@ -61,7 +60,7 @@ internal fun CheckoutPaymentMethodRow(
             indication = ripple(),
             onClick = onClick,
         )
-        .padding(horizontal = CheckoutPaymentMethodTokens.rowHorizontalPadding)
+        .padding(horizontal = CheckoutPaymentMethodTokens.rowHorizontalPadding, vertical = 12.dp)
 
     Row(
         modifier = rowModifier,
@@ -70,8 +69,7 @@ internal fun CheckoutPaymentMethodRow(
     ) {
         Row(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
+                .weight(1f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -97,7 +95,7 @@ internal fun CheckoutPaymentMethodRow(
                 fontWeight = FontWeight.SemiBold,
                 lineHeight = 24.sp,
                 letterSpacing = (-0.31).sp,
-                maxLines = 2,
+                maxLines = Int.MAX_VALUE,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )

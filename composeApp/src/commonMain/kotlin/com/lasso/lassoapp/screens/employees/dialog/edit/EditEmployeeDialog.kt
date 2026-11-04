@@ -1,17 +1,46 @@
 package com.lasso.lassoapp.screens.employees.dialog.edit
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,13 +51,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.screens.employees.dialog.new.EmployeeField
-import com.lasso.lassoapp.ui.theme.*
+import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.ui.theme.LassoSurfaceVariant
+import com.lasso.lassoapp.ui.theme.LassoTextMuted
+import com.lasso.lassoapp.ui.theme.LassoTextPrimary
+import com.lasso.lassoapp.ui.theme.LassoTertiary
 
 @Composable
 fun EditEmployeeDialog(
     employee: Employee,
     isLoading: Boolean = false,
     onDismiss: () -> Unit,
+    onDisable: () -> Unit,
     onEdit: (Employee) -> Unit
 ) {
     var name by remember { mutableStateOf(employee.name) }
@@ -174,42 +208,64 @@ fun EditEmployeeDialog(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Save Button
-                    Button(
-                        onClick = {
-                            onEdit(
-                                employee.copy(
-                                    name = name,
-                                    email = email,
-                                    role = role,
-                                    productCommissionPercentage = productCommission,
-                                    serviceCommissionPercentage = serviceCommission
-                                )
-                            )
-                        },
-                        enabled = name.isNotBlank() && email.isNotBlank() && !isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = LassoPrimary,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(14.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "Guardar Cambios",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp
+                        // Save Button
+                        Button(
+                            onClick = {
+                                onEdit(
+                                    employee.copy(
+                                        name = name,
+                                        email = email,
+                                        role = role,
+                                        productCommissionPercentage = productCommission,
+                                        serviceCommissionPercentage = serviceCommission
+                                    )
                                 )
+                            },
+                            enabled = name.isNotBlank() && email.isNotBlank() && !isLoading,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = LassoPrimary,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = "Guardar Cambios",
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        OutlinedButton(
+                            onClick = onDisable,
+                            enabled = !isLoading,
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            border = BorderStroke(1.dp, LassoTertiary),
+                            contentPadding = PaddingValues(0.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = LassoTertiary)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Desactivar empleado",
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }

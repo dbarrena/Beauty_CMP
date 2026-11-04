@@ -5,31 +5,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,10 +38,13 @@ import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.screens.commissions.components.EmployeeSelector
 import com.lasso.lassoapp.screens.commissions.dialog.EmployeePickerDialog
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogLayout
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutHeader
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPayment
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
-import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodColors
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.PaymentFields
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.paymentFieldSpec
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
 import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
 import com.lasso.lassoapp.ui.theme.LassoPrimary
@@ -59,17 +52,10 @@ import com.lasso.lassoapp.ui.theme.LassoSecondary
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
-import lassoapp.composeapp.generated.resources.Res
-import lassoapp.composeapp.generated.resources.checkout_payment_efectivo
-import lassoapp.composeapp.generated.resources.checkout_payment_multiples
-import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_credito
-import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
-import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
-import lassoapp.composeapp.generated.resources.sales_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToLong
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CheckoutSplitPaymentContent(
     totalPrice: Double,
@@ -84,375 +70,92 @@ fun CheckoutSplitPaymentContent(
     showEmployeeSelector: Boolean = true,
     initialPayments: List<CheckoutPayment> = emptyList(),
 ) {
-    var efectivo by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Cash)) }
-    var tarjetaDebito by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Card)) }
-    var transferencia by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Transfer)) }
-    var otro by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Other)) }
-    var anticipo by remember(initialPayments) { mutableStateOf(initialPayments.amountFor(CheckoutPaymentMethod.Advance)) }
+    val fields =
+        remember(initialPayments, checkoutPaymentMethod, totalPrice) {
+            PaymentFields(checkoutPaymentMethod, totalPrice, initialPayments)
+        }
     var showEmployeePicker by remember { mutableStateOf(false) }
-
-    val enteredCents = remember(efectivo, tarjetaDebito, transferencia, otro, anticipo) {
-        listOf(efectivo, tarjetaDebito, transferencia, otro, anticipo)
-            .sumOf { (parseMoney(it) * 100).roundToLong() }
-    }
-    val totalCents = (totalPrice * 100).roundToLong()
-    val remaining = (totalCents - enteredCents).coerceAtLeast(0L) / 100.0
-
-    LaunchedEffect(checkoutPaymentMethod, totalPrice, initialPayments) {
-        if (initialPayments.isNotEmpty()) return@LaunchedEffect
-        when (checkoutPaymentMethod) {
-            CheckoutPaymentMethod.Cash -> {
-                efectivo = totalPrice.toPosMoneyString()
-            }
-            CheckoutPaymentMethod.Card -> {
-                tarjetaDebito = totalPrice.toPosMoneyString()
-            }
-            CheckoutPaymentMethod.Transfer -> {
-                transferencia = totalPrice.toPosMoneyString()
-            }
-            CheckoutPaymentMethod.Other -> {
-                otro = totalPrice.toPosMoneyString()
-            }
-            CheckoutPaymentMethod.Advance -> {
-                anticipo = totalPrice.toPosMoneyString()
-            }
-            else -> {}
-        }
-    }
-
-    Box(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.align(Alignment.TopStart),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = LassoPrimary,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Text(
-                        text = "Volver",
-                        color = LassoPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = (-0.31).sp,
-                    )
-                }
-            }
-        }
-
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(4.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Cerrar",
-                tint = CheckoutPaymentMethodTokens.closeIconTint,
+    CheckoutDialogLayout(
+        onClose = onClose,
+        onBack = onBack,
+        modifier = modifier,
+        header = {
+            CheckoutHeader(
+                totalPrice,
+                title,
+                summary =
+                    if (fields.remaining > 0.0)
+                        ({
+                            FlowRow(horizontalArrangement = Arrangement.Center) {
+                                Text("Restan ", color = LassoTextMuted, fontSize = 18.sp)
+                                Text(
+                                    "$${fields.remaining.toPosMoneyString()}",
+                                    color = LassoSecondary,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        })
+                    else null,
             )
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(CheckoutPaymentMethodTokens.contentPadding),
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = title,
-                    color = CheckoutPaymentMethodTokens.titleColor,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp,
-                    letterSpacing = (-0.45).sp,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Total a cobrar",
-                    color = CheckoutPaymentMethodTokens.subtitleColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    lineHeight = 20.sp,
-                    letterSpacing = (-0.15).sp,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "$${totalPrice.toPosMoneyString()}",
-                    color = CheckoutPaymentMethodTokens.amountColor,
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 48.sp,
-                    letterSpacing = 0.35.sp,
-                    textAlign = TextAlign.Center,
-                )
-
-                if (remaining != 0.0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = "Restan ",
-                            color = LassoTextMuted,
-                            fontSize = 18.sp,
-                            letterSpacing = (-0.44).sp,
-                        )
-                        Text(
-                            text = "$${remaining.toPosMoneyString()}",
-                            color = LassoSecondary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.44).sp,
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false) // Grow only as needed, but allow taking up space if large
-                    .heightIn(max = 400.dp)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    if (showEmployeeSelector) {
-                        EmployeeSelector(
-                            selectedEmployee = state.selectedEmployee,
-                            onClick = { showEmployeePicker = true },
-                            enabled = state.canSelectEmployee,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-
-                    when (checkoutPaymentMethod) {
-                        CheckoutPaymentMethod.Cash -> {
-                            SplitPaymentRow(
-                                label = "Efectivo",
-                                circleColor = CheckoutPaymentMethodColors.efectivoCircle,
-                                icon = Res.drawable.checkout_payment_efectivo,
-                                value = efectivo,
-                                onValueChange = { efectivo = it },
-                            )
-                        }
-
-                        CheckoutPaymentMethod.Card -> {
-                            SplitPaymentRow(
-                                label = "Tarjeta de Débito",
-                                circleColor = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
-                                icon = Res.drawable.checkout_payment_tarjeta_debito,
-                                value = tarjetaDebito,
-                                onValueChange = { tarjetaDebito = it },
-                            )
-                        }
-
-                        CheckoutPaymentMethod.Transfer -> {
-                            SplitPaymentRow(
-                                label = "Transferencia",
-                                circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
-                                icon = Res.drawable.checkout_payment_transferencia,
-                                value = transferencia,
-                                onValueChange = { transferencia = it },
-                            )
-                        }
-
-                        CheckoutPaymentMethod.Other -> {
-                            SplitPaymentRow(
-                                label = "Otro",
-                                circleColor = CheckoutPaymentMethodColors.multiplesCircle,
-                                icon = Res.drawable.checkout_payment_multiples,
-                                value = otro,
-                                onValueChange = { otro = it },
-                            )
-                        }
-
-                        CheckoutPaymentMethod.Advance -> {
-                            SplitPaymentRow(
-                                label = "Anticipo",
-                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                                icon = Res.drawable.sales_icon,
-                                value = anticipo,
-                                onValueChange = { anticipo = it },
-                            )
-                        }
-
-                        CheckoutPaymentMethod.Multiple -> {
-                            SplitPaymentRow(
-                                label = "Efectivo",
-                                circleColor = CheckoutPaymentMethodColors.efectivoCircle,
-                                icon = Res.drawable.checkout_payment_efectivo,
-                                value = efectivo,
-                                onValueChange = { efectivo = it },
-                            )
-
-                            SplitPaymentRow(
-                                label = "Tarjeta de Débito",
-                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                                icon = Res.drawable.checkout_payment_tarjeta_credito,
-                                value = tarjetaDebito,
-                                onValueChange = { tarjetaDebito = it },
-                            )
-
-                            SplitPaymentRow(
-                                label = "Transferencia",
-                                circleColor = CheckoutPaymentMethodColors.transferenciaCircle,
-                                icon = Res.drawable.checkout_payment_transferencia,
-                                value = transferencia,
-                                onValueChange = { transferencia = it },
-                            )
-
-                            SplitPaymentRow(
-                                label = "Otro",
-                                circleColor = CheckoutPaymentMethodColors.multiplesCircle,
-                                icon = Res.drawable.checkout_payment_multiples,
-                                value = otro,
-                                onValueChange = { otro = it },
-                            )
-
-                            SplitPaymentRow(
-                                label = "Anticipo",
-                                circleColor = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                                icon = Res.drawable.sales_icon,
-                                value = anticipo,
-                                onValueChange = { anticipo = it },
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        },
+        actions = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = {
-                            val payments = mutableListOf<CheckoutPayment>()
-
-                        if (efectivo.isNotEmpty()) {
-                            val total = parseMoney(efectivo)
-                            payments.add(
-                                CheckoutPayment(
-                                    paymentType = CheckoutPaymentMethod.Cash,
-                                    total = total
-                                )
-                            )
-                        }
-
-                        if (tarjetaDebito.isNotEmpty()) {
-                            val total = parseMoney(tarjetaDebito)
-                            payments.add(
-                                CheckoutPayment(
-                                    paymentType = CheckoutPaymentMethod.Card,
-                                    total = total
-                                )
-                            )
-                        }
-
-                        if (transferencia.isNotEmpty()) {
-                            val total = parseMoney(transferencia)
-                            payments.add(
-                                CheckoutPayment(
-                                    paymentType = CheckoutPaymentMethod.Transfer,
-                                    total = total
-                                )
-                            )
-                        }
-
-                        if (otro.isNotEmpty()) {
-                            val total = parseMoney(otro)
-                            payments.add(
-                                CheckoutPayment(
-                                    paymentType = CheckoutPaymentMethod.Other,
-                                    total = total
-                                )
-                            )
-                        }
-
-                        if (anticipo.isNotEmpty()) {
-                            val total = parseMoney(anticipo)
-                            payments.add(
-                                CheckoutPayment(
-                                    paymentType = CheckoutPaymentMethod.Advance,
-                                    total = total
-                                )
-                            )
-                        }
-
-                        onRegisterSale(payments)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    onClick = { onRegisterSale(fields.payments) },
+                    enabled = fields.balanced && !state.isLoading,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    enabled = enteredCents == totalCents && !state.isLoading,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = LassoPrimary,
-                        contentColor = Color.White,
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = LassoPrimary,
+                            contentColor = Color.White,
+                        ),
                 ) {
                     Text(
-                        text = if (state.isLoading) {
-                            "Registrando…"
-                        } else {
-                            "Confirmar pago en ${checkoutPaymentMethod.display}"
-                        },
+                        if (state.isLoading) "Registrando…"
+                        else "Confirmar pago en ${checkoutPaymentMethod.display}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.31).sp,
                         textAlign = TextAlign.Center,
                     )
                 }
-                state.error?.let { message ->
-                    Text(
-                        text = message,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 14.sp,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                state.error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
                 }
+            }
+        },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (showEmployeeSelector)
+                EmployeeSelector(
+                    selectedEmployee = state.selectedEmployee,
+                    onClick = { showEmployeePicker = true },
+                    enabled = state.canSelectEmployee && !state.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            fields.methods.forEach { method ->
+                val spec = paymentFieldSpec(method)
+                SplitPaymentRow(
+                    spec.label,
+                    spec.circleColor,
+                    spec.icon,
+                    fields[method],
+                    { fields[method] = it },
+                )
             }
         }
     }
-    
     EmployeePickerDialog(
         isVisible = showEmployeeSelector && showEmployeePicker,
         employees = state.employees,
         isLoading = state.isLoading,
-        onDismiss = { showEmployeePicker = false }
+        onDismiss = { showEmployeePicker = false },
     ) {
         onSelectEmployee(it)
         showEmployeePicker = false
     }
 }
-
-private fun List<CheckoutPayment>.amountFor(method: CheckoutPaymentMethod): String =
-    filter { it.paymentType == method }.sumOf(CheckoutPayment::total).takeIf { it > 0.0 }?.toPosMoneyString().orEmpty()
 
 @Composable
 internal fun SplitPaymentRow(
@@ -463,17 +166,15 @@ internal fun SplitPaymentRow(
     onValueChange: (String) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(CheckoutPaymentMethodTokens.iconCircleSize)
-                .clip(CircleShape)
-                .background(circleColor),
+            modifier =
+                Modifier.size(CheckoutPaymentMethodTokens.iconCircleSize)
+                    .clip(CircleShape)
+                    .background(circleColor),
             contentAlignment = Alignment.Center,
         ) {
             Image(
@@ -482,10 +183,7 @@ internal fun SplitPaymentRow(
                 modifier = Modifier.size(CheckoutPaymentMethodTokens.iconImageSize),
             )
         }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = label,
                 color = LassoTextPrimary,
@@ -494,10 +192,7 @@ internal fun SplitPaymentRow(
                 lineHeight = 20.sp,
                 letterSpacing = (-0.15).sp,
             )
-            CheckoutSplitMoneyField(
-                value = value,
-                onValueChange = onValueChange,
-            )
+            CheckoutSplitMoneyField(value = value, onValueChange = onValueChange)
         }
     }
 }
@@ -511,12 +206,13 @@ private fun CheckoutSplitMoneyField(
     val shape = RoundedCornerShape(20.dp)
     val textColor = if (value.isEmpty()) LassoTextPlaceholder else LassoTextPrimary
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .clip(shape)
-            .background(Color(0xFFF8F8FA))
-            .padding(horizontal = 12.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clip(shape)
+                .background(Color(0xFFF8F8FA))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         Row(
@@ -532,15 +228,17 @@ private fun CheckoutSplitMoneyField(
             BasicTextField(
                 value = value,
                 onValueChange = { onValueChange(sanitizeMoneyInput(it)) },
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    color = textColor,
-                    letterSpacing = (-0.31).sp,
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Done,
-                ),
+                textStyle =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 16.sp,
+                        color = textColor,
+                        letterSpacing = (-0.31).sp,
+                    ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    ),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -568,5 +266,4 @@ private fun sanitizeMoneyInput(input: String): String {
     return sb.toString()
 }
 
-private fun parseMoney(s: String): Double =
-    s.replace(",", "").toDoubleOrNull() ?: 0.0
+private fun parseMoney(s: String): Double = s.replace(",", "").toDoubleOrNull() ?: 0.0

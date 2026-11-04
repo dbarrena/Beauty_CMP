@@ -5,35 +5,27 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,10 +38,10 @@ import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
 import com.lasso.lassoapp.screens.clients.ClientsScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreen
 import com.lasso.lassoapp.screens.configuration.ConfigurationScreenRoutes
-import com.lasso.lassoapp.screens.home.HomeScreen
 import com.lasso.lassoapp.screens.home.v2.HomeScreenV2
 import com.lasso.lassoapp.screens.login.LoginScreen
 import com.lasso.lassoapp.screens.register.RegisterScreen
+import com.lasso.lassoapp.screens.profile.ProfileScreen
 import com.lasso.lassoapp.screens.pos.v2.PosScreenV2
 import com.lasso.lassoapp.screens.product_catalog.ProductCatalogScreen
 import com.lasso.lassoapp.screens.reports.sales_by_product_category.SalesByProductCategoryScreen
@@ -58,12 +50,8 @@ import com.lasso.lassoapp.ui.theme.LightLassoColorScheme
 import com.lasso.lassoapp.ui.theme.lassoTypography
 import kotlinx.serialization.Serializable
 import lassoapp.composeapp.generated.resources.Res
-import lassoapp.composeapp.generated.resources.agenda_icon
 import lassoapp.composeapp.generated.resources.bell_icon
-import lassoapp.composeapp.generated.resources.home_icon
 import lassoapp.composeapp.generated.resources.lasso_icon_full_cropped_title_only
-import lassoapp.composeapp.generated.resources.sales_icon
-import lassoapp.composeapp.generated.resources.shopping_cart_icon
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -79,6 +67,9 @@ object SalesDestination
 
 @Serializable
 object ConfigurationDestination
+
+@Serializable
+object ProfileDestination
 
 @Serializable
 data class DetailDestination(val objectId: Int)
@@ -132,20 +123,21 @@ fun App() {
 
         val onBackNavigation: () -> Unit = { navController.popBackStack() }
 
-        val titleText: String = when (currentDestination?.route) {
-            HomeDestination::class.qualifiedName -> "Inicio"
-            PosDestination::class.qualifiedName -> "Punto de Venta"
-            SalesDestination::class.qualifiedName -> "Ventas"
-            ConfigurationDestination::class.qualifiedName -> "Herramientas"
-            DetailDestination::class.qualifiedName -> "Detalle"
-            CalendarDestination::class.qualifiedName -> "Calendario de citas"
-            CashClosureDestination::class.qualifiedName -> "Corte de caja"
-            CashClosureRecordsDestination::class.qualifiedName -> "Registro cortes de caja"
-            ProductCatalogDestination::class.qualifiedName -> "Productos y Servicios"
-            SalesByProductCategoriesDestination::class.qualifiedName -> "Ventas por Categoria"
-            EmployeesDestination::class.qualifiedName -> "Empleados"
-            ClientsDestination::class.qualifiedName -> "Clientes"
-            CommissionsDestination::class.qualifiedName -> "Comisiones"
+        val titleText: String = when {
+            currentDestination?.hasRoute<HomeDestination>() == true -> "Inicio"
+            currentDestination?.hasRoute<PosDestination>() == true -> "Punto de Venta"
+            currentDestination?.hasRoute<SalesDestination>() == true -> "Ventas"
+            currentDestination?.hasRoute<ConfigurationDestination>() == true -> "Herramientas"
+            currentDestination?.hasRoute<DetailDestination>() == true -> "Detalle"
+            currentDestination?.hasRoute<CalendarDestination>() == true -> "Calendario de citas"
+            currentDestination?.hasRoute<CashClosureDestination>() == true -> "Corte de caja"
+            currentDestination?.hasRoute<CashClosureRecordsDestination>() == true -> "Registro cortes de caja"
+            currentDestination?.hasRoute<ProductCatalogDestination>() == true -> "Productos y Servicios"
+            currentDestination?.hasRoute<SalesByProductCategoriesDestination>() == true -> "Ventas por Categoria"
+            currentDestination?.hasRoute<EmployeesDestination>() == true -> "Empleados"
+            currentDestination?.hasRoute<ClientsDestination>() == true -> "Clientes"
+            currentDestination?.hasRoute<CommissionsDestination>() == true -> "Comisiones"
+            currentDestination?.hasRoute<ProfileDestination>() == true -> "Perfil"
             else -> ""
         }
 
@@ -214,152 +206,21 @@ fun App() {
                     }
                 },
                 bottomBar = {
-                    //AnimatedVisibility(visible = showBottomNav) {
                     if (showBottomNav && isLoggedIn) {
-                        Column {
-                            Divider(
-                                thickness = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant
-                            )
-                            NavigationBar(
-                                modifier = Modifier.height(105.dp),
-                                containerColor = Color.White,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            ) {
-                                NavigationBarItem(
-                                    modifier = Modifier.padding(8.dp),
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.home_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Inicio",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.route == HomeDestination::class.qualifiedName } == true,
-                                    onClick = {
-                                        navController.navigate(HomeDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                modifier = Modifier.size(22.dp),
-                                                painter = painterResource(Res.drawable.agenda_icon),
-                                                contentDescription = null,
-                                                tint = if (currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                "Agenda",
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        selected = currentDestination?.hierarchy?.any { it.route == CalendarDestination::class.qualifiedName } == true,
-                                        onClick = {
-                                            navController.navigate(CalendarDestination)
-                                        },
-                                        colors = NavigationBarItemDefaults.colors(
-                                            indicatorColor = Color.Transparent
-                                        ),
-                                        alwaysShowLabel = false
-                                    )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.shopping_cart_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Venta",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.route == PosDestination::class.qualifiedName } == true,
-                                    onClick = {
-                                        navController.navigate(PosDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(Res.drawable.sales_icon),
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Ventas",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.route == SalesDestination::class.qualifiedName } == true,
-                                    onClick = { navController.navigate(SalesDestination) },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            imageVector = Icons.Default.Apps,
-                                            contentDescription = null,
-                                            tint = if (currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            "Mas",
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    selected = currentDestination?.hierarchy?.any { it.route == ConfigurationDestination::class.qualifiedName } == true,
-                                    onClick = {
-                                        navController.navigate(ConfigurationDestination)
-                                    },
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = Color.Transparent
-                                    ),
-                                    alwaysShowLabel = false
-                                )
+                        val selectedTab = when {
+                            currentDestination?.hasRoute<CalendarDestination>() == true -> MainTab.Calendar
+                            currentDestination?.hasRoute<PosDestination>() == true -> MainTab.Pos
+                            currentDestination?.hasRoute<SalesDestination>() == true -> MainTab.Sales
+                            currentDestination?.hasRoute<ConfigurationDestination>() == true -> MainTab.Configuration
+                            else -> MainTab.Home
+                        }
+                        MainNavigationBar(selectedTab) { tab ->
+                            when (tab) {
+                                MainTab.Home -> navController.navigate(HomeDestination)
+                                MainTab.Calendar -> navController.navigate(CalendarDestination)
+                                MainTab.Pos -> navController.navigate(PosDestination)
+                                MainTab.Sales -> navController.navigate(SalesDestination)
+                                MainTab.Configuration -> navController.navigate(ConfigurationDestination)
                             }
                         }
                     }
@@ -385,7 +246,6 @@ fun App() {
                             onNavigateToCashClosure = { navController.navigate(CashClosureDestination) },
                             onNavigateToCommissions = { navController.navigate(CommissionsDestination) },
                         )
-                        //HomeScreen()
                     }
                     composable<PosDestination> {
                         PosScreenV2()
@@ -408,6 +268,9 @@ fun App() {
                             }
                         ) { destination ->
                             when (destination) {
+                                ConfigurationScreenRoutes.PROFILE -> {
+                                    navController.navigate(ProfileDestination)
+                                }
                                 ConfigurationScreenRoutes.CASH_CLOSURE -> {
                                     navController.navigate(CashClosureDestination)
                                 }
@@ -449,6 +312,21 @@ fun App() {
                     composable<RegisterDestination> {
                         RegisterScreen(onLogin = { navController.popBackStack() })
                     }
+                    composable<ProfileDestination> {
+                        ProfileScreen(onBranchChanged = {
+                            viewModel.setLoggedIn()
+                            navController.navigate(HomeDestination) {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }, onLoggedOut = {
+                            viewModel.setLoggedOut()
+                            navController.navigate(LoginDestination) {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        })
+                    }
                     composable<CalendarDestination> {
                         CalendarScreen()
                     }
@@ -480,10 +358,9 @@ fun App() {
 }
 
 fun isRootDestination(destination: NavDestination?): Boolean {
-    val route = destination?.route
-    return route == HomeDestination::class.qualifiedName ||
-            route == PosDestination::class.qualifiedName ||
-            route == SalesDestination::class.qualifiedName ||
-            route == ConfigurationDestination::class.qualifiedName ||
-            route == CalendarDestination::class.qualifiedName
+    return destination?.hasRoute<HomeDestination>() == true ||
+            destination?.hasRoute<PosDestination>() == true ||
+            destination?.hasRoute<SalesDestination>() == true ||
+            destination?.hasRoute<ConfigurationDestination>() == true ||
+            destination?.hasRoute<CalendarDestination>() == true
 }

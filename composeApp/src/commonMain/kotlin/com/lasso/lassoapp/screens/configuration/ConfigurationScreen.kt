@@ -17,13 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -105,6 +101,14 @@ fun ConfigurationScreenContent(
 
             // Menu Options
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ConfigurationTile(
+                    title = "Perfil",
+                    subtitle = "Datos personales y contraseña",
+                    icon = Icons.Default.Person,
+                    containerColor = LassoPrimary.copy(alpha = 0.1f),
+                    iconTint = LassoPrimary,
+                    onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.PROFILE) }
+                )
                 if (isAdmin) {
                     // Disabled until reportes is ready
                     /*ConfigurationTile(
@@ -221,7 +225,7 @@ fun ConfigurationScreenContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "LASSO v1.5.4 (14)",
+                    text = "LASSO v1.5.6 (17)",
                     style = MaterialTheme.typography.bodySmall,
                     color = LassoTextMuted
                 )
@@ -361,6 +365,7 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
+    PROFILE,
     PRODUCT_CATALOG,
     CASH_CLOSURE,
     CASH_CLOSURE_RECORDS,

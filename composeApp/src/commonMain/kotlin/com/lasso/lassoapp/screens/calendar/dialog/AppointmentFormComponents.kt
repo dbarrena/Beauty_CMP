@@ -3,6 +3,7 @@ package com.lasso.lassoapp.screens.calendar.dialog
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +47,7 @@ internal fun AppointmentNotesField(
     TextField(
         value = notes,
         onValueChange = onNotesChanged,
-        modifier = Modifier.fillMaxWidth().height(80.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp),
         placeholder = { Text("Notas adicionales", color = LassoTextMuted) },
         shape = RoundedCornerShape(20.dp),
         colors = TextFieldDefaults.colors(

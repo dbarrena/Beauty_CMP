@@ -1,9 +1,10 @@
 [versions]
 agp = "8.12.1"
 androidx-activityCompose = "1.10.1"
-androidx-ui-tooling = "1.7.8"
+androidx-ui-tooling = "1.9.4"
 coil = "3.2.0"
-compose-multiplatform = "1.8.2"
+compose-multiplatform = "1.9.3"
+compose-material3 = "1.9.0"
 koin = "4.1.0"
 kotlin = "2.3.0"
 kotlinxDatetimeVersion = "0.7.1"
@@ -17,6 +18,7 @@ androidx-room = "2.7.2"
 vico = "2.4.1"
 
 [libraries]
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "androidx-ui-tooling" }

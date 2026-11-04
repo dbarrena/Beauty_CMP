@@ -4,43 +4,38 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.screens.utils.AdaptiveEqualPair
+import com.lasso.lassoapp.screens.utils.FittedAmountText
+import com.lasso.lassoapp.screens.utils.labelWidth
 import com.lasso.lassoapp.ui.theme.LassoOnPrimary
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoPrimaryDark
 import com.lasso.lassoapp.ui.theme.LassoSecondary
-import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTertiary
+import com.lasso.lassoapp.ui.theme.LassoTextMuted
 
 @Composable
 fun HomeMetricsCards(
@@ -51,50 +46,56 @@ fun HomeMetricsCards(
     appointmentsPending: Int,
     modifier: Modifier = Modifier,
 ) {
+    val minCardWidth =
+        maxOf(120.dp, labelWidth("Transacciones", MaterialTheme.typography.bodyMedium) + 32.dp)
     Column(
         modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            MetricCardGradientPrimary(
-                label = "Ventas hoy",
-                value = todayEarningsFormatted,
-                icon = Icons.Default.AttachMoney,
-                modifier = Modifier.weight(1f),
-            )
-            MetricCardLight(
-                label = "Citas",
-                value = appointmentsToday.toString(),
-                sublabel = null,
-                icon = Icons.Default.CalendarMonth,
-                iconTint = LassoPrimary,
-                iconBackground = LassoPrimary.copy(alpha = 0.1f),
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            MetricCardLight(
-                label = "Transacciones",
-                value = todayTransactionCount.toString(),
-                sublabel = null,
-                icon = Icons.Default.ShoppingCart,
-                iconTint = LassoTertiary,
-                iconBackground = LassoTertiary.copy(alpha = 0.1f),
-                modifier = Modifier.weight(1f),
-            )
-            MetricCardGradientWarm(
-                label = "Semana",
-                value = weekEarningsFormatted,
-                icon = Icons.AutoMirrored.Filled.TrendingUp,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        AdaptiveEqualPair(
+            minFieldWidth = minCardWidth,
+            first = { cardModifier ->
+                MetricCardGradientPrimary(
+                    label = "Ventas hoy",
+                    value = todayEarningsFormatted,
+                    icon = Icons.Default.AttachMoney,
+                    modifier = cardModifier,
+                )
+            },
+            second = { cardModifier ->
+                MetricCardLight(
+                    label = "Citas",
+                    value = appointmentsToday.toString(),
+                    sublabel = null,
+                    icon = Icons.Default.CalendarMonth,
+                    iconTint = LassoPrimary,
+                    iconBackground = LassoPrimary.copy(alpha = 0.1f),
+                    modifier = cardModifier,
+                )
+            },
+        )
+        AdaptiveEqualPair(
+            minFieldWidth = minCardWidth,
+            first = { cardModifier ->
+                MetricCardLight(
+                    label = "Transacciones",
+                    value = todayTransactionCount.toString(),
+                    sublabel = null,
+                    icon = Icons.Default.ShoppingCart,
+                    iconTint = LassoTertiary,
+                    iconBackground = LassoTertiary.copy(alpha = 0.1f),
+                    modifier = cardModifier,
+                )
+            },
+            second = { cardModifier ->
+                MetricCardGradientWarm(
+                    label = "Semana",
+                    value = weekEarningsFormatted,
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    modifier = cardModifier,
+                )
+            },
+        )
     }
 }
 
@@ -112,23 +113,17 @@ private fun MetricCardGradientPrimary(
     ) {
         Box(
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     .background(
                         brush =
-                            Brush.verticalGradient(
-                                colors = listOf(LassoPrimary, LassoPrimaryDark),
-                            ),
+                            Brush.verticalGradient(colors = listOf(LassoPrimary, LassoPrimaryDark))
                     )
-                    .padding(16.dp),
+                    .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier,
-            ) {
+            Column(modifier = Modifier) {
                 Box(
                     modifier =
-                        Modifier
-                            .size(40.dp)
+                        Modifier.size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center,
@@ -146,9 +141,10 @@ private fun MetricCardGradientPrimary(
                     color = LassoOnPrimary.copy(alpha = 0.95f),
                     modifier = Modifier.padding(top = 28.dp),
                 )
-                AutoResizeText(
+                FittedAmountText(
                     text = value,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = LassoOnPrimary,
                 )
             }
@@ -170,23 +166,17 @@ private fun MetricCardGradientWarm(
     ) {
         Box(
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     .background(
                         brush =
-                            Brush.verticalGradient(
-                                colors = listOf(LassoTertiary, LassoSecondary),
-                            ),
+                            Brush.verticalGradient(colors = listOf(LassoTertiary, LassoSecondary))
                     )
-                    .padding(16.dp),
+                    .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier,
-            ) {
+            Column(modifier = Modifier) {
                 Box(
                     modifier =
-                        Modifier
-                            .size(40.dp)
+                        Modifier.size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center,
@@ -204,9 +194,10 @@ private fun MetricCardGradientWarm(
                     color = LassoOnPrimary.copy(alpha = 0.95f),
                     modifier = Modifier.padding(top = 28.dp),
                 )
-                AutoResizeText(
+                FittedAmountText(
                     text = value,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = LassoOnPrimary,
                 )
             }
@@ -231,11 +222,7 @@ private fun MetricCardLight(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Box(
-                modifier =
-                    Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(iconBackground),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBackground),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -251,7 +238,7 @@ private fun MetricCardLight(
                 color = LassoTextMuted,
                 modifier = Modifier.padding(top = 28.dp),
             )
-            AutoResizeText(
+            FittedAmountText(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
@@ -266,42 +253,4 @@ private fun MetricCardLight(
             }
         }
     }
-}
-
-@Composable
-private fun AutoResizeText(
-    text: String,
-    style: TextStyle,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    maxLines: Int = 1,
-) {
-    var resizedTextStyle by remember(text) { mutableStateOf(style) }
-    var shouldDraw by remember(text) { mutableStateOf(value = false) }
-
-    Text(
-        text = text,
-        color = color,
-        modifier = modifier.drawWithContent {
-            if (shouldDraw) {
-                drawContent()
-            }
-        },
-        softWrap = false,
-        maxLines = maxLines,
-        style = resizedTextStyle,
-        onTextLayout = { result ->
-            if (result.didOverflowWidth) {
-                if (resizedTextStyle.fontSize > 12.sp) {
-                    resizedTextStyle = resizedTextStyle.copy(
-                        fontSize = resizedTextStyle.fontSize * 0.9f
-                    )
-                } else {
-                    shouldDraw = true
-                }
-            } else {
-                shouldDraw = true
-            }
-        }
-    )
 }

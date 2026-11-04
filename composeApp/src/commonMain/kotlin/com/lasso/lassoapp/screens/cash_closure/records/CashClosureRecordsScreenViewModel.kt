@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.CashClosureRecordsResponse
-import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.screens.utils.toLocalDateTimeString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

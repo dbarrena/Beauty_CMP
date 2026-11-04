@@ -40,11 +40,21 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+        }
+        androidInstrumentedTest.dependencies {
+            implementation("androidx.compose.ui:ui-test-junit4:1.9.4")
+            implementation("androidx.test:runner:1.7.0")
+            implementation("androidx.test.espresso:espresso-core:3.7.0")
+            implementation("androidx.test.ext:junit:1.3.0")
+        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.animation)
-            implementation(compose.material3)
+            implementation(libs.compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -83,8 +93,9 @@ android {
         applicationId = "com.lasso.lassoapp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.5.4"
+        versionCode = 17
+        versionName = "1.5.6"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
         resources {
@@ -105,5 +116,6 @@ android {
 
 dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.9.4")
     ksp(libs.androidx.room.compiler)
 }

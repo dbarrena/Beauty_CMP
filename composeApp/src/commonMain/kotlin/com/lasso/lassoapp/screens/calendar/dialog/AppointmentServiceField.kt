@@ -1,8 +1,10 @@
 package com.lasso.lassoapp.screens.calendar.dialog
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,23 +23,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lasso.lassoapp.model.Service
+import com.lasso.lassoapp.model.AppointmentServiceSummary
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoSurfaceVariant
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 
 @Composable
 internal fun AppointmentServiceField(
-    selectedService: Service?,
+    selectedServices: List<AppointmentServiceSummary>,
     enabled: Boolean,
     onSearchClick: () -> Unit,
-    onServiceRemoved: () -> Unit,
+    onServiceRemoved: (Int) -> Unit,
 ) {
-    AppointmentFieldLabel("Servicio (opcional)")
+    AppointmentFieldLabel("Servicios (opcional)")
 
-    if (selectedService != null) {
+    selectedServices.forEach { selectedService ->
         Surface(
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             shape = RoundedCornerShape(24.dp),
             color = LassoPrimary,
         ) {
@@ -54,28 +56,28 @@ internal fun AppointmentServiceField(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = onServiceRemoved, enabled = enabled) {
+                IconButton(onClick = { onServiceRemoved(selectedService.id) }, enabled = enabled) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Quitar servicio",
+                        contentDescription = "Quitar ${selectedService.name}",
                         tint = Color.White,
                         modifier = Modifier.size(18.dp),
                     )
                 }
             }
         }
-        return
+        Spacer(Modifier.height(8.dp))
     }
 
     Surface(
         onClick = onSearchClick,
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().height(48.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         shape = RoundedCornerShape(24.dp),
         color = LassoSurfaceVariant,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -85,7 +87,7 @@ internal fun AppointmentServiceField(
                 modifier = Modifier.size(18.dp),
             )
             Text(
-                text = "Buscar servicio...",
+                text = if (selectedServices.isEmpty()) "Buscar servicio..." else "Agregar otro servicio...",
                 color = LassoTextMuted,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(start = 8.dp),

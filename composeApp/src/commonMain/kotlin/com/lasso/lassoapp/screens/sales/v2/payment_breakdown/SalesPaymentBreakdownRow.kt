@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.screens.sales.v2.paymentBreakdown
+import com.lasso.lassoapp.screens.utils.labelWidth
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.card_icon
@@ -37,6 +38,7 @@ fun SalesPaymentBreakdownRow(
     isLoading: Boolean,
 ) {
     val paymentBreakdown = sales.paymentBreakdown()
+    val cardWidth = maxOf(128.dp, labelWidth("Transferencia", MaterialTheme.typography.labelSmall) + 24.dp)
     Column(modifier = modifier) {
         Text(
             text = "Por método de pago",
@@ -62,7 +64,7 @@ fun SalesPaymentBreakdownRow(
                             contentScale = ContentScale.Fit,
                         )
                     },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.width(cardWidth),
                 )
             }
             item {
@@ -77,7 +79,7 @@ fun SalesPaymentBreakdownRow(
                             contentScale = ContentScale.Fit,
                         )
                     },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.width(cardWidth),
                     isLoading = isLoading
                 )
             }
@@ -93,7 +95,7 @@ fun SalesPaymentBreakdownRow(
                             contentScale = ContentScale.Fit,
                         )
                     },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.width(cardWidth),
                     isLoading = isLoading
                 )
             }
@@ -109,7 +111,7 @@ fun SalesPaymentBreakdownRow(
                             tint = LassoPrimary,
                         )
                     },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.width(cardWidth),
                     isLoading = isLoading
                 )
             }
@@ -125,7 +127,7 @@ fun SalesPaymentBreakdownRow(
                             tint = LassoPrimary,
                         )
                     },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.width(cardWidth),
                     isLoading = isLoading
                 )
             }

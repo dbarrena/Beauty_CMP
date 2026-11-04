@@ -1,12 +1,26 @@
 package com.lasso.lassoapp.screens.employees
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.screens.employees.dialog.edit.EditEmployeeDialog
 import com.lasso.lassoapp.screens.employees.dialog.new.NewEmployeeDialog
+import com.lasso.lassoapp.screens.employees.dialog.edit.DisableEmployeeConfirmationDialog
 import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
@@ -116,9 +131,22 @@ fun EmployeesScreen() {
         if (employee != null) {
             EditEmployeeDialog(
                 employee = employee,
-                isLoading = state.isUpdating,
+                isLoading = state.isUpdating || state.isDisabling,
                 onDismiss = { viewModel.hideEditEmployeeDialog() },
+                onDisable = viewModel::showDisableConfirmation,
                 onEdit = { viewModel.editEmployee(it) }
+            )
+        }
+    }
+
+    if (state.isDisableConfirmationDisplayed) {
+        state.selectedEmployee?.let { employee ->
+            DisableEmployeeConfirmationDialog(
+                employeeName = employee.name,
+                isLoading = state.isDisabling,
+                error = state.disableError,
+                onDismiss = viewModel::hideDisableConfirmation,
+                onConfirm = viewModel::disableEmployee
             )
         }
     }

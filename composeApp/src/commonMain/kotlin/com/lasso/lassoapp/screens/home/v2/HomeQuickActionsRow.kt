@@ -16,11 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,15 +27,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.screens.utils.labelWidth
 import com.lasso.lassoapp.ui.theme.LassoOnPrimary
-import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 
 @Composable
@@ -132,6 +130,11 @@ private fun QuickActionCell(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val labelStyle = MaterialTheme.typography.labelSmall.copy(
+        fontSize = 12.sp,
+        fontWeight = FontWeight(500),
+    )
+    val cellWidth = maxOf(75.dp, labelWidth(label.split(' '), labelStyle))
     Column(
         modifier =
             modifier
@@ -140,7 +143,7 @@ private fun QuickActionCell(
                 .background(containerColor)
                 .clickable(onClick = onClick)
                 .padding(vertical = 8.dp, horizontal = 4.dp)
-                .width(75.dp)
+                .width(cellWidth)
                 .fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -153,10 +156,7 @@ private fun QuickActionCell(
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 12.sp,
-                fontWeight = FontWeight(500),
-            ),
+            style = labelStyle,
             color = if (isPrimaryAction) labelColor else LassoTextPrimary,
             textAlign = TextAlign.Center,
             maxLines = 2,

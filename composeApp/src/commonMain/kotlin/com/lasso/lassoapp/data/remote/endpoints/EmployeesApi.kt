@@ -5,6 +5,7 @@ import com.lasso.lassoapp.data.remote.bodyOrThrow
 import com.lasso.lassoapp.data.remote.recoverWith
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.EmployeeRegistrationRequest
+import com.lasso.lassoapp.model.MessageResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -15,10 +16,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 interface EmployeesApi {
+    suspend fun getProfile(id: Int): Employee
+    suspend fun updateProfile(id: Int, request: ProfileUpdateRequest): Employee
     suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee
     suspend fun getEmployees(): List<Employee>
     suspend fun editEmployee(employee: Employee): Employee
+    suspend fun disableEmployee(id: Int): String?
 }
+
+@Serializable
+data class ProfileUpdateRequest(
+    val name: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+)
 
 @Serializable
 private data class EmployeeEditRequest(
@@ -31,6 +42,22 @@ private data class EmployeeEditRequest(
 )
 
 internal class KtorEmployeesApi(private val client: HttpClient) : EmployeesApi {
+    override suspend fun disableEmployee(id: Int): String? =
+        client.post(LASSO_API_URL + "employees/disable") {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("id" to id))
+        }.bodyOrThrow<MessageResponse>().message
+
+    override suspend fun getProfile(id: Int): Employee =
+        client.get(LASSO_API_URL + "employees/all").bodyOrThrow<List<Employee>>()
+            .firstOrNull { it.id == id } ?: error("No se pudo encontrar tu perfil.")
+
+    override suspend fun updateProfile(id: Int, request: ProfileUpdateRequest): Employee =
+        client.post(LASSO_API_URL + "employees/edit/$id") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
+
     override suspend fun registerEmployee(employee: EmployeeRegistrationRequest): Employee =
         client.post(LASSO_API_URL + "employees/add") {
             contentType(ContentType.Application.Json)

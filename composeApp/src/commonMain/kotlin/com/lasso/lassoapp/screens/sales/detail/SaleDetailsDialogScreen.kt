@@ -69,8 +69,8 @@ import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
 import com.lasso.lassoapp.screens.clients.ClientSelectorField
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialog
-import com.lasso.lassoapp.screens.sales.detail.edit_dialog.SaleDetailEditDialogScreen
 import com.lasso.lassoapp.screens.sales.detail.edit_dialog.EditSalePaymentsDialog
+import com.lasso.lassoapp.screens.sales.detail.edit_dialog.SaleDetailEditDialogScreen
 import com.lasso.lassoapp.screens.utils.formatDdMmYyyy
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoSecondary

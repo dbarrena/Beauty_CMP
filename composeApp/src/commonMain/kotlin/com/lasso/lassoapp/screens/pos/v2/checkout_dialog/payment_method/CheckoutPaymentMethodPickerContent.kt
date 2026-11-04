@@ -1,28 +1,16 @@
 package com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogLayout
+import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutHeader
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
 import com.lasso.lassoapp.ui.theme.LassoSecondary
@@ -36,6 +24,7 @@ import lassoapp.composeapp.generated.resources.checkout_payment_multiples
 import lassoapp.composeapp.generated.resources.checkout_payment_tarjeta_debito
 import lassoapp.composeapp.generated.resources.checkout_payment_transferencia
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CheckoutPaymentMethodPickerContent(
     totalPrice: Double,
@@ -47,198 +36,114 @@ fun CheckoutPaymentMethodPickerContent(
     onRegisterDiscountClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val appliedDiscount = discountAmount
-        ?.coerceIn(0.0, totalPrice.coerceAtLeast(0.0))
-        ?: 0.0
+    val appliedDiscount = discountAmount?.coerceIn(0.0, totalPrice.coerceAtLeast(0.0)) ?: 0.0
     val payableTotal = (totalPrice - appliedDiscount).coerceAtLeast(0.0)
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    CheckoutDialogLayout(
+        onClose = onClose,
+        modifier = modifier,
+        header = {
+            CheckoutHeader(
+                payableTotal,
+                title,
+                summary =
+                    if (appliedDiscount > 0.0)
+                        ({
+                            FlowRow(horizontalArrangement = Arrangement.Center) {
+                                Text("Descuento ", color = LassoTextMuted, fontSize = 18.sp)
+                                Text(
+                                    "$${appliedDiscount.toPosMoneyString()}",
+                                    color = LassoSecondary,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        })
+                    else null,
+            )
+        },
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(CheckoutPaymentMethodTokens.contentPadding)
-                .padding(top = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(CheckoutPaymentMethodTokens.gapBetweenRows)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                    //.height(108.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = title,
-                    color = CheckoutPaymentMethodTokens.titleColor,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp,
-                    letterSpacing = (-0.45).sp,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Total a cobrar",
-                    color = CheckoutPaymentMethodTokens.subtitleColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    lineHeight = 20.sp,
-                    letterSpacing = (-0.15).sp,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "$${payableTotal.toPosMoneyString()}",
-                    color = CheckoutPaymentMethodTokens.amountColor,
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 48.sp,
-                    letterSpacing = 0.35.sp,
-                    textAlign = TextAlign.Center,
-                )
-
-                if (appliedDiscount > 0.0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = "Descuento ",
-                            color = LassoTextMuted,
-                            fontSize = 18.sp,
-                            letterSpacing = (-0.44).sp,
-                        )
-                        Text(
-                            text = "$${appliedDiscount.toPosMoneyString()}",
-                            color = LassoSecondary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.44).sp,
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(CheckoutPaymentMethodTokens.gapHeaderToRows))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(
-                        CheckoutPaymentMethodTokens.gapBetweenRows,
-                    ),
-                ) {
-                    CheckoutPaymentMethodRow(
-                        label = "Efectivo",
-                        style = PaymentMethodStyle(
-                            rowStyle = PaymentMethodRowStyle(
+            CheckoutPaymentMethodRow(
+                label = "Efectivo",
+                style =
+                    PaymentMethodStyle(
+                        rowStyle =
+                            PaymentMethodRowStyle(
                                 rowBackground = CheckoutPaymentMethodColors.efectivoRow,
                                 circleBackground = CheckoutPaymentMethodColors.efectivoCircle,
                                 labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
                             ),
-                            leadingIcon = Res.drawable.checkout_payment_efectivo,
-                            trailingChevron = Res.drawable.checkout_chevron_right,
-                        ),
-                        onClick = { onMethodClicked(CheckoutPaymentMethod.Cash) },
-                    )
-                /*CheckoutPaymentMethodRow(
-                    label = "A Crédito",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.acreditoRow,
-                            circleBackground = CheckoutPaymentMethodColors.acreditoCircle,
-                            labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
-                        ),
-                        leadingIcon = Res.drawable.checkout_payment_acredito,
+                        leadingIcon = Res.drawable.checkout_payment_efectivo,
                         trailingChevron = Res.drawable.checkout_chevron_right,
                     ),
-                    onClick = { onMethodClicked(CheckoutPaymentMethod.Cash) },
-                )*/
-                /*CheckoutPaymentMethodRow(
-                    label = "Tarjeta de Crédito",
-                    style = PaymentMethodStyle(
-                        rowStyle = PaymentMethodRowStyle(
-                            rowBackground = CheckoutPaymentMethodColors.tarjetaCreditoRow,
-                            circleBackground = CheckoutPaymentMethodColors.tarjetaCreditoCircle,
-                            labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
-                        ),
-                        leadingIcon = Res.drawable.checkout_payment_tarjeta_credito,
-                        trailingChevron = Res.drawable.checkout_chevron_right,
-                    ),
-                    onClick = noOp,
-                )*/
-                    CheckoutPaymentMethodRow(
-                        label = "Tarjeta de Débito",
-                        style = PaymentMethodStyle(
-                            rowStyle = PaymentMethodRowStyle(
+                onClick = { onMethodClicked(CheckoutPaymentMethod.Cash) },
+            )
+            CheckoutPaymentMethodRow(
+                label = "Tarjeta de Débito",
+                style =
+                    PaymentMethodStyle(
+                        rowStyle =
+                            PaymentMethodRowStyle(
                                 rowBackground = CheckoutPaymentMethodColors.tarjetaDebitoRow,
                                 circleBackground = CheckoutPaymentMethodColors.tarjetaDebitoCircle,
                                 labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
                             ),
-                            leadingIcon = Res.drawable.checkout_payment_tarjeta_debito,
-                            trailingChevron = Res.drawable.checkout_chevron_right,
-                        ),
-                        onClick = { onMethodClicked(CheckoutPaymentMethod.Card) },
-                    )
-                    CheckoutPaymentMethodRow(
-                        label = "Transferencia",
-                        style = PaymentMethodStyle(
-                            rowStyle = PaymentMethodRowStyle(
+                        leadingIcon = Res.drawable.checkout_payment_tarjeta_debito,
+                        trailingChevron = Res.drawable.checkout_chevron_right,
+                    ),
+                onClick = { onMethodClicked(CheckoutPaymentMethod.Card) },
+            )
+            CheckoutPaymentMethodRow(
+                label = "Transferencia",
+                style =
+                    PaymentMethodStyle(
+                        rowStyle =
+                            PaymentMethodRowStyle(
                                 rowBackground = CheckoutPaymentMethodColors.transferenciaRow,
                                 circleBackground = CheckoutPaymentMethodColors.transferenciaCircle,
                                 labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
                             ),
-                            leadingIcon = Res.drawable.checkout_payment_transferencia,
-                            trailingChevron = Res.drawable.checkout_chevron_right,
-                        ),
-                        onClick = { onMethodClicked(CheckoutPaymentMethod.Transfer) },
-                    )
-                    CheckoutPaymentMethodRow(
-                        label = "Usar Múltiples Métodos",
-                        style = PaymentMethodStyle(
-                            rowStyle = PaymentMethodRowStyle(
+                        leadingIcon = Res.drawable.checkout_payment_transferencia,
+                        trailingChevron = Res.drawable.checkout_chevron_right,
+                    ),
+                onClick = { onMethodClicked(CheckoutPaymentMethod.Transfer) },
+            )
+            CheckoutPaymentMethodRow(
+                label = "Usar Múltiples Métodos",
+                style =
+                    PaymentMethodStyle(
+                        rowStyle =
+                            PaymentMethodRowStyle(
                                 rowBackground = CheckoutPaymentMethodColors.multiplesRow,
                                 circleBackground = CheckoutPaymentMethodColors.multiplesCircle,
                                 labelColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
                                 borderColor = CheckoutPaymentMethodTokens.multiplesRowLabelColor,
                                 rowHeight = CheckoutPaymentMethodTokens.rowHeightMultiples,
                             ),
-                            leadingIcon = Res.drawable.checkout_payment_multiples,
-                            trailingChevron = Res.drawable.checkout_chevron_right_teal,
-                        ),
-                        onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
-                    )
-                    if (showDiscountAction) CheckoutPaymentMethodRow(
-                        label = "Aplicar Descuento",
-                        style = PaymentMethodStyle(
-                            rowStyle = PaymentMethodRowStyle(
-                                rowBackground = CheckoutPaymentMethodColors.acreditoRow,
-                                circleBackground = CheckoutPaymentMethodColors.acreditoCircle,
-                                labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
-                            ),
+                        leadingIcon = Res.drawable.checkout_payment_multiples,
+                        trailingChevron = Res.drawable.checkout_chevron_right_teal,
+                    ),
+                onClick = { onMethodClicked(CheckoutPaymentMethod.Multiple) },
+            )
+            if (showDiscountAction)
+                CheckoutPaymentMethodRow(
+                    label = "Aplicar Descuento",
+                    style =
+                        PaymentMethodStyle(
+                            rowStyle =
+                                PaymentMethodRowStyle(
+                                    rowBackground = CheckoutPaymentMethodColors.acreditoRow,
+                                    circleBackground = CheckoutPaymentMethodColors.acreditoCircle,
+                                    labelColor = CheckoutPaymentMethodTokens.defaultRowLabelColor,
+                                ),
                             leadingIcon = Res.drawable.checkout_payment_acredito,
                             trailingChevron = Res.drawable.checkout_chevron_right,
                         ),
-                        onClick = onRegisterDiscountClicked,
-                    )
-                }
-            }
-        }
-
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(4.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Cerrar",
-                tint = CheckoutPaymentMethodTokens.closeIconTint,
-            )
+                    onClick = onRegisterDiscountClicked,
+                )
         }
     }
 }

@@ -6,6 +6,7 @@ import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.data.remote.LassoApi
 import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.ProductCategory
+import com.lasso.lassoapp.utils.searchKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -73,7 +74,8 @@ class PosViewModel(
 
         _state.value = currentState.copy(
             selectedPosItems = updatedItems,
-            totalPrice = newTotal
+            totalPrice = newTotal,
+            searchQuery = ""
         )
     }
 
@@ -96,6 +98,12 @@ class PosViewModel(
         }
     }
 
+
+    fun removeSubmittedItems(submitted: List<SelectedPosItem>) {
+        val remaining = reconcileSubmittedItems(_state.value.selectedPosItems, submitted)
+        _state.value = _state.value.copy(selectedPosItems = remaining.toMutableList(),
+            totalPrice = remaining.sumOf { it.price * it.quantity })
+    }
 
     fun restartPos() {
         _state.value = state.value.copy(
@@ -143,11 +151,11 @@ class PosViewModel(
             items = items.filter { it.categoryId == filter.id }
         }
 
-        val query = currentState.searchQuery.trim()
+        val query = currentState.searchQuery.trim().searchKey()
         return if (query.isEmpty()) {
             items
         } else {
-            items.filter { it.name.contains(query, ignoreCase = true) }
+            items.filter { it.name.searchKey().contains(query) }
         }
     }
 }
@@ -171,3 +179,8 @@ data class SelectedPosItem(
     var quantity: Int = 1,
     var price: Double = lassoItem.price.toDoubleOrNull() ?: 0.0
 )
+internal fun reconcileSubmittedItems(current: List<SelectedPosItem>, submitted: List<SelectedPosItem>): List<SelectedPosItem> =
+    current.mapNotNull { item ->
+        val sold = submitted.find { it.instanceId == item.instanceId && it.price == item.price }
+        if (sold == null) item else (item.quantity - sold.quantity).takeIf { it > 0 }?.let { item.copy(quantity = it) }
+    }

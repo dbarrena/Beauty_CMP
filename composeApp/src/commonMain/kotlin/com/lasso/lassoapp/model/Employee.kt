@@ -1,5 +1,7 @@
 package com.lasso.lassoapp.model
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -30,6 +32,7 @@ data class Employee(
 )
 
 @Serializable
+@OptIn(ExperimentalSerializationApi::class)
 data class EmployeeRegistrationRequest(
     val name: String,
     val email: String,
@@ -40,10 +43,12 @@ data class EmployeeRegistrationRequest(
     val partnerId: Int? = null,
 
     @SerialName("product_commission_percentage")
-    val productCommissionPercentage: String? = "0",
+    @EncodeDefault
+    val productCommissionPercentage: String = "0",
 
     @SerialName("service_commission_percentage")
-    val serviceCommissionPercentage: String? = "0"
+    @EncodeDefault
+    val serviceCommissionPercentage: String = "0"
 )
 
 @Serializable

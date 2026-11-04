@@ -1,10 +1,8 @@
 package com.lasso.lassoapp.screens.reports.sales_by_product_category
 
-import androidx.compose.material3.rememberDateRangePickerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
-import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.SalesByProductCategoryItemApiResponse
 import kotlinx.coroutines.flow.MutableStateFlow

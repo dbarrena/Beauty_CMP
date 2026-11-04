@@ -4,10 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.Payment
 import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutDialogViewModelV2
@@ -24,7 +19,7 @@ import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPayment
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.CheckoutPaymentMethod
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_amount.CheckoutSplitPaymentContent
 import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodPickerContent
-import com.lasso.lassoapp.screens.pos.v2.checkout_dialog.payment_method.CheckoutPaymentMethodTokens
+import com.lasso.lassoapp.screens.utils.LassoDialogFrame
 import com.lasso.lassoapp.ui.theme.LassoOutlineHairline
 
 @Composable
@@ -44,13 +39,7 @@ fun EditSalePaymentsDialog(
         canSelectEmployee = false,
     )
 
-    Dialog(onDismissRequest = { if (!isSaving) onDismiss() }) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(CheckoutPaymentMethodTokens.cardCornerRadius),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, LassoOutlineHairline),
-        ) {
+    LassoDialogFrame(onDismiss = { if (!isSaving) onDismiss() }, border = BorderStroke(1.dp, LassoOutlineHairline)) {
             Box(modifier = Modifier.fillMaxWidth().background(Color.Transparent)) {
                 val method = selectedMethod
                 if (method == null) {
@@ -80,7 +69,6 @@ fun EditSalePaymentsDialog(
                     )
                 }
             }
-        }
     }
 }
 

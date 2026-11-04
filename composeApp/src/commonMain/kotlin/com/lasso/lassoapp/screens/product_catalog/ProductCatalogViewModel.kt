@@ -7,8 +7,8 @@ import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.model.Product
 import com.lasso.lassoapp.model.ProductCategory
 import com.lasso.lassoapp.model.Service
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch

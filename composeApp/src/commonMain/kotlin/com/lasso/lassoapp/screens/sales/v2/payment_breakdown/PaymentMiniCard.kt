@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.sales.v2.formatMoney
+import com.lasso.lassoapp.screens.utils.FittedAmountText
 import com.lasso.lassoapp.ui.theme.LassoTextPlaceholder
 
 @Composable
@@ -28,7 +30,7 @@ fun PaymentMiniCard(
     isLoading: Boolean,
 ) {
     Card(
-        modifier = modifier.height(90.dp),
+        modifier = modifier.heightIn(min = 90.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -45,7 +47,7 @@ fun PaymentMiniCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = LassoTextPlaceholder,
             )
-            Text(
+            FittedAmountText(
                 text = formatMoney(amount),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,

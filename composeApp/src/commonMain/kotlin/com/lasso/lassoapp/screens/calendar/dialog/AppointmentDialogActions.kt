@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,7 +45,7 @@ internal fun AppointmentDialogActions(
         Button(
             onClick = onSave,
             enabled = isValid && !isBusy,
-            modifier = Modifier.weight(1f).height(48.dp),
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(containerColor = LassoPrimary),
         ) {

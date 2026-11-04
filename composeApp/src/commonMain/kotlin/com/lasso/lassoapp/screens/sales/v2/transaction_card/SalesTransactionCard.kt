@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.PaymentApiResponse
 import com.lasso.lassoapp.model.SaleApiResponse
 import com.lasso.lassoapp.model.SaleDetailApiResponse
-import com.lasso.lassoapp.screens.sales.v2.formatMoney
 import com.lasso.lassoapp.screens.sales.v2.discountAmountValue
+import com.lasso.lassoapp.screens.sales.v2.formatMoney
 import com.lasso.lassoapp.screens.sales.v2.netTotalValue
 import com.lasso.lassoapp.screens.utils.toSaleCardDateTimeString
 import com.lasso.lassoapp.ui.theme.LassoTertiary
