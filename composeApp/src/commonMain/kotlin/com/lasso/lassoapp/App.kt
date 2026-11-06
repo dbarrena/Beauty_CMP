@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +34,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lasso.lassoapp.screens.calendar.CalendarScreen
+import com.lasso.lassoapp.screens.calendar.CalendarScreenViewModel
 import com.lasso.lassoapp.screens.commissions.CommissionsScreen
 import com.lasso.lassoapp.screens.cash_closure.create.CashClosureScreen
 import com.lasso.lassoapp.screens.cash_closure.records.CashClosureRecordsScreen
@@ -185,6 +188,31 @@ fun App() {
                                     }
                                 },
                                 actions = {
+                                    if (currentDestination?.hasRoute<CalendarDestination>() == true) {
+                                        navBackStackEntry?.let { calendarEntry ->
+                                            val calendarViewModel = koinViewModel<CalendarScreenViewModel>(
+                                                viewModelStoreOwner = calendarEntry,
+                                            )
+                                            val calendarState by calendarViewModel.state.collectAsState()
+                                            IconButton(
+                                                onClick = calendarViewModel::retry,
+                                                enabled = !calendarState.isLoading,
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Refresh,
+                                                    contentDescription = "Actualizar calendario",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                )
+                                            }
+                                            IconButton(onClick = calendarViewModel::showDateDialog) {
+                                                Icon(
+                                                    imageVector = Icons.Default.CalendarMonth,
+                                                    contentDescription = "Seleccionar fecha",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                )
+                                            }
+                                        }
+                                    }
                                     IconButton(
                                         onClick = {
                                         }

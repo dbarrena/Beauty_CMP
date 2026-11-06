@@ -1,8 +1,9 @@
 package com.lasso.lassoapp.screens.calendar
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,17 +25,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,26 +43,41 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
+import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
-import com.lasso.lassoapp.utils.formatFullDateSpanish
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
+import kotlinx.coroutines.flow.first
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CalendarScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<CalendarScreenViewModel>()
     val state by viewModel.state.collectAsState()
-    var showDatePicker by remember { mutableStateOf(false) }
+    val isThreeDayView = state.viewMode == CalendarViewMode.ThreeDays
     var selectedEmployeeId by remember { mutableStateOf<Int?>(null) }
+    var outgoingRange by remember { mutableStateOf<CalendarRangeSnapshot?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            outgoingRange = null
+            snackbarHostState.showSnackbar(it)
+        }
+    }
 
     LaunchedEffect(state.employeeSchedules) {
         if (selectedEmployeeId != null && state.employeeSchedules.none { it.id == selectedEmployeeId }) {
@@ -72,33 +87,36 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFFF8F8FA)
-    ) {
+        containerColor = Color(0xFFF8F8FA),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.showNewAppointmentDialog() },
+                containerColor = Color(0xFF00D1AD),
+                contentColor = Color.White,
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
+                modifier = Modifier.size(56.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Agregar cita",
+                )
+            }
+        },
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            if (state.isLoading) {
+            if (state.isLoading && !state.isLoadingNextRange && !state.isLoadingPreviousRange) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             } else {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            CalendarHeader(
-                modifier = Modifier.padding(vertical = 16.dp),
-                onAddClick = { viewModel.showNewAppointmentDialog() },
-            )
-
-            // Date Selector
-            CalendarDateSelector(
-                modifier = Modifier,
-                selectedDateFormatted = state.selectedDate.formatFullDateSpanish(),
-                onPreviousDay = { viewModel.onPreviousDay() },
-                onNextDay = { viewModel.onNextDay() },
-                onDatePickerClick = { showDatePicker = true }
-            )
-
-            if (state.employeeSchedules.isNotEmpty()) {
+            if (!isThreeDayView && state.employeeSchedules.isNotEmpty()) {
                 EmployeeFilterPills(
                     employees = state.employeeSchedules,
                     selectedEmployeeId = selectedEmployeeId,
@@ -108,10 +126,12 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             }
 
             val verticalScrollState = rememberScrollState()
-            val horizontalScrollState = rememberScrollState()
+            var horizontalScrollState by rememberSaveable(stateSaver = ScrollState.Saver) {
+                mutableStateOf(ScrollState(0))
+            }
             val hourHeight = 90.dp
             val sidebarWidth = 60.dp
-            val headerHeight = if (selectedEmployeeId == null) 58.dp else 42.dp
+            val headerHeight = if (isThreeDayView) 72.dp else if (selectedEmployeeId == null) 58.dp else 42.dp
             val displayedEmployees = if (selectedEmployeeId == null) {
                 state.employeeSchedules
             } else {
@@ -124,6 +144,53 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                     .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
                     val availableCalendarWidth = maxWidth - sidebarWidth - 16.dp
+                    val density = LocalDensity.current
+                    val previousRange = outgoingRange
+                    val isRangeTransition = isThreeDayView && previousRange != null &&
+                        state.selectedDate == previousRange.startDate.plus(previousRange.direction.dayOffset, DateTimeUnit.DAY)
+                    val isBackwardTransition = isRangeTransition && previousRange.direction == CalendarRangeDirection.Previous
+                    val incomingWidth = if (isBackwardTransition) with(density) {
+                        calendarDayColumnWidth(
+                            List(3) { state.selectedDate.plus(it, DateTimeUnit.DAY) },
+                            state.events,
+                            availableCalendarWidth,
+                        ).roundToPx() * 3
+                    } else 0
+                    // Starting this scroll state at the old first day keeps prepended columns offscreen
+                    // until the backward animation begins, without flashing the new range's first day.
+                    val activeScrollState = if (isBackwardTransition) {
+                        remember(state.selectedDate, previousRange) { ScrollState(incomingWidth) }
+                    } else horizontalScrollState
+
+                    LaunchedEffect(state.selectedDate, state.viewMode) {
+                        if (isBackwardTransition) {
+                            snapshotFlow { activeScrollState.maxValue }
+                                .first { it != Int.MAX_VALUE && it >= incomingWidth }
+                            val viewportWidth = with(density) { availableCalendarWidth.roundToPx() }
+                            val incomingEnd = (incomingWidth - viewportWidth).coerceAtLeast(0)
+                            activeScrollState.animateScrollTo(incomingEnd, tween(durationMillis = 450))
+                            horizontalScrollState = activeScrollState
+                            outgoingRange = null
+                        } else if (isRangeTransition) {
+                            val incomingStart = with(density) {
+                                calendarDayColumnWidth(
+                                    previousRange.dates,
+                                    previousRange.events,
+                                    availableCalendarWidth,
+                                ).roundToPx() * 3
+                            }
+                            // Wait for both ranges to be measured before scrolling into the incoming range.
+                            snapshotFlow { horizontalScrollState.maxValue }.first { it >= incomingStart }
+                            horizontalScrollState.animateScrollTo(incomingStart, tween(durationMillis = 450))
+                            // Removing the outgoing columns and adjusting the offset in the same frame
+                            // leaves the incoming first day in exactly the same visible position.
+                            outgoingRange = null
+                            horizontalScrollState.scrollTo(0)
+                        } else {
+                            outgoingRange = null
+                            horizontalScrollState.scrollTo(0)
+                        }
+                    }
                     val columnWidth = if (selectedEmployeeId != null) {
                         availableCalendarWidth
                     } else {
@@ -155,11 +222,74 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 )
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .horizontalScroll(horizontalScrollState)
+                            CalendarRangeScroller(
+                                modifier = Modifier.fillMaxSize(),
+                                scrollState = activeScrollState,
+                                enabled = isThreeDayView,
+                                isLoading = state.isLoading || isRangeTransition,
+                                isLoadingNextRange = state.isLoadingNextRange,
+                                isLoadingPreviousRange = state.isLoadingPreviousRange,
+                                userScrollEnabled = !isRangeTransition,
+                                onNextRange = {
+                                    if (!state.isLoading && !isRangeTransition) {
+                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events, CalendarRangeDirection.Next)
+                                        viewModel.loadNextThreeDays()
+                                    }
+                                },
+                                onPreviousRange = {
+                                    if (!state.isLoading && !isRangeTransition) {
+                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events, CalendarRangeDirection.Previous)
+                                        viewModel.loadPreviousThreeDays()
+                                    }
+                                },
                             ) {
+                                if (isThreeDayView) {
+                                    if (isRangeTransition && !isBackwardTransition) {
+                                        CalendarDayColumns(
+                                            dates = previousRange.dates,
+                                            events = previousRange.events,
+                                            availableWidth = availableCalendarWidth,
+                                            hourHeight = hourHeight,
+                                            headerHeight = headerHeight,
+                                            verticalScrollState = verticalScrollState,
+                                            onEditAppointment = {},
+                                            onEmptySlotClick = { _, _ -> },
+                                        )
+                                    }
+                                    CalendarDayColumns(
+                                        dates = List(3) { state.selectedDate.plus(it, DateTimeUnit.DAY) },
+                                        events = state.events,
+                                        availableWidth = availableCalendarWidth,
+                                        hourHeight = hourHeight,
+                                        headerHeight = headerHeight,
+                                        verticalScrollState = verticalScrollState,
+                                        onEditAppointment = { event ->
+                                            val employee = state.employeeSchedules.firstOrNull { it.id == event.employeeId }
+                                            val appointment = employee?.appointments?.firstOrNull { it.id == event.appointmentId }
+                                            if (appointment != null) {
+                                                viewModel.showEditAppointmentDialog(appointment, employee.id)
+                                            }
+                                        },
+                                        onEmptySlotClick = { date, startMinutes ->
+                                            viewModel.showNewAppointmentDialog(
+                                                date = date,
+                                                startMinutes = startMinutes,
+                                            )
+                                        },
+                                    )
+                                    if (isBackwardTransition) {
+                                        CalendarDayColumns(
+                                            dates = previousRange.dates,
+                                            events = previousRange.events,
+                                            availableWidth = availableCalendarWidth,
+                                            hourHeight = hourHeight,
+                                            headerHeight = headerHeight,
+                                            verticalScrollState = verticalScrollState,
+                                            onEditAppointment = {},
+                                            onEmptySlotClick = { _, _ -> },
+                                        )
+                                    }
+                                } else {
                                 displayedEmployees.forEach { employee ->
                                     Column(modifier = Modifier.width(columnWidth)) {
                                         EmployeeHeader(
@@ -196,6 +326,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         )
                                     }
                                 }
+                                }
                             }
                         }
                     }
@@ -203,14 +334,13 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    if (showDatePicker) {
-        CalendarPickerDialog(
-            initialDate = state.selectedDate,
-            onDismiss = { showDatePicker = false },
-            onConfirm = { date ->
-                viewModel.onDateSelected(date)
-                showDatePicker = false
-            }
+    if (state.isDateDialogDisplayed) {
+        CalendarDateDialog(
+            selectedDate = state.selectedDate,
+            viewMode = state.viewMode,
+            onDismiss = viewModel::hideDateDialog,
+            onDateSelected = viewModel::onDateSelected,
+            onViewModeSelected = viewModel::onViewModeSelected,
         )
     }
 
@@ -263,7 +393,7 @@ private fun EmployeeHeader(
         if (showEmployeeName) {
             Text(
                 text = employeeName,
-                style = MaterialTheme.typography.titleSmall.copy(
+                style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF353D3C)
                 ),
@@ -339,105 +469,11 @@ private fun EmployeeFilterPill(
 private fun appointmentCountLabel(count: Int): String =
     if (count == 1) "1 cita" else "$count citas"
 
-@Composable
-private fun CalendarHeader(
-    modifier: Modifier = Modifier,
-    onAddClick: () -> Unit = {}
+private data class CalendarRangeSnapshot(
+    val startDate: LocalDate,
+    val events: List<Event>,
+    val direction: CalendarRangeDirection,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Citas",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF353D3C)
-                )
-            )
-            Text(
-                text = "Gestiona tu agenda",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color(0xFF9CA3AF)
-                )
-            )
-        }
-
-        FloatingActionButton(
-            onClick = onAddClick,
-            containerColor = Color(0xFF00D1AD),
-            contentColor = Color.White,
-            shape = CircleShape,
-            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Agregar cita"
-            )
-        }
-    }
-}
-
-@Composable
-private fun CalendarDateSelector(
-    modifier: Modifier = Modifier,
-    selectedDateFormatted: String,
-    onPreviousDay: () -> Unit,
-    onNextDay: () -> Unit,
-    onDatePickerClick: () -> Unit,
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconButton(onClick = onPreviousDay) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Day", tint = Color(0xFF353D3C))
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onDatePickerClick),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Fecha seleccionada",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color(0xFF9CA3AF),
-                        fontSize = 12.sp
-                    )
-                )
-                Text(
-                    text = selectedDateFormatted,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF353D3C),
-                        fontSize = 16.sp
-                    ),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            IconButton(onClick = onNextDay) {
-                Icon(Icons.Default.ChevronRight, contentDescription = "Next Day", tint = Color(0xFF353D3C))
-            }
-        }
-    }
+    val dates: List<LocalDate> get() = List(3) { startDate.plus(it, DateTimeUnit.DAY) }
 }
 

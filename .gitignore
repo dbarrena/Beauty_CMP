@@ -22,3 +22,4 @@ captures
 /.cursor/mcp.json
 /.cursor/plans
 /tmp/
+/composeApp/release/

@@ -24,7 +24,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -45,16 +44,34 @@ class CalendarScreenViewModel(
     }
 
     fun onDateSelected(date: LocalDate) {
-        if (date == _state.value.selectedDate && _state.value.employeeSchedules.isNotEmpty()) return
-        _state.value = _state.value.copy(selectedDate = date)
+        _state.value = _state.value.copy(selectedDate = date, isDateDialogDisplayed = false)
         loadEvents(date)
     }
 
-    fun onPreviousDay() = onDateSelected(_state.value.selectedDate.minus(1, DateTimeUnit.DAY))
+    fun showDateDialog() {
+        _state.value = _state.value.copy(isDateDialogDisplayed = true)
+    }
 
-    fun onNextDay() = onDateSelected(_state.value.selectedDate.plus(1, DateTimeUnit.DAY))
+    fun hideDateDialog() {
+        _state.value = _state.value.copy(isDateDialogDisplayed = false)
+    }
+
+    fun onViewModeSelected(viewMode: CalendarViewMode) {
+        _state.value = _state.value.copy(viewMode = viewMode, isDateDialogDisplayed = false)
+        loadEvents(_state.value.selectedDate)
+    }
 
     fun retry() = loadEvents(_state.value.selectedDate)
+
+    fun loadNextThreeDays() = loadAdjacentThreeDays(CalendarRangeDirection.Next)
+
+    fun loadPreviousThreeDays() = loadAdjacentThreeDays(CalendarRangeDirection.Previous)
+
+    private fun loadAdjacentThreeDays(direction: CalendarRangeDirection) {
+        val current = _state.value
+        if (current.viewMode != CalendarViewMode.ThreeDays || current.isLoading) return
+        loadEvents(current.selectedDate.plus(direction.dayOffset, DateTimeUnit.DAY), rangeDirection = direction)
+    }
 
     fun showNewAppointmentDialog(
         employeeId: Int? = null,
@@ -210,16 +227,26 @@ class CalendarScreenViewModel(
         )
     }
 
-    private fun loadEvents(date: LocalDate) {
+    private fun loadEvents(date: LocalDate, rangeDirection: CalendarRangeDirection? = null) {
         loadJob?.cancel()
+        val viewMode = _state.value.viewMode
+        val originalDate = _state.value.selectedDate
+        _state.value = _state.value.copy(
+            isLoading = true,
+            isLoadingNextRange = rangeDirection == CalendarRangeDirection.Next,
+            isLoadingPreviousRange = rangeDirection == CalendarRangeDirection.Previous,
+            error = null,
+        )
         loadJob = viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null)
-            val range = appointmentDayRange(date, timeZone)
+            val range = appointmentDayRange(date, timeZone, viewMode.dayCount)
             try {
                 val response = lassoApi.getAppointmentCalendar(range.first, range.second)
-                if (_state.value.selectedDate != date) return@launch
+                if (_state.value.selectedDate != originalDate || _state.value.viewMode != viewMode) return@launch
                 _state.value = _state.value.copy(
                     isLoading = false,
+                    isLoadingNextRange = false,
+                    isLoadingPreviousRange = false,
+                    selectedDate = date,
                     employeeSchedules = response.employees,
                     events = response.toEvents(timeZone),
                     error = null,
@@ -227,11 +254,13 @@ class CalendarScreenViewModel(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                if (_state.value.selectedDate != date) return@launch
+                if (_state.value.selectedDate != originalDate || _state.value.viewMode != viewMode) return@launch
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    employeeSchedules = emptyList(),
-                    events = emptyList(),
+                    isLoadingNextRange = false,
+                    isLoadingPreviousRange = false,
+                    employeeSchedules = if (rangeDirection != null) _state.value.employeeSchedules else emptyList(),
+                    events = if (rangeDirection != null) _state.value.events else emptyList(),
                     error = exception.message ?: "No se pudieron cargar las citas",
                 )
             }
@@ -265,6 +294,10 @@ class CalendarScreenViewModel(
 
 data class CalendarScreenState(
     val isLoading: Boolean = false,
+    val isLoadingNextRange: Boolean = false,
+    val isLoadingPreviousRange: Boolean = false,
+    val viewMode: CalendarViewMode = CalendarViewMode.Day,
+    val isDateDialogDisplayed: Boolean = false,
     val isSavingAppointment: Boolean = false,
     val isDeleting: Boolean = false,
     val isLoadingOptions: Boolean = false,
@@ -289,12 +322,13 @@ data class CalendarScreenState(
         .toLocalDateTime(TimeZone.currentSystemDefault()).date,
 )
 
-fun appointmentDayRange(date: LocalDate, timeZone: TimeZone): Pair<Long, Long> {
+fun appointmentDayRange(date: LocalDate, timeZone: TimeZone, dayCount: Int = 1): Pair<Long, Long> {
+    require(dayCount > 0)
     val startEpoch = date
         .atStartOfDayIn(timeZone)
         .toEpochMilliseconds()
     val endEpoch = date
-        .plus(1, DateTimeUnit.DAY)
+        .plus(dayCount, DateTimeUnit.DAY)
         .atStartOfDayIn(timeZone)
         .toEpochMilliseconds()
     return startEpoch to endEpoch

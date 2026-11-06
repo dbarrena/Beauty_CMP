@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -28,9 +29,14 @@ fun CalendarEvents(
     onEditAppointment: (Event) -> Unit = {},
     onEmptySlotClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
+    arrangeOverlaps: Boolean = false,
 ) {
     val visibleHours = 14 // de 7 a 20 inclusive
     val hourStart = 7
+    val placements = remember(events, arrangeOverlaps) {
+        if (arrangeOverlaps) placeCalendarEvents(events)
+        else events.sortedBy(Event::start).map { CalendarEventPlacement(it, 0, 1) }
+    }
 
     Layout(
         modifier = modifier
@@ -61,14 +67,12 @@ fun CalendarEvents(
                 for (i in 0..visibleHours) {
                     val y = i * hourHeight.toPx()
                     // Hour line
-                    if(i != 0) {
-                        drawLine(
-                            Color.LightGray,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = lineStroke,
-                        )
-                    }
+                    drawLine(
+                        Color.LightGray,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = lineStroke,
+                    )
                     // 30 min line
                     if (i < visibleHours) {
                         val halfY = y + (hourHeight.toPx() / 2)
@@ -83,8 +87,9 @@ fun CalendarEvents(
                 }
             },
         content = {
-            events.sortedBy(Event::start).forEach { event ->
-                Box(modifier = Modifier.eventData(event)) {
+            placements.forEach { placement ->
+                val event = placement.event
+                Box(modifier = Modifier.eventData(placement)) {
                     CalendarEventItem(
                         event = event,
                         onEdit = { onEditAppointment(event) },
@@ -95,36 +100,42 @@ fun CalendarEvents(
     ) { measurables, constraints ->
         val height = hourHeight.roundToPx() * visibleHours
         val placeablesWithEvents = measurables.map { measurable ->
-            val event = measurable.parentData as Event
+            val placement = measurable.parentData as CalendarEventPlacement
+            val event = placement.event
+            val left = constraints.maxWidth * placement.lane / placement.laneCount
+            val right = constraints.maxWidth * (placement.lane + 1) / placement.laneCount
             val eventHeight =
                 ((minutesBetween(event.start, event.end) / 60f) * hourHeight.toPx()).roundToInt()
             val placeable = measurable.measure(
                 constraints.copy(
-                    minWidth = constraints.maxWidth,
+                    minWidth = right - left,
+                    maxWidth = right - left,
                     minHeight = eventHeight,
                     maxHeight = eventHeight,
                 ),
             )
-            Pair(placeable, event)
+            Pair(placeable, placement)
         }
 
         layout(constraints.maxWidth, height) {
-            placeablesWithEvents.forEach { (placeable, event) ->
+            placeablesWithEvents.forEach { (placeable, placement) ->
+                val event = placement.event
                 val minutesFromMidnightToEventStart = event.start.hour * 60 + event.start.minute
                 val minutesOffsetFromStartHour = minutesFromMidnightToEventStart - hourStart * 60
 
                 val eventY = ((minutesOffsetFromStartHour / 60f) * hourHeight.toPx()).roundToInt()
 
-                placeable.place(0, eventY)
+                val eventX = constraints.maxWidth * placement.lane / placement.laneCount
+                placeable.placeRelative(eventX, eventY)
             }
         }
     }
 }
 
 private class EventDataModifier(
-    val event: Event,
+    val placement: CalendarEventPlacement,
 ) : ParentDataModifier {
-    override fun Density.modifyParentData(parentData: Any?) = event
+    override fun Density.modifyParentData(parentData: Any?) = placement
 }
 
-private fun Modifier.eventData(event: Event) = this.then(EventDataModifier(event))
+private fun Modifier.eventData(placement: CalendarEventPlacement) = this.then(EventDataModifier(placement))
