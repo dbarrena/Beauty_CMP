@@ -54,6 +54,7 @@ fun ClientSelectorField(
     label: String = "Cliente (opcional)",
     showWhatsAppAction: Boolean = false,
     onEditClient: ((Client) -> Unit)? = null,
+    whatsAppMessage: String? = null,
 ) {
     val uriHandler = LocalUriHandler.current
     ClientSelectorLabel(label)
@@ -61,7 +62,7 @@ fun ClientSelectorField(
         val whatsAppUrl =
             selectedClient.phone
                 ?.takeIf { showWhatsAppAction }
-                ?.let { buildWhatsAppUrl(phone = it, message = "Hola ${selectedClient.name}") }
+                ?.let { buildWhatsAppUrl(phone = it, message = whatsAppMessage ?: "Hola ${selectedClient.name}") }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -86,7 +87,11 @@ fun ClientSelectorField(
                         modifier = Modifier.weight(1f),
                     )
                     if (onEditClient != null) {
-                        IconButton(onClick = { onEditClient(selectedClient) }, enabled = enabled) {
+                        IconButton(
+                            onClick = { onEditClient(selectedClient) },
+                            enabled = enabled,
+                            modifier = Modifier.size(36.dp),
+                        ) {
                             Icon(
                                 Icons.Default.Edit,
                                 contentDescription = "Editar cliente",
@@ -95,7 +100,11 @@ fun ClientSelectorField(
                             )
                         }
                     }
-                    IconButton(onClick = onClientRemoved, enabled = enabled) {
+                    IconButton(
+                        onClick = onClientRemoved,
+                        enabled = enabled,
+                        modifier = Modifier.size(36.dp),
+                    ) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Quitar cliente",

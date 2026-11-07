@@ -105,7 +105,7 @@ private fun AppointmentTimePickerField(minutes: Int, enabled: Boolean, onSelecte
     }
 }
 
-private fun formatAppointmentTime(minutes: Int): String {
+internal fun formatAppointmentTime(minutes: Int): String {
     val hour24 = minutes / 60
     val minute = minutes % 60
     val hour12 =

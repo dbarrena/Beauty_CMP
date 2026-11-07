@@ -173,6 +173,7 @@ private fun ServiceSearchItem(
             Text(
                 text = service.price.parseCurrency().formatCurrency(includeSymbol = true),
                 style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
                 color = LassoPrimary,
             )
         }

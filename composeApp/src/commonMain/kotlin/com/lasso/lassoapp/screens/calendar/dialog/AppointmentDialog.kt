@@ -33,6 +33,7 @@ import com.lasso.lassoapp.screens.clients.search_client_dialog.SearchClientDialo
 import com.lasso.lassoapp.screens.product_catalog.dialog.search_service.SearchServiceDialog
 import com.lasso.lassoapp.screens.utils.DialogContentScaffold
 import com.lasso.lassoapp.screens.utils.LassoDialogFrame
+import com.lasso.lassoapp.screens.utils.formatDdMmYyyy
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import kotlinx.datetime.LocalDate
@@ -122,6 +123,17 @@ fun AppointmentDialog(
                 onNewClient = onNewClient,
                 onEditClient = onEditClient,
                 showWhatsAppAction = appointment != null,
+                whatsAppMessage = formState.selectedClient?.let { client ->
+                    buildString {
+                        append("Hola ${client.name} te recordamos tu cita")
+                        if (formState.selectedServices.isNotEmpty()) {
+                            append(" para el servicio de ")
+                            append(formState.selectedServices.joinToString(", ") { it.name })
+                        }
+                        append(" el día ${formState.selectedDate.formatDdMmYyyy()}")
+                        append(" a las ${formatAppointmentTime(formState.startMinutes)}")
+                    }
+                },
             )
 
             AppointmentFormSpacer()
