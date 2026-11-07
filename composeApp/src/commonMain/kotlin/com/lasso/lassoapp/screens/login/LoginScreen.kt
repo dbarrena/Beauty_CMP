@@ -54,14 +54,17 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun LoginScreen(onRegister: () -> Unit, onLoginSuccess: () -> Unit) {
+fun LoginScreen(onRegister: () -> Unit, showRegistration: Boolean = true,
+    logo: @Composable (Modifier) -> Unit = { modifier ->
+        Image(painterResource(Res.drawable.lasso_icon_full_cropped), "Lasso Logo", modifier)
+    }, onLoginSuccess: () -> Unit) {
     val viewModel = koinViewModel<LoginScreenViewModel>()
 
-    LoginScreenContent(viewModel, onRegister, onLoginSuccess)
+    LoginScreenContent(viewModel, onRegister, onLoginSuccess, showRegistration, logo)
 }
 
 @Composable
-private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -> Unit, onLoginSuccess: () -> Unit) {
+private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -> Unit, onLoginSuccess: () -> Unit, showRegistration: Boolean, logo: @Composable (Modifier) -> Unit) {
     val state = viewModel.state.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -82,10 +85,8 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(Res.drawable.lasso_icon_full_cropped),
-                contentDescription = "Lasso Logo",
-                modifier = Modifier
+            logo(
+                Modifier
                     .width(180.dp)
                     .padding(bottom = 40.dp)
             )
@@ -171,6 +172,7 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -
                     keyboardActions = KeyboardActions(
                         onDone = {
                             keyboardController?.hide()
+                            viewModel.login(email.value, password.value, onLoginSuccess)
                         }
                     ),
                     textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
@@ -217,7 +219,7 @@ private fun LoginScreenContent(viewModel: LoginScreenViewModel, onRegister: () -
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
+            if (showRegistration) Text(
                 text = buildAnnotatedString {
                     append("¿No tienes cuenta? ")
                     withStyle(style = SpanStyle(color = LassoPrimary, fontWeight = FontWeight.Bold)) {

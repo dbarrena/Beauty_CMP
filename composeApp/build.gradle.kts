@@ -12,6 +12,7 @@ plugins {
 }
 
 kotlin {
+    jvm("desktop")
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -31,6 +32,19 @@ kotlin {
     }
 
     sourceSets {
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.ktor.client.okhttp)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
+                implementation("net.java.dev.jna:jna:5.6.0")
+            }
+        }
+        val desktopTest by getting {
+            dependencies {
+                implementation(compose.desktop.uiTestJUnit4)
+            }
+        }
         androidMain.dependencies {
             implementation(libs.androidx.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
@@ -118,4 +132,20 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.9.4")
     ksp(libs.androidx.room.compiler)
+    add("kspDesktop", libs.androidx.room.compiler)
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.lasso.lassoapp.desktop.MainKt"
+        nativeDistributions {
+            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
+            packageName = "Lasso"
+            packageVersion = "1.5.6"
+            windows { iconFile.set(project.file("desktopIcons/lasso.ico")) }
+            modules("java.sql", "jdk.unsupported", "jdk.crypto.ec")
+        }
+    }
 }

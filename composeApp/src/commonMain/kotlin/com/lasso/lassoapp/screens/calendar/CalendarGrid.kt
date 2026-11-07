@@ -3,6 +3,7 @@ package com.lasso.lassoapp.screens.calendar
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.minutesBetween
+import androidx.compose.ui.input.pointer.PointerInputChange
 import kotlin.math.roundToInt
 
 @Composable
@@ -44,6 +46,10 @@ internal fun CalendarEvents(
     dragEnabled: Boolean = false,
     onDragChanged: (CalendarAppointmentDrag?) -> Unit = {},
     onAppointmentMoved: (Event, Int) -> Unit = { _, _ -> },
+    dragAfterLongPress: Boolean = true,
+    scrollInternally: Boolean = true,
+    currentTimeMinutes: Int? = null,
+    compactShortEvents: Boolean = false,
 ) {
     val visibleHours = 14 // de 7 a 20 inclusive
     val hourStart = 7
@@ -64,7 +70,7 @@ internal fun CalendarEvents(
         modifier = modifier
             .pointerInput(events, hourHeight, verticalScrollState.value) {
                 detectTapGestures { position ->
-                    val contentY = position.y + verticalScrollState.value
+                    val contentY = position.y + if (scrollInternally) verticalScrollState.value else 0
                     val halfHourHeight = hourHeight.toPx() / 2f
                     val slotIndex = (contentY / halfHourHeight).toInt()
                         .coerceIn(0, visibleHours * 2 - 1)
@@ -80,10 +86,10 @@ internal fun CalendarEvents(
                     }
                 }
             }
-            .verticalScroll(
+            .then(if (scrollInternally) Modifier.verticalScroll(
                 state = verticalScrollState,
                 overscrollEffect = null,
-            )
+            ) else Modifier)
             .drawBehind {
                 val lineStroke = 1.dp.toPx()
                 for (i in 0..visibleHours) {
@@ -107,40 +113,46 @@ internal fun CalendarEvents(
                         )
                     }
                 }
+                currentTimeMinutes?.takeIf { it in hourStart * 60..(hourStart + visibleHours) * 60 }?.let {
+                    val y = (it - hourStart * 60) / 60f * hourHeight.toPx()
+                    drawLine(Color(0xFFEA625B), Offset(0f, y), Offset(size.width, y), 1.5.dp.toPx())
+                    drawCircle(Color(0xFFEA625B), 4.dp.toPx(), Offset(4.dp.toPx(), y))
+                }
             },
         content = {
             placements.forEach { placement ->
                 val event = placement.event
                 val activeDrag = drag?.takeIf { it.event.appointmentId == event.appointmentId }
-                val dragModifier = if (dragEnabled && event.canDragAppointment()) Modifier.pointerInput(event, hourHeight) {
-                    detectDragGesturesAfterLongPress(
-                        onDragStart = {
-                            dragPixels = 0f
-                            drag = CalendarAppointmentDrag(event, event.start.hour * 60 + event.start.minute)
-                            currentOnDragChanged(drag)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
-                        onDrag = { change, amount ->
-                            change.consume()
-                            dragPixels += amount.y
-                            val start = snappedAppointmentStart(event.start.hour * 60 + event.start.minute,
-                                minutesBetween(event.start, event.end).toInt(), dragPixels, hourHeight.toPx())
-                            drag = CalendarAppointmentDrag(event, start)
-                            currentOnDragChanged(drag)
-                        },
-                        onDragEnd = {
-                            val finished = drag
-                            drag = null
-                            currentOnDragChanged(null)
-                            if (finished != null && finished.startMinutes != event.start.hour * 60 + event.start.minute) {
-                                currentOnAppointmentMoved(event, finished.startMinutes)
-                            }
-                        },
-                        onDragCancel = {
-                            drag = null
-                            currentOnDragChanged(null)
-                        },
-                    )
+                val dragModifier = if (dragEnabled && event.canDragAppointment()) Modifier.pointerInput(event, hourHeight, dragAfterLongPress) {
+                    val startDrag: (Offset) -> Unit = {
+                        dragPixels = 0f
+                        drag = CalendarAppointmentDrag(event, event.start.hour * 60 + event.start.minute)
+                        currentOnDragChanged(drag)
+                        if (dragAfterLongPress) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    val updateDrag: (PointerInputChange, Offset) -> Unit = { change, amount ->
+                        change.consume()
+                        dragPixels += amount.y
+                        val start = snappedAppointmentStart(event.start.hour * 60 + event.start.minute,
+                            minutesBetween(event.start, event.end).toInt(), dragPixels, hourHeight.toPx())
+                        drag = CalendarAppointmentDrag(event, start)
+                        currentOnDragChanged(drag)
+                    }
+                    val endDrag: () -> Unit = {
+                        val finished = drag
+                        drag = null
+                        currentOnDragChanged(null)
+                        if (finished != null && finished.startMinutes != event.start.hour * 60 + event.start.minute) {
+                            currentOnAppointmentMoved(event, finished.startMinutes)
+                        }
+                    }
+                    val cancelDrag: () -> Unit = {
+                        drag = null
+                        currentOnDragChanged(null)
+                    }
+                    if (dragAfterLongPress) detectDragGesturesAfterLongPress(startDrag, endDrag, cancelDrag, updateDrag)
+                    else detectDragGestures(onDragStart = startDrag, onDragEnd = endDrag,
+                        onDragCancel = cancelDrag, onDrag = updateDrag)
                 } else Modifier
                 Box(modifier = Modifier.eventData(placement)
                     .zIndex(if (activeDrag != null) 2f else if (event.calendarBlockId != null) 0f else 1f).then(dragModifier)) {
@@ -151,6 +163,7 @@ internal fun CalendarEvents(
                         event = activeDrag?.preview ?: event,
                         onEdit = { if (activeDrag == null) onEditAppointment(event) },
                         isDragging = activeDrag != null,
+                        compactShortEvents = compactShortEvents,
                         modifier = Modifier.graphicsLayer {
                             translationY = if (activeDrag == null) 0f else
                                 (activeDrag.startMinutes - (event.start.hour * 60 + event.start.minute)) / 60f * hourHeight.toPx()

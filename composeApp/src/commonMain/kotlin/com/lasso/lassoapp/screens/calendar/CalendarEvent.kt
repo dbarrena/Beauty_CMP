@@ -34,6 +34,7 @@ fun CalendarEventItem(
     modifier: Modifier = Modifier,
     isPlaceholder: Boolean = false,
     isDragging: Boolean = false,
+    compactShortEvents: Boolean = false,
 ) {
     val duration = minutesBetween(event.start, event.end)
     val isShort = duration <= 30
@@ -61,7 +62,16 @@ fun CalendarEventItem(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 0.dp)
     ) {
-        if (!isPlaceholder && !isCalendarBlock) Column(
+        if (!isPlaceholder && !isCalendarBlock && isShort && compactShortEvents) Column(
+            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 2.dp),
+        ) {
+            Text(event.name ?: event.description ?: "Cita", color = event.color,
+                fontWeight = FontWeight.SemiBold, fontSize = if (duration <= 15) 10.sp else 11.sp,
+                lineHeight = if (duration <= 15) 10.sp else 13.sp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (duration > 15) Text("${event.start.formatEventTime()} - ${event.end.formatEventTime()}",
+                color = event.color, fontSize = 10.sp, lineHeight = 12.sp, maxLines = 1)
+        } else if (!isPlaceholder && !isCalendarBlock) Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(

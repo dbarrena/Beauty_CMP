@@ -50,9 +50,6 @@ import androidx.compose.ui.unit.Dp
 import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
 import com.lasso.lassoapp.model.Event
-import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
-import com.lasso.lassoapp.screens.calendar.dialog.CalendarBlockDialog
-import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.screens.utils.rememberLoadingShimmer
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
@@ -374,67 +371,8 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    if (state.isDateDialogDisplayed) {
-        CalendarDateDialog(
-            selectedDate = state.selectedDate,
-            viewMode = state.viewMode,
-            onDismiss = viewModel::hideDateDialog,
-            onDateSelected = viewModel::onDateSelected,
-            onViewModeSelected = viewModel::onViewModeSelected,
-        )
-    }
+    CalendarDialogs(state, viewModel, selectedEmployeeId)
 
-
-    if (state.isCalendarBlockDialogDisplayed) {
-        CalendarBlockDialog(
-            initialDate = state.selectedDate,
-            initialEmployeeId = selectedEmployeeId,
-            employees = state.calendarBlockEmployees,
-            isLoadingEmployees = state.isLoadingCalendarBlockEmployees,
-            isSaving = state.isSavingCalendarBlock,
-            error = state.calendarBlockError,
-            onDismiss = viewModel::hideCalendarBlockDialog,
-            onRetryEmployees = viewModel::loadCalendarBlockEmployees,
-            onSave = viewModel::createCalendarBlock,
-            block = state.selectedCalendarBlock,
-            isDeleting = state.isDeletingCalendarBlock,
-            onDelete = viewModel::deleteCalendarBlock,
-            employeeName = state.employeeSchedules.firstOrNull { it.id == state.selectedCalendarBlock?.employeeId }?.name,
-        )
-    }
-
-    if (state.isAppointmentDialogDisplayed) {
-        AppointmentDialog(
-            appointment = state.selectedAppointment,
-            appointmentEmployeeId = state.selectedAppointmentEmployeeId,
-            clients = state.clients,
-            employees = state.employees,
-            services = state.services,
-            initialDate = state.initialAppointmentDate ?: state.selectedDate,
-            initialStartMinutes = state.initialAppointmentStartMinutes,
-            preferredClient = state.createdClient,
-            isSaving = state.isSavingAppointment,
-            isDeleting = state.isDeleting,
-            optionsError = state.optionsError ?: state.mutationError,
-            onDismiss = viewModel::hideAppointmentDialog,
-            onNewClient = viewModel::showNewClientDialog,
-            onEditClient = viewModel::showEditClientDialog,
-            onResult = viewModel::saveAppointment,
-            onDelete = {
-                state.selectedAppointment?.let { viewModel.deleteAppointment(it.id) }
-            },
-        )
-    }
-
-    if (state.isNewClientDialogDisplayed) {
-        ClientDialog(
-            client = state.editingClient,
-            isLoading = state.isSavingClient,
-            error = state.clientSaveError,
-            onDismiss = viewModel::hideNewClientDialog,
-            onSave = viewModel::saveClient,
-        )
-    }
 }
 
 @Composable
