@@ -38,7 +38,6 @@ class ProfileTest {
             return employee.copy(name = request.name ?: employee.name, email = request.email ?: employee.email)
         }
         override suspend fun rememberProfile(employee: Employee) { remembered = employee }
-        override suspend fun logout() {}
         var savedBranches = emptyList<Session>()
         var branchLoginFails = false
         var branchLoginCalls = 0

@@ -28,7 +28,16 @@ data class Employee(
     val productCommissionPercentage: String? = "0",
 
     @SerialName("service_commission_percentage")
-    val serviceCommissionPercentage: String? = "0"
+    val serviceCommissionPercentage: String? = "0",
+
+    @SerialName("calendar_color")
+    val calendarColor: String? = null,
+
+    @SerialName("is_displayed_on_calendar")
+    val isDisplayedOnCalendar: Boolean = true,
+
+    @SerialName("can_see_sales")
+    val canSeeSales: Boolean = false
 )
 
 @Serializable
@@ -48,7 +57,19 @@ data class EmployeeRegistrationRequest(
 
     @SerialName("service_commission_percentage")
     @EncodeDefault
-    val serviceCommissionPercentage: String = "0"
+    val serviceCommissionPercentage: String = "0",
+
+    @SerialName("calendar_color")
+    @EncodeDefault
+    val calendarColor: String? = null,
+
+    @SerialName("is_displayed_on_calendar")
+    @EncodeDefault
+    val isDisplayedOnCalendar: Boolean = true,
+
+    @SerialName("can_see_sales")
+    @EncodeDefault
+    val canSeeSales: Boolean = false
 )
 
 @Serializable

@@ -347,12 +347,6 @@ fun App() {
                                 popUpTo(navController.graph.id) { inclusive = true }
                                 launchSingleTop = true
                             }
-                        }, onLoggedOut = {
-                            viewModel.setLoggedOut()
-                            navController.navigate(LoginDestination) {
-                                popUpTo(navController.graph.id) { inclusive = true }
-                                launchSingleTop = true
-                            }
                         })
                     }
                     composable<CalendarDestination> {

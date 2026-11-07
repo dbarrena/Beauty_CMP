@@ -39,6 +39,9 @@ private data class EmployeeEditRequest(
     val role: String,
     @SerialName("product_commission_percentage") val productCommissionPercentage: String?,
     @SerialName("service_commission_percentage") val serviceCommissionPercentage: String?,
+    @SerialName("calendar_color") val calendarColor: String?,
+    @SerialName("is_displayed_on_calendar") val isDisplayedOnCalendar: Boolean,
+    @SerialName("can_see_sales") val canSeeSales: Boolean,
 )
 
 internal class KtorEmployeesApi(private val client: HttpClient) : EmployeesApi {
@@ -79,6 +82,9 @@ internal class KtorEmployeesApi(private val client: HttpClient) : EmployeesApi {
                     role = employee.role,
                     productCommissionPercentage = employee.productCommissionPercentage,
                     serviceCommissionPercentage = employee.serviceCommissionPercentage,
+                    calendarColor = employee.calendarColor,
+                    isDisplayedOnCalendar = employee.isDisplayedOnCalendar,
+                    canSeeSales = employee.canSeeSales,
                 ),
             )
         }.bodyOrThrow()

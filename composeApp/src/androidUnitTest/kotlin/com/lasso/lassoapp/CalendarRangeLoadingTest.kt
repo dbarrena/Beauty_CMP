@@ -2,6 +2,9 @@ package com.lasso.lassoapp
 
 import androidx.lifecycle.ViewModelStore
 import com.lasso.lassoapp.data.remote.LassoApi
+import com.lasso.lassoapp.data.local.dao.SessionDao
+import com.lasso.lassoapp.data.local.session.SessionRepository
+import com.lasso.lassoapp.model.room.Session
 import com.lasso.lassoapp.model.AppointmentCalendarResponse
 import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
@@ -40,6 +43,9 @@ class CalendarRangeLoadingTest {
                 EmployeeAppointmentSchedule(1, "Ana", listOf(
                     CalendarAppointment(10, startsAt = start + 10 * 60 * 60 * 1000L, endsAt = start + 11 * 60 * 60 * 1000L),
                 )),
+                EmployeeAppointmentSchedule(2, "Bea", listOf(
+                    CalendarAppointment(11, startsAt = start + 12 * 60 * 60 * 1000L, endsAt = start + 13 * 60 * 60 * 1000L),
+                )),
             )))
         }
     }
@@ -66,15 +72,27 @@ class CalendarRangeLoadingTest {
         } as LassoApi
     }
 
-    private fun calendarTest(block: suspend TestScope.(FakeApi, CalendarScreenViewModel) -> Unit) = runTest {
+    private fun calendarTest(
+        role: String = "administrador",
+        viewMode: CalendarViewMode = CalendarViewMode.ThreeDays,
+        block: suspend TestScope.(FakeApi, CalendarScreenViewModel) -> Unit,
+    ) = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val store = ViewModelStore()
         try {
             val api = FakeApi()
-            val model = CalendarScreenViewModel(api.api)
+            val session = Session(partnerId = 7, employeeId = 1, partnerName = "Estética",
+                employeeName = "Ana", employeeRole = role, token = "token")
+            val repository = SessionRepository(object : SessionDao {
+                override suspend fun getSession() = session
+                override suspend fun getSessions() = listOf(session)
+                override suspend fun insert(session: Session): Long = error("Unexpected session write")
+                override suspend fun deleteAll(): Int = error("Unexpected session deletion")
+            })
+            val model = CalendarScreenViewModel(api.api, repository)
             store.put("calendar", model)
             model.onDateSelected(selectedDate)
-            model.onViewModeSelected(CalendarViewMode.ThreeDays)
+            model.onViewModeSelected(viewMode)
             runCurrent()
             api.requests.single().succeed()
             runCurrent()
@@ -86,10 +104,83 @@ class CalendarRangeLoadingTest {
     }
 
     @Test
+    fun dayViewMovesOneDayForwardAndBackAndIgnoresDuplicateRequests() = calendarTest(viewMode = CalendarViewMode.Day) { api, model ->
+        val originalEvents = model.state.value.events
+        model.loadNextRange()
+        model.loadNextRange()
+        model.loadPreviousRange()
+        runCurrent()
+        assertEquals(2, api.requests.size)
+        assertEquals(originalEvents, model.state.value.events)
+        val next = api.requests.last()
+        assertEquals(appointmentDayRange(LocalDate(2026, 11, 7), TimeZone.currentSystemDefault()), next.start to next.end)
+        next.succeed()
+        runCurrent()
+        assertEquals(LocalDate(2026, 11, 7), model.state.value.selectedDate)
+        model.loadPreviousRange()
+        runCurrent()
+        val previous = api.requests.last()
+        assertEquals(appointmentDayRange(selectedDate, TimeZone.currentSystemDefault()), previous.start to previous.end)
+        previous.succeed()
+        runCurrent()
+        assertEquals(selectedDate, model.state.value.selectedDate)
+    }
+
+    @Test
+    fun failedDayNavigationKeepsDateAndAppointmentsAndAllowsRetry() = calendarTest(viewMode = CalendarViewMode.Day) { api, model ->
+        val originalEvents = model.state.value.events
+        model.loadPreviousRange()
+        runCurrent()
+        api.requests.last().response.completeExceptionally(IllegalStateException("Sin conexión"))
+        runCurrent()
+        assertEquals(selectedDate, model.state.value.selectedDate)
+        assertEquals(originalEvents, model.state.value.events)
+        assertFalse(model.state.value.isLoadingPreviousRange)
+        model.loadPreviousRange()
+        runCurrent()
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(LocalDate(2026, 11, 5), model.state.value.selectedDate)
+    }
+
+    @Test
+    fun changingViewDuringDayNavigationDiscardsTheStaleDayResponse() = calendarTest(viewMode = CalendarViewMode.Day) { api, model ->
+        model.loadNextRange()
+        runCurrent()
+        val day = api.requests.last()
+        model.onViewModeSelected(CalendarViewMode.ThreeDays)
+        runCurrent()
+        api.requests.last().succeed()
+        day.succeed()
+        runCurrent()
+        assertEquals(selectedDate, model.state.value.selectedDate)
+        assertEquals(CalendarViewMode.ThreeDays, model.state.value.viewMode)
+        assertFalse(model.state.value.isLoading)
+    }
+
+    @Test
+    fun employeeOnlySeesOwnScheduleAcrossBothViews() = calendarTest(role = "empleado") { api, model ->
+        assertEquals(listOf(1), model.state.value.employeeSchedules.map { it.id })
+        assertTrue(model.state.value.events.all { it.employeeId == 1 })
+        model.onViewModeSelected(CalendarViewMode.Day)
+        runCurrent()
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(listOf(1), model.state.value.employeeSchedules.map { it.id })
+        assertTrue(model.state.value.events.all { it.employeeId == 1 })
+    }
+
+    @Test
+    fun administratorSeesAllEmployeeSchedules() = calendarTest { _, model ->
+        assertEquals(listOf(1, 2), model.state.value.employeeSchedules.map { it.id })
+        assertEquals(setOf(1, 2), model.state.value.events.map { it.employeeId }.toSet())
+    }
+
+    @Test
     fun nextRangeLoadsExactlyOnceAndKeepsCurrentGridUntilSuccess() = calendarTest { api, model ->
         val originalEvents = model.state.value.events
-        model.loadNextThreeDays()
-        model.loadNextThreeDays()
+        model.loadNextRange()
+        model.loadNextRange()
         assertTrue(model.state.value.isLoadingNextRange)
         assertEquals(selectedDate, model.state.value.selectedDate)
         assertEquals(originalEvents, model.state.value.events)
@@ -110,7 +201,7 @@ class CalendarRangeLoadingTest {
     @Test
     fun failedNextRangeKeepsCurrentAppointmentsAndCanBeRetried() = calendarTest { api, model ->
         val originalEvents = model.state.value.events
-        model.loadNextThreeDays()
+        model.loadNextRange()
         runCurrent()
         api.requests.last().response.completeExceptionally(IllegalStateException("Sin conexión"))
         runCurrent()
@@ -118,7 +209,7 @@ class CalendarRangeLoadingTest {
         assertEquals(originalEvents, model.state.value.events)
         assertEquals("Sin conexión", model.state.value.error)
         assertFalse(model.state.value.isLoadingNextRange)
-        model.loadNextThreeDays()
+        model.loadNextRange()
         runCurrent()
         assertEquals(3, api.requests.size)
         api.requests.last().succeed()
@@ -128,7 +219,7 @@ class CalendarRangeLoadingTest {
 
     @Test
     fun switchingToDayCancelsPendingRangeAdvance() = calendarTest { api, model ->
-        model.loadNextThreeDays()
+        model.loadNextRange()
         runCurrent()
         val next = api.requests.last()
         model.onViewModeSelected(CalendarViewMode.Day)
@@ -139,17 +230,20 @@ class CalendarRangeLoadingTest {
         assertEquals(CalendarViewMode.Day, model.state.value.viewMode)
         assertEquals(selectedDate, model.state.value.selectedDate)
         assertFalse(model.state.value.isLoadingNextRange)
-        model.loadNextThreeDays()
+        model.loadNextRange()
         runCurrent()
-        assertEquals(3, api.requests.size)
+        assertEquals(4, api.requests.size)
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(LocalDate(2026, 11, 7), model.state.value.selectedDate)
     }
 
     @Test
     fun previousRangeLoadsOnceAndKeepsCurrentGridUntilSuccess() = calendarTest { api, model ->
         val originalEvents = model.state.value.events
-        model.loadPreviousThreeDays()
-        model.loadPreviousThreeDays()
-        model.loadNextThreeDays()
+        model.loadPreviousRange()
+        model.loadPreviousRange()
+        model.loadNextRange()
         assertTrue(model.state.value.isLoadingPreviousRange)
         assertFalse(model.state.value.isLoadingNextRange)
         assertEquals(selectedDate, model.state.value.selectedDate)
@@ -170,14 +264,14 @@ class CalendarRangeLoadingTest {
     @Test
     fun failedPreviousRangeKeepsCurrentAppointmentsAndCanBeRetried() = calendarTest { api, model ->
         val originalEvents = model.state.value.events
-        model.loadPreviousThreeDays()
+        model.loadPreviousRange()
         runCurrent()
         api.requests.last().response.completeExceptionally(IllegalStateException("Sin conexión"))
         runCurrent()
         assertEquals(selectedDate, model.state.value.selectedDate)
         assertEquals(originalEvents, model.state.value.events)
         assertFalse(model.state.value.isLoadingPreviousRange)
-        model.loadPreviousThreeDays()
+        model.loadPreviousRange()
         runCurrent()
         api.requests.last().succeed()
         runCurrent()
@@ -186,7 +280,7 @@ class CalendarRangeLoadingTest {
 
     @Test
     fun switchingToDayCancelsPendingBackwardRequest() = calendarTest { api, model ->
-        model.loadPreviousThreeDays()
+        model.loadPreviousRange()
         runCurrent()
         val previous = api.requests.last()
         model.onViewModeSelected(CalendarViewMode.Day)
@@ -197,18 +291,21 @@ class CalendarRangeLoadingTest {
         assertEquals(selectedDate, model.state.value.selectedDate)
         assertEquals(CalendarViewMode.Day, model.state.value.viewMode)
         assertFalse(model.state.value.isLoadingPreviousRange)
-        model.loadPreviousThreeDays()
+        model.loadPreviousRange()
         runCurrent()
-        assertEquals(3, api.requests.size)
+        assertEquals(4, api.requests.size)
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(LocalDate(2026, 11, 5), model.state.value.selectedDate)
     }
 
     @Test
     fun navigatingForwardAndBackReturnsToOriginalRange() = calendarTest { api, model ->
-        model.loadNextThreeDays()
+        model.loadNextRange()
         runCurrent()
         api.requests.last().succeed()
         runCurrent()
-        model.loadPreviousThreeDays()
+        model.loadPreviousRange()
         runCurrent()
         api.requests.last().succeed()
         runCurrent()

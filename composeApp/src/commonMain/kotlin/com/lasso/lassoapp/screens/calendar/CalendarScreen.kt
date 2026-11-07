@@ -53,10 +53,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
+import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
+import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.ui.theme.LassoTextPrimary
+import com.lasso.lassoapp.ui.theme.calendarColorOrPrimary
+import com.lasso.lassoapp.utils.formatFullDateSpanish
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
@@ -116,10 +122,22 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            if (!isThreeDayView && state.employeeSchedules.isNotEmpty()) {
+            if (!isThreeDayView) {
+                Text(
+                    text = state.selectedDate.formatFullDateSpanish(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 16.dp, end = 16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = LassoTextPrimary,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            if (state.employeeSchedules.isNotEmpty()) {
                 EmployeeFilterPills(
                     employees = state.employeeSchedules,
                     selectedEmployeeId = selectedEmployeeId,
+                    informative = isThreeDayView,
                     onEmployeeSelected = { selectedEmployeeId = it },
                     modifier = Modifier.padding(top = 16.dp),
                 )
@@ -146,15 +164,22 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                     val availableCalendarWidth = maxWidth - sidebarWidth - 16.dp
                     val density = LocalDensity.current
                     val previousRange = outgoingRange
-                    val isRangeTransition = isThreeDayView && previousRange != null &&
-                        state.selectedDate == previousRange.startDate.plus(previousRange.direction.dayOffset, DateTimeUnit.DAY)
+                    val columnWidth = employeeColumnWidth(availableCalendarWidth, displayedEmployees.size, selectedEmployeeId)
+                    val previousEmployees = previousRange?.employees.orEmpty().filter {
+                        selectedEmployeeId == null || it.id == selectedEmployeeId
+                    }
+                    val previousColumnWidth = employeeColumnWidth(availableCalendarWidth, previousEmployees.size, selectedEmployeeId)
+                    val isRangeTransition = previousRange != null && previousRange.viewMode == state.viewMode &&
+                        state.selectedDate == previousRange.startDate.plus(
+                            previousRange.direction.dayOffset(state.viewMode.dayCount), DateTimeUnit.DAY)
                     val isBackwardTransition = isRangeTransition && previousRange.direction == CalendarRangeDirection.Previous
                     val incomingWidth = if (isBackwardTransition) with(density) {
-                        calendarDayColumnWidth(
+                        if (isThreeDayView) calendarDayColumnWidth(
                             List(3) { state.selectedDate.plus(it, DateTimeUnit.DAY) },
                             state.events,
                             availableCalendarWidth,
                         ).roundToPx() * 3
+                        else (columnWidth * displayedEmployees.size.coerceAtLeast(1)).roundToPx()
                     } else 0
                     // Starting this scroll state at the old first day keeps prepended columns offscreen
                     // until the backward animation begins, without flashing the new range's first day.
@@ -173,11 +198,12 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             outgoingRange = null
                         } else if (isRangeTransition) {
                             val incomingStart = with(density) {
-                                calendarDayColumnWidth(
+                                if (isThreeDayView) calendarDayColumnWidth(
                                     previousRange.dates,
                                     previousRange.events,
                                     availableCalendarWidth,
                                 ).roundToPx() * 3
+                                else (previousColumnWidth * previousEmployees.size.coerceAtLeast(1)).roundToPx()
                             }
                             // Wait for both ranges to be measured before scrolling into the incoming range.
                             snapshotFlow { horizontalScrollState.maxValue }.first { it >= incomingStart }
@@ -191,12 +217,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             horizontalScrollState.scrollTo(0)
                         }
                     }
-                    val columnWidth = if (selectedEmployeeId != null) {
-                        availableCalendarWidth
-                    } else {
-                        maxOf(140.dp, availableCalendarWidth / displayedEmployees.size.coerceAtLeast(1).toFloat())
-                    }
-
                     Card(
                         modifier = Modifier.fillMaxSize(),
                         shape = RoundedCornerShape(16.dp),
@@ -225,21 +245,24 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             CalendarRangeScroller(
                                 modifier = Modifier.fillMaxSize(),
                                 scrollState = activeScrollState,
-                                enabled = isThreeDayView,
+                                enabled = true,
+                                dayCount = state.viewMode.dayCount,
                                 isLoading = state.isLoading || isRangeTransition,
                                 isLoadingNextRange = state.isLoadingNextRange,
                                 isLoadingPreviousRange = state.isLoadingPreviousRange,
                                 userScrollEnabled = !isRangeTransition,
                                 onNextRange = {
                                     if (!state.isLoading && !isRangeTransition) {
-                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events, CalendarRangeDirection.Next)
-                                        viewModel.loadNextThreeDays()
+                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
+                                            CalendarRangeDirection.Next, state.viewMode, state.employeeSchedules)
+                                        viewModel.loadNextRange()
                                     }
                                 },
                                 onPreviousRange = {
                                     if (!state.isLoading && !isRangeTransition) {
-                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events, CalendarRangeDirection.Previous)
-                                        viewModel.loadPreviousThreeDays()
+                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
+                                            CalendarRangeDirection.Previous, state.viewMode, state.employeeSchedules)
+                                        viewModel.loadPreviousRange()
                                     }
                                 },
                             ) {
@@ -290,42 +313,23 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         )
                                     }
                                 } else {
-                                displayedEmployees.forEach { employee ->
-                                    Column(modifier = Modifier.width(columnWidth)) {
-                                        EmployeeHeader(
-                                            employeeName = employee.name,
-                                            appointmentCount = employee.appointments.size,
-                                            showEmployeeName = selectedEmployeeId == null,
-                                            modifier = Modifier
-                                                .height(headerHeight)
-                                                .fillMaxWidth(),
-                                        )
-                                        CalendarEvents(
-                                            hourHeight = hourHeight,
-                                            verticalScrollState = verticalScrollState,
-                                            events = state.events.filter { it.employeeId == employee.id },
-                                            onEditAppointment = { event ->
-                                                val appointment = employee.appointments.firstOrNull {
-                                                    it.id == event.appointmentId
-                                                }
-                                                if (appointment != null) {
-                                                    viewModel.showEditAppointmentDialog(
-                                                        appointment = appointment,
-                                                        employeeId = employee.id,
-                                                    )
-                                                }
-                                            },
-                                            onEmptySlotClick = { startMinutes ->
-                                                viewModel.showNewAppointmentDialog(
-                                                    employeeId = employee.id,
-                                                    date = state.selectedDate,
-                                                    startMinutes = startMinutes,
-                                                )
-                                            },
-                                            modifier = Modifier.fillMaxSize(),
-                                        )
+                                    if (isRangeTransition && !isBackwardTransition) {
+                                        CalendarEmployeeColumns(previousEmployees, previousRange.events,
+                                            previousColumnWidth, hourHeight, headerHeight, verticalScrollState,
+                                            selectedEmployeeId == null)
                                     }
-                                }
+                                    CalendarEmployeeColumns(displayedEmployees, state.events,
+                                        columnWidth, hourHeight, headerHeight, verticalScrollState,
+                                        selectedEmployeeId == null,
+                                        onEditAppointment = viewModel::showEditAppointmentDialog,
+                                        onEmptySlotClick = { employeeId, startMinutes ->
+                                            viewModel.showNewAppointmentDialog(employeeId, state.selectedDate, startMinutes)
+                                        })
+                                    if (isBackwardTransition) {
+                                        CalendarEmployeeColumns(previousEmployees, previousRange.events,
+                                            previousColumnWidth, hourHeight, headerHeight, verticalScrollState,
+                                            selectedEmployeeId == null)
+                                    }
                                 }
                             }
                         }
@@ -379,6 +383,43 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
+private fun CalendarEmployeeColumns(
+    employees: List<EmployeeAppointmentSchedule>,
+    events: List<Event>,
+    columnWidth: Dp,
+    hourHeight: Dp,
+    headerHeight: Dp,
+    verticalScrollState: ScrollState,
+    showEmployeeName: Boolean,
+    onEditAppointment: (CalendarAppointment, Int) -> Unit = { _, _ -> },
+    onEmptySlotClick: (Int, Int) -> Unit = { _, _ -> },
+) {
+    if (employees.isEmpty()) Box(Modifier.width(columnWidth))
+    employees.forEach { employee ->
+        Column(Modifier.width(columnWidth)) {
+            EmployeeHeader(employee.name, employee.appointments.size, showEmployeeName,
+                Modifier.height(headerHeight).fillMaxWidth())
+            CalendarEvents(
+                hourHeight = hourHeight,
+                verticalScrollState = verticalScrollState,
+                events = events.filter { it.employeeId == employee.id },
+                onEditAppointment = { event ->
+                    employee.appointments.firstOrNull { it.id == event.appointmentId }?.let {
+                        onEditAppointment(it, employee.id)
+                    }
+                },
+                onEmptySlotClick = { onEmptySlotClick(employee.id, it) },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    }
+}
+
+private fun employeeColumnWidth(availableWidth: Dp, employeeCount: Int, selectedEmployeeId: Int?): Dp =
+    if (selectedEmployeeId != null) availableWidth
+    else maxOf(140.dp, availableWidth / employeeCount.coerceAtLeast(1).toFloat())
+
+@Composable
 private fun EmployeeHeader(
     employeeName: String,
     appointmentCount: Int,
@@ -416,6 +457,7 @@ private fun EmployeeFilterPills(
     employees: List<EmployeeAppointmentSchedule>,
     selectedEmployeeId: Int?,
     onEmployeeSelected: (Int?) -> Unit,
+    informative: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     LazyRow(
@@ -423,18 +465,22 @@ private fun EmployeeFilterPills(
         contentPadding = PaddingValues(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item {
-            EmployeeFilterPill(
-                label = "Todos",
-                selected = selectedEmployeeId == null,
-                onClick = { onEmployeeSelected(null) },
-            )
+        if (!informative) {
+            item {
+                EmployeeFilterPill(
+                    label = "Todos",
+                    color = LassoPrimary,
+                    selected = selectedEmployeeId == null,
+                    onClick = { onEmployeeSelected(null) },
+                )
+            }
         }
         items(employees, key = { it.id }) { employee ->
             EmployeeFilterPill(
                 label = employee.name,
-                selected = selectedEmployeeId == employee.id,
-                onClick = { onEmployeeSelected(employee.id) },
+                color = calendarColorOrPrimary(employee.calendarColor),
+                selected = informative || selectedEmployeeId == employee.id,
+                onClick = if (informative) null else ({ onEmployeeSelected(employee.id) }),
             )
         }
     }
@@ -443,22 +489,23 @@ private fun EmployeeFilterPills(
 @Composable
 private fun EmployeeFilterPill(
     label: String,
+    color: Color,
     selected: Boolean,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
 ) {
     Box(
         modifier = Modifier
             .background(
-                color = if (selected) Color(0xFF00CFAE) else Color(0xFFEEF1F4),
+                color = if (selected) color else color.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(50),
             )
-            .clickable(onClick = onClick)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 22.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            color = if (selected) Color.White else Color(0xFF89939F),
+            color = if (selected) Color.White else color,
             style = MaterialTheme.typography.bodySmall,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -473,6 +520,8 @@ private data class CalendarRangeSnapshot(
     val startDate: LocalDate,
     val events: List<Event>,
     val direction: CalendarRangeDirection,
+    val viewMode: CalendarViewMode,
+    val employees: List<EmployeeAppointmentSchedule>,
 ) {
     val dates: List<LocalDate> get() = List(3) { startDate.plus(it, DateTimeUnit.DAY) }
 }

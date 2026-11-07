@@ -48,13 +48,14 @@ internal fun CalendarRangeScroller(
     onPreviousRange: () -> Unit,
     modifier: Modifier = Modifier,
     userScrollEnabled: Boolean = true,
+    dayCount: Int = 3,
     content: @Composable RowScope.() -> Unit,
 ) {
     val density = LocalDensity.current
-    val threshold = with(density) { 72.dp.toPx() }
+    val threshold = with(density) { 90.dp.toPx() }
     val loadingWidth = with(density) { 56.dp.toPx() }
-    val pullState = remember(threshold) { CalendarEndPullState(threshold) }
-    val startPullState = remember(threshold) { CalendarEndPullState(threshold) }
+    val pullState = remember(threshold, dayCount) { CalendarEndPullState(threshold) }
+    val startPullState = remember(threshold, dayCount) { CalendarEndPullState(threshold) }
     val currentEnabled by rememberUpdatedState(enabled)
     val currentLoading by rememberUpdatedState(isLoading)
     val currentOnNextRange by rememberUpdatedState(onNextRange)
@@ -143,8 +144,12 @@ internal fun CalendarRangeScroller(
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = if (startPullState.isArmed) "Soltar para cargar los 3 días anteriores"
-                                else "Cargar los 3 días anteriores",
+                            contentDescription = if (dayCount == 1) {
+                                if (startPullState.isArmed) "Soltar para cargar el día anterior" else "Cargar el día anterior"
+                            } else {
+                                if (startPullState.isArmed) "Soltar para cargar los $dayCount días anteriores"
+                                else "Cargar los $dayCount días anteriores"
+                            },
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp).graphicsLayer {
                                 alpha = startProgress
@@ -173,8 +178,12 @@ internal fun CalendarRangeScroller(
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = if (pullState.isArmed) "Soltar para cargar los próximos 3 días"
-                                else "Cargar los próximos 3 días",
+                            contentDescription = if (dayCount == 1) {
+                                if (pullState.isArmed) "Soltar para cargar el día siguiente" else "Cargar el día siguiente"
+                            } else {
+                                if (pullState.isArmed) "Soltar para cargar los próximos $dayCount días"
+                                else "Cargar los próximos $dayCount días"
+                            },
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp).graphicsLayer {
                                 alpha = progress

@@ -1,9 +1,9 @@
 package com.lasso.lassoapp.screens.calendar
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lasso.lassoapp.data.remote.LassoApi
+import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.model.AppointmentCalendarResponse
 import com.lasso.lassoapp.model.AppointmentWriteRequest
 import com.lasso.lassoapp.model.CalendarAppointment
@@ -13,6 +13,7 @@ import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.Service
+import com.lasso.lassoapp.ui.theme.calendarColorOrPrimary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,7 @@ import kotlin.time.Clock
 
 class CalendarScreenViewModel(
     private val lassoApi: LassoApi,
+    private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val timeZone = TimeZone.currentSystemDefault()
     private val _state = MutableStateFlow(CalendarScreenState())
@@ -63,14 +65,14 @@ class CalendarScreenViewModel(
 
     fun retry() = loadEvents(_state.value.selectedDate)
 
-    fun loadNextThreeDays() = loadAdjacentThreeDays(CalendarRangeDirection.Next)
+    fun loadNextRange() = loadAdjacentRange(CalendarRangeDirection.Next)
 
-    fun loadPreviousThreeDays() = loadAdjacentThreeDays(CalendarRangeDirection.Previous)
+    fun loadPreviousRange() = loadAdjacentRange(CalendarRangeDirection.Previous)
 
-    private fun loadAdjacentThreeDays(direction: CalendarRangeDirection) {
+    private fun loadAdjacentRange(direction: CalendarRangeDirection) {
         val current = _state.value
-        if (current.viewMode != CalendarViewMode.ThreeDays || current.isLoading) return
-        loadEvents(current.selectedDate.plus(direction.dayOffset, DateTimeUnit.DAY), rangeDirection = direction)
+        if (current.isLoading) return
+        loadEvents(current.selectedDate.plus(direction.dayOffset(current.viewMode.dayCount), DateTimeUnit.DAY), rangeDirection = direction)
     }
 
     fun showNewAppointmentDialog(
@@ -240,7 +242,11 @@ class CalendarScreenViewModel(
         loadJob = viewModelScope.launch {
             val range = appointmentDayRange(date, timeZone, viewMode.dayCount)
             try {
-                val response = lassoApi.getAppointmentCalendar(range.first, range.second)
+                val session = sessionRepository.getSession() ?: error("No se encontró una sesión activa.")
+                val calendar = lassoApi.getAppointmentCalendar(range.first, range.second)
+                val response = calendar.copy(employees = calendar.employees.filter {
+                    session.isAdmin || it.id == session.employeeId
+                })
                 if (_state.value.selectedDate != originalDate || _state.value.viewMode != viewMode) return@launch
                 _state.value = _state.value.copy(
                     isLoading = false,
@@ -272,7 +278,8 @@ class CalendarScreenViewModel(
             _state.value = _state.value.copy(isLoadingOptions = true, optionsError = null)
             try {
                 val clients = lassoApi.getClients()
-                val employees = lassoApi.getEmployees()
+                val session = sessionRepository.getSession() ?: error("No se encontró una sesión activa.")
+                val employees = lassoApi.getEmployees().filter { session.isAdmin || it.id == session.employeeId }
                 val services = lassoApi.getServices()
                 _state.value = _state.value.copy(
                     isLoadingOptions = false,
@@ -335,13 +342,12 @@ fun appointmentDayRange(date: LocalDate, timeZone: TimeZone, dayCount: Int = 1):
 }
 
 fun AppointmentCalendarResponse.toEvents(timeZone: TimeZone): List<Event> {
-    val colors = listOf(Color(0xFFAFBBF2), Color(0xFF1B998B), Color(0xFFFFC857), Color(0xFFFF8A80))
-    return employees.flatMapIndexed { employeeIndex, employee ->
+    return employees.flatMap { employee ->
         employee.appointments.map { appointment ->
             Event(
                 appointmentId = appointment.id,
                 name = appointment.client?.name?.takeIf { it.isNotBlank() },
-                color = colors[employeeIndex % colors.size],
+                color = calendarColorOrPrimary(employee.calendarColor),
                 start = Instant.fromEpochMilliseconds(appointment.startsAt).toLocalDateTime(timeZone),
                 end = Instant.fromEpochMilliseconds(appointment.endsAt).toLocalDateTime(timeZone),
                 description = appointment.services.map { it.name }.filter { it.isNotBlank() }

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,8 +43,8 @@ fun CalendarEventItem(
                 vertical = if (isShort) 2.dp else 4.dp
             ),
         shape = RoundedCornerShape(if (isShort) 12.dp else 18.dp),
-        border = BorderStroke(2.dp, Color(0xFF52E4C2)),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFC9F7E8)),
+        border = BorderStroke(2.dp, event.color),
+        colors = CardDefaults.cardColors(containerColor = event.color.copy(alpha = 0.15f).compositeOver(Color.White)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -59,7 +60,7 @@ fun CalendarEventItem(
                     text = clientName,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF353D3C),
+                        color = event.color,
                         fontSize = if (isShort) 10.sp else 14.sp,
                         lineHeight = if (isShort) 10.sp else 18.sp,
                     ),
@@ -71,7 +72,7 @@ fun CalendarEventItem(
                 Text(
                     text = serviceName,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color(0xFF8D9997),
+                        color = event.color,
                         fontSize = if (isShort) 9.sp else 12.sp,
                         lineHeight = if (isShort) 9.sp else 16.sp,
                     ),
@@ -86,7 +87,7 @@ fun CalendarEventItem(
                 text = "${event.start.formatEventTime()} - ${event.end.formatEventTime()}",
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00BFA5),
+                    color = event.color,
                     fontSize = if (isShort) 9.sp else 12.sp,
                     lineHeight = if (isShort) 9.sp else 16.sp,
                 ),

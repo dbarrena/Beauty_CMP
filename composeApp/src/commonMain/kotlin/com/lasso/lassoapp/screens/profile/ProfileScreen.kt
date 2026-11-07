@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Email
@@ -35,12 +34,11 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProfileScreen(onLoggedOut: () -> Unit, onBranchChanged: () -> Unit) {
+fun ProfileScreen(onBranchChanged: () -> Unit) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val state by viewModel.state.collectAsState()
-    LaunchedEffect(state.loggedOut) { if (state.loggedOut) onLoggedOut() }
     LaunchedEffect(state.branchChanged) { if (state.branchChanged) onBranchChanged() }
-    ProfileScreenContent(state, viewModel::openDialog, viewModel::logout, viewModel::loadProfile, viewModel::switchBranch)
+    ProfileScreenContent(state, viewModel::openDialog, viewModel::loadProfile, viewModel::switchBranch)
     if (state.dialog != null) {
         ProfileFormDialog(state, viewModel::updateField, viewModel::save, viewModel::dismissDialog)
     }
@@ -50,7 +48,6 @@ fun ProfileScreen(onLoggedOut: () -> Unit, onBranchChanged: () -> Unit) {
 internal fun ProfileScreenContent(
     state: ProfileState,
     onOpenDialog: (ProfileDialog) -> Unit,
-    onLogout: () -> Unit,
     onRetry: () -> Unit,
     onSwitchBranch: (Int) -> Unit = {},
 ) {
@@ -94,7 +91,7 @@ internal fun ProfileScreenContent(
                     ProfileDetail("Cargo", roleLabel(employee.role), Icons.Outlined.WorkOutline)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
-                            onClick = { onOpenDialog(ProfileDialog.Edit) }, enabled = !state.isLoggingOut && !state.isSaving,
+                            onClick = { onOpenDialog(ProfileDialog.Edit) }, enabled = !state.isSaving,
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoPrimary),
@@ -104,7 +101,7 @@ internal fun ProfileScreenContent(
                                 maxLines = 1, softWrap = false, textAlign = TextAlign.Center)
                         }
                         OutlinedButton(
-                            onClick = { onOpenDialog(ProfileDialog.Password) }, enabled = !state.isLoggingOut && !state.isSaving,
+                            onClick = { onOpenDialog(ProfileDialog.Password) }, enabled = !state.isSaving,
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(14.dp),
@@ -133,7 +130,7 @@ internal fun ProfileScreenContent(
                         color = LassoTextMuted)
                 }
                 if (isAdmin) {
-                    BranchActionButton("Agregar sucursal", !state.isSaving && !state.isLoggingOut && !state.isLoading,
+                    BranchActionButton("Agregar sucursal", !state.isSaving && !state.isLoading,
                         { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add,
                         containerColor = LassoSecondaryLight.copy(alpha = 0.45f).compositeOver(Color.White),
                         contentColor = Color.Black)
@@ -159,7 +156,7 @@ internal fun ProfileScreenContent(
                                     Text("Sucursal guardada", style = MaterialTheme.typography.bodySmall, color = LassoGray)
                                 }
                             }
-                            BranchActionButton("Cambiar a esta sucursal", !state.isSaving && !state.isLoggingOut && !state.isLoading,
+                            BranchActionButton("Cambiar a esta sucursal", !state.isSaving && !state.isLoading,
                                 { onSwitchBranch(branch.partnerId) }, modifier = Modifier.fillMaxWidth())
                         }
                     }
@@ -172,17 +169,6 @@ internal fun ProfileScreenContent(
                 if (state.employee == null && !state.isLoading) TextButton(onClick = onRetry) { Text("Reintentar") }
             }
             state.success?.let { Text(it, color = LassoPrimaryDark, style = MaterialTheme.typography.bodyMedium) }
-        }
-        OutlinedButton(
-            onClick = onLogout, enabled = !state.isLoggingOut && !state.isSaving,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoTertiary),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = LassoTertiary),
-        ) {
-            if (state.isLoggingOut) CircularProgressIndicator(Modifier.size(20.dp), color = LassoTertiary, strokeWidth = 2.dp)
-            else Icon(Icons.AutoMirrored.Filled.Logout, null, Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(if (state.isLoggingOut) "Cerrando sesión..." else "Cerrar sesión")
         }
     }
 }
@@ -312,6 +298,6 @@ private fun ProfilePreview() {
     MaterialTheme(colorScheme = LightLassoColorScheme, typography = lassoTypography()) {
         ProfileScreenContent(ProfileState(isLoading = false, employee = Employee(
             id = 1, name = "Amairany Mateos", email = "amairany@correo.com", role = "empleado", partnerId = 1, updatedAt = null,
-        )), {}, {}, {})
+        )), {}, {})
     }
 }

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.Employee
+import com.lasso.lassoapp.screens.employees.dialog.EmployeeConfigurationFields
 import com.lasso.lassoapp.screens.employees.dialog.new.EmployeeField
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoSurfaceVariant
@@ -71,6 +72,9 @@ fun EditEmployeeDialog(
     var productCommission by remember { mutableStateOf(employee.productCommissionPercentage ?: "0") }
     var serviceCommission by remember { mutableStateOf(employee.serviceCommissionPercentage ?: "0") }
     var showRoleMenu by remember { mutableStateOf(false) }
+    var calendarColor by remember(employee.id) { mutableStateOf(employee.calendarColor) }
+    var isDisplayedOnCalendar by remember(employee.id) { mutableStateOf(employee.isDisplayedOnCalendar) }
+    var canSeeSales by remember(employee.id) { mutableStateOf(employee.canSeeSales) }
 
     Dialog(onDismissRequest = { if (!isLoading) onDismiss() }) {
         Card(
@@ -206,6 +210,16 @@ fun EditEmployeeDialog(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(24.dp))
+                    EmployeeConfigurationFields(
+                        calendarColor = calendarColor,
+                        onCalendarColorChange = { calendarColor = it },
+                        isDisplayedOnCalendar = isDisplayedOnCalendar,
+                        onDisplayedOnCalendarChange = { isDisplayedOnCalendar = it },
+                        canSeeSales = canSeeSales,
+                        onCanSeeSalesChange = { canSeeSales = it },
+                        enabled = !isLoading
+                    )
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Row(
@@ -222,7 +236,10 @@ fun EditEmployeeDialog(
                                         email = email,
                                         role = role,
                                         productCommissionPercentage = productCommission,
-                                        serviceCommissionPercentage = serviceCommission
+                                        serviceCommissionPercentage = serviceCommission,
+                                        calendarColor = calendarColor,
+                                        isDisplayedOnCalendar = isDisplayedOnCalendar,
+                                        canSeeSales = canSeeSales
                                     )
                                 )
                             },

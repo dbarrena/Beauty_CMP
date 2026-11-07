@@ -21,8 +21,6 @@ data class ProfileState(
     val employee: Employee? = null,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
-    val isLoggingOut: Boolean = false,
-    val loggedOut: Boolean = false,
     val dialog: ProfileDialog? = null,
     val name: String = "",
     val email: String = "",
@@ -39,7 +37,6 @@ internal interface ProfileRepository {
     suspend fun load(): Employee
     suspend fun update(id: Int, request: ProfileUpdateRequest): Employee
     suspend fun rememberProfile(employee: Employee)
-    suspend fun logout()
     suspend fun branches(): List<Session>
     suspend fun addBranch(email: String, password: String)
     suspend fun switchBranch(partnerId: Int)
@@ -65,11 +62,6 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
             session.addBranch(employee, token)
         }
         override suspend fun switchBranch(partnerId: Int) = session.switchBranch(partnerId)
-        override suspend fun logout() {
-            try { api.logout() } catch (exception: CancellationException) { throw exception }
-            catch (_: Exception) { /* Match the existing local sign-out behavior when offline. */ }
-            session.removeSession()
-        }
     })
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
@@ -77,7 +69,7 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
     init { loadProfile() }
 
     fun loadProfile() {
-        if (_state.value.isSaving || _state.value.isLoggingOut) return
+        if (_state.value.isSaving) return
         _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             try {
@@ -96,7 +88,7 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
     fun openDialog(dialog: ProfileDialog) {
         val current = _state.value
         val employee = current.employee ?: return
-        if (current.isSaving || current.isLoggingOut) return
+        if (current.isSaving) return
         if (dialog == ProfileDialog.Branch && !employee.role.equals("administrador", ignoreCase = true)) return
         _state.update { it.copy(dialog = dialog, name = employee.name, email = employee.email,
             password = "", confirmPassword = "", fieldErrors = emptyMap(), error = null, success = null) }
@@ -127,7 +119,7 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
         val form = _state.value
         val employee = form.employee ?: return
         val dialog = form.dialog ?: return
-        if (form.isSaving || form.isLoggingOut) return
+        if (form.isSaving) return
         if (dialog == ProfileDialog.Branch) {
             addBranch()
             return
@@ -169,21 +161,6 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
         }
     }
 
-    fun logout() {
-        if (_state.value.isSaving || _state.value.isLoggingOut) return
-        _state.update { it.copy(isLoggingOut = true, error = null, success = null) }
-        viewModelScope.launch {
-            try {
-                repository.logout()
-                _state.value = ProfileState(isLoading = false, loggedOut = true)
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
-                _state.update { it.copy(isLoggingOut = false, error = "No se pudo cerrar la sesión. Inténtalo de nuevo.") }
-            }
-        }
-    }
-
     private fun addBranch() {
         val form = _state.value
         val errors = buildMap {
@@ -212,7 +189,7 @@ class ProfileViewModel internal constructor(private val repository: ProfileRepos
 
     fun switchBranch(partnerId: Int) {
         val current = _state.value
-        if (current.isSaving || current.isLoading || current.isLoggingOut || current.branchChanged || current.dialog != null) return
+        if (current.isSaving || current.isLoading || current.branchChanged || current.dialog != null) return
         if (current.branches.none { it.partnerId == partnerId }) return
         _state.update { it.copy(isSaving = true, error = null, success = null) }
         viewModelScope.launch {

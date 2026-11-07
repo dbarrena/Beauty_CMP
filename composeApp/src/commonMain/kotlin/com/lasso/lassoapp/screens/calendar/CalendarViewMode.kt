@@ -5,7 +5,9 @@ enum class CalendarViewMode(val dayCount: Int) {
     ThreeDays(3),
 }
 
-enum class CalendarRangeDirection(val dayOffset: Int) {
-    Previous(-3),
-    Next(3),
+enum class CalendarRangeDirection(private val sign: Int) {
+    Previous(-1),
+    Next(1);
+
+    fun dayOffset(dayCount: Int): Int = sign * dayCount
 }
