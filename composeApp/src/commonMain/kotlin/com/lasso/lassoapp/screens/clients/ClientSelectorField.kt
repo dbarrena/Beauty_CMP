@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +53,7 @@ fun ClientSelectorField(
     onNewClient: () -> Unit,
     label: String = "Cliente (opcional)",
     showWhatsAppAction: Boolean = false,
+    onEditClient: ((Client) -> Unit)? = null,
 ) {
     val uriHandler = LocalUriHandler.current
     ClientSelectorLabel(label)
@@ -83,6 +85,16 @@ fun ClientSelectorField(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
+                    if (onEditClient != null) {
+                        IconButton(onClick = { onEditClient(selectedClient) }, enabled = enabled) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Editar cliente",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
                     IconButton(onClick = onClientRemoved, enabled = enabled) {
                         Icon(
                             Icons.Default.Close,

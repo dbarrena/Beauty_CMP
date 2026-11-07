@@ -197,6 +197,17 @@ class CalendarScreenViewModel(
     fun showNewClientDialog() {
         _state.value = _state.value.copy(
             isNewClientDialogDisplayed = true,
+            editingClient = null,
+            clientSaveError = null,
+            createdClient = null,
+        )
+    }
+
+    fun showEditClientDialog(client: Client) {
+        if (_state.value.isSavingClient) return
+        _state.value = _state.value.copy(
+            isNewClientDialogDisplayed = true,
+            editingClient = client,
             clientSaveError = null,
             createdClient = null,
         )
@@ -206,6 +217,7 @@ class CalendarScreenViewModel(
         if (_state.value.isSavingClient) return
         _state.value = _state.value.copy(
             isNewClientDialogDisplayed = false,
+            editingClient = null,
             clientSaveError = null,
         )
     }
@@ -238,17 +250,23 @@ class CalendarScreenViewModel(
         }
     }
 
-    fun createClient(request: ClientWriteRequest) {
+    fun saveClient(request: ClientWriteRequest) {
         if (_state.value.isSavingClient) return
+        val editingClient = _state.value.editingClient
         viewModelScope.launch {
             _state.value = _state.value.copy(isSavingClient = true, clientSaveError = null)
             try {
-                val client = lassoApi.registerClient(request)
+                val client = if (editingClient == null) {
+                    lassoApi.registerClient(request)
+                } else {
+                    lassoApi.editClient(editingClient.id, request)
+                }
                 _state.value = _state.value.copy(
                     isSavingClient = false,
-                    clients = (_state.value.clients + client).distinctBy(Client::id).sortedBy(Client::name),
+                    clients = (_state.value.clients.filterNot { it.id == client.id } + client).sortedBy(Client::name),
                     createdClient = client,
                     isNewClientDialogDisplayed = false,
+                    editingClient = null,
                 )
             } catch (exception: CancellationException) {
                 throw exception
@@ -361,6 +379,7 @@ class CalendarScreenViewModel(
             mutationError = null,
             clientSaveError = null,
             createdClient = null,
+            editingClient = null,
         )
     }
 
@@ -389,6 +408,8 @@ class CalendarScreenViewModel(
                     isLoadingPreviousRange = false,
                     selectedDate = date,
                     hasLoadedCalendar = true,
+                    calendarLoadRevision = _state.value.calendarLoadRevision + 1,
+                    calendarLoadDirection = rangeDirection,
                     employeeSchedules = response.employees,
                     events = response.toEvents(timeZone),
                     error = null,
@@ -438,6 +459,8 @@ class CalendarScreenViewModel(
 data class CalendarScreenState(
     val isLoading: Boolean = false,
     val hasLoadedCalendar: Boolean = false,
+    val calendarLoadRevision: Int = 0,
+    val calendarLoadDirection: CalendarRangeDirection? = null,
     val isCalendarBlockDialogDisplayed: Boolean = false,
     val isSavingCalendarBlock: Boolean = false,
     val isDeletingCalendarBlock: Boolean = false,
@@ -464,6 +487,7 @@ data class CalendarScreenState(
     val employees: List<Employee> = emptyList(),
     val services: List<Service> = emptyList(),
     val createdClient: Client? = null,
+    val editingClient: Client? = null,
     val selectedAppointment: CalendarAppointment? = null,
     val selectedAppointmentEmployeeId: Int? = null,
     val initialAppointmentDate: LocalDate? = null,

@@ -35,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.model.Service
+import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.utils.formatCurrency
+import com.lasso.lassoapp.utils.parseCurrency
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 
@@ -158,13 +160,21 @@ private fun ServiceSearchItem(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
-        Text(
-            text = service.name,
+        Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            color = LassoTextPrimary,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = service.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = LassoTextPrimary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = service.price.parseCurrency().formatCurrency(includeSymbol = true),
+                style = MaterialTheme.typography.bodySmall,
+                color = LassoPrimary,
+            )
+        }
     }
 }

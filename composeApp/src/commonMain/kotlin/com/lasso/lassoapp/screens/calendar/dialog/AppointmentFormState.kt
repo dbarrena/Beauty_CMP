@@ -136,7 +136,7 @@ internal fun rememberAppointmentFormState(
         )
     }
 
-    LaunchedEffect(preferredClient?.id) {
+    LaunchedEffect(preferredClient) {
         if (preferredClient != null) state.selectClient(preferredClient)
     }
     LaunchedEffect(appointment?.id, clients) {

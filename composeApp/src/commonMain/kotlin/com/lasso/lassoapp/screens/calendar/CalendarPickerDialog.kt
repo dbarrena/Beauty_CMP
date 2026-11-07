@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -40,11 +41,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lasso.lassoapp.utils.formatMonthYearSpanish
+import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.ui.theme.LassoSecondary
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 @Composable
 fun CalendarPickerDialog(
@@ -54,6 +60,7 @@ fun CalendarPickerDialog(
 ) {
     var currentMonthDate by remember { mutableStateOf(initialDate) }
     var selectedDate by remember { mutableStateOf(initialDate) }
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -127,13 +134,18 @@ fun CalendarPickerDialog(
                     items(calendarDays) { date ->
                         if (date != null) {
                             val isSelected = date == selectedDate
+                            val isToday = date == today
                             Box(
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .padding(2.dp)
                                     .background(
-                                        color = if (isSelected) Color(0xFF00D1AD) else Color.Transparent,
-                                        shape = RoundedCornerShape(10.dp)
+                                        color = when {
+                                            isSelected -> LassoPrimary
+                                            isToday -> LassoSecondary.copy(alpha = 0.35f)
+                                            else -> Color.Transparent
+                                        },
+                                        shape = if (isToday && !isSelected) CircleShape else RoundedCornerShape(10.dp)
                                     )
                                     .clickable {
                                         selectedDate = date
@@ -143,7 +155,7 @@ fun CalendarPickerDialog(
                                 Text(
                                     text = date.dayOfMonth.toString(),
                                     color = if (isSelected) Color.White else Color(0xFF353D3C),
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
                                     fontSize = 14.sp
                                 )
                             }

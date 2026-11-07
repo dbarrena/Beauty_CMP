@@ -49,50 +49,52 @@ fun CheckoutFlowDialog(
                     )
                     .background(Color.Transparent)
         ) {
-            when (val step = state.step) {
-                is CheckoutStep.MethodPicker -> {
-                    CheckoutPaymentMethodPickerContent(
-                        totalPrice = originalTotal,
-                        discountAmount = state.discountAmount,
-                        onClose = { if (!state.isLoading) onDismiss(false) },
-                        onMethodClicked = viewModel::navigateToSplitPayment,
-                        onRegisterDiscountClicked = viewModel::navigateToRegisterDiscount,
-                    )
-                }
+            CheckoutHeaderTransition(showBack = state.step !is CheckoutStep.MethodPicker) {
+                when (val step = state.step) {
+                    is CheckoutStep.MethodPicker -> {
+                        CheckoutPaymentMethodPickerContent(
+                            totalPrice = originalTotal,
+                            discountAmount = state.discountAmount,
+                            onClose = { if (!state.isLoading) onDismiss(false) },
+                            onMethodClicked = viewModel::navigateToSplitPayment,
+                            onRegisterDiscountClicked = viewModel::navigateToRegisterDiscount,
+                        )
+                    }
 
-                is CheckoutStep.SplitPayment -> {
-                    CheckoutSplitPaymentContent(
-                        checkoutPaymentMethod = step.checkoutPaymentMethod,
-                        totalPrice = payableTotalPrice,
-                        state = state,
-                        initialPayments = state.draftPayments,
-                        onBack = viewModel::navigateToMethodPicker,
-                        onClose = { if (!state.isLoading) onDismiss(false) },
-                        onSelectEmployee = viewModel::setSelectedEmployee,
-                        onRegisterSale = { payments ->
-                            viewModel.registerSale(items = items, unprocessedPayments = payments)
-                        },
-                    )
-                }
+                    is CheckoutStep.SplitPayment -> {
+                        CheckoutSplitPaymentContent(
+                            checkoutPaymentMethod = step.checkoutPaymentMethod,
+                            totalPrice = payableTotalPrice,
+                            state = state,
+                            initialPayments = state.draftPayments,
+                            onBack = viewModel::navigateToMethodPicker,
+                            onClose = { if (!state.isLoading) onDismiss(false) },
+                            onSelectEmployee = viewModel::setSelectedEmployee,
+                            onRegisterSale = { payments ->
+                                viewModel.registerSale(items = items, unprocessedPayments = payments)
+                            },
+                        )
+                    }
 
-                is CheckoutStep.Success -> {
-                    CheckoutSaleSuccessContent(
-                        collectedAmount = step.collectedAmount,
-                        onClose = {
-                            viewModel.dismissCheckout()
-                            onDismiss(true)
-                        },
-                    )
-                }
+                    is CheckoutStep.Success -> {
+                        CheckoutSaleSuccessContent(
+                            collectedAmount = step.collectedAmount,
+                            onClose = {
+                                viewModel.dismissCheckout()
+                                onDismiss(true)
+                            },
+                        )
+                    }
 
-                CheckoutStep.Discount -> {
-                    RegisterDiscountContent(
-                        totalPrice = originalTotal,
-                        discountAmount = state.discountAmount,
-                        onBack = viewModel::navigateToMethodPicker,
-                        onClose = { if (!state.isLoading) onDismiss(false) },
-                        onRegisterDiscount = viewModel::registerDiscount,
-                    )
+                    CheckoutStep.Discount -> {
+                        RegisterDiscountContent(
+                            totalPrice = originalTotal,
+                            discountAmount = state.discountAmount,
+                            onBack = viewModel::navigateToMethodPicker,
+                            onClose = { if (!state.isLoading) onDismiss(false) },
+                            onRegisterDiscount = viewModel::registerDiscount,
+                        )
+                    }
                 }
             }
         }

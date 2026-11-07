@@ -213,6 +213,23 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             horizontalScrollState.scrollTo(0)
                         }
                     }
+                    val focusDates = List(state.viewMode.dayCount) { state.selectedDate.plus(it, DateTimeUnit.DAY) }
+                    val focusColumnWidth = if (isThreeDayView) {
+                        calendarDayColumnWidth(focusDates, state.events, availableCalendarWidth)
+                    } else columnWidth
+                    CalendarAppointmentAutoScroll(
+                        loadRevision = state.calendarLoadRevision,
+                        selectedEmployeeId = selectedEmployeeId,
+                        enabled = !state.isLoading && !isRangeTransition,
+                        target = firstAppointmentFocus(
+                            state.events, focusDates, displayedEmployees.map { it.id }, state.viewMode,
+                        ),
+                        columnWidthPx = with(density) { focusColumnWidth.toPx() },
+                        hourHeightPx = with(density) { hourHeight.toPx() },
+                        horizontalScrollState = activeScrollState,
+                        verticalScrollState = verticalScrollState,
+                        keepLastColumn = state.calendarLoadDirection == CalendarRangeDirection.Previous,
+                    )
                     Card(
                         modifier = Modifier.fillMaxSize(),
                         shape = RoundedCornerShape(16.dp),
@@ -400,6 +417,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             optionsError = state.optionsError ?: state.mutationError,
             onDismiss = viewModel::hideAppointmentDialog,
             onNewClient = viewModel::showNewClientDialog,
+            onEditClient = viewModel::showEditClientDialog,
             onResult = viewModel::saveAppointment,
             onDelete = {
                 state.selectedAppointment?.let { viewModel.deleteAppointment(it.id) }
@@ -409,11 +427,11 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
 
     if (state.isNewClientDialogDisplayed) {
         ClientDialog(
-            client = null,
+            client = state.editingClient,
             isLoading = state.isSavingClient,
             error = state.clientSaveError,
             onDismiss = viewModel::hideNewClientDialog,
-            onSave = viewModel::createClient,
+            onSave = viewModel::saveClient,
         )
     }
 }

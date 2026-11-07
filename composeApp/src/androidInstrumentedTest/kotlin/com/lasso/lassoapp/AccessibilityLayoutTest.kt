@@ -150,9 +150,19 @@ class AccessibilityLayoutTest {
                     }
             }
         }
+        val initialTitle = compose.onNodeWithText("Registrar Venta").fetchSemanticsNode().boundsInRoot
+        val initialClose = compose.onNodeWithContentDescription("Cerrar").fetchSemanticsNode().boundsInRoot
+        assertEquals("Initial checkout title must share the close button's row", initialClose.center.y, initialTitle.center.y, 1f)
         for (label in
             listOf("Efectivo", "Tarjeta de Débito", "Transferencia", "Usar Múltiples Métodos")) {
             compose.onNodeWithText(label).performScrollTo().performClick()
+            val backBounds = compose.onNodeWithText("Volver").fetchSemanticsNode().boundsInRoot
+            val closeBounds = compose.onNodeWithContentDescription("Cerrar").fetchSemanticsNode().boundsInRoot
+            val titleBounds = compose.onNodeWithText("Registrar Venta").fetchSemanticsNode().boundsInRoot
+            val totalBounds = compose.onAllNodesWithText("$14,000.00").fetchSemanticsNodes()
+                .minBy { it.boundsInRoot.top }.boundsInRoot
+            assertTrue("Checkout title must be below navigation", titleBounds.top >= maxOf(backBounds.bottom, closeBounds.bottom))
+            assertEquals("Checkout title must be centered over the total", totalBounds.center.x, titleBounds.center.x, 1f)
             if (method != CheckoutPaymentMethod.Multiple) {
                 compose.onNodeWithText("Restan ", substring = true).assertDoesNotExist()
                 compose.onNodeWithText("Confirmar pago en ${method.display}").assertIsEnabled()
@@ -174,6 +184,44 @@ class AccessibilityLayoutTest {
     }
 
     @Test
+    fun checkoutTitleAnimatesBelowNavigationAndBack() {
+        var nextStep by mutableStateOf(false)
+        compose.setContent {
+            Theme(1f) {
+                LassoDialogFrame(onDismiss = {}) {
+                    CheckoutHeaderTransition(showBack = nextStep) {
+                        CheckoutDialogLayout(
+                            onClose = {},
+                            onBack = if (nextStep) ({ nextStep = false }) else null,
+                            header = { CheckoutHeader(350.0) },
+                        ) { Text("Contenido de pago") }
+                    }
+                }
+            }
+        }
+        fun titleOffset(): Float {
+            val title = compose.onNodeWithText("Registrar Venta").fetchSemanticsNode().boundsInRoot
+            val close = compose.onNodeWithContentDescription("Cerrar").fetchSemanticsNode().boundsInRoot
+            return title.center.y - close.center.y
+        }
+        assertEquals(0f, titleOffset(), 1f)
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle { nextStep = true }
+        compose.mainClock.advanceTimeBy(100)
+        val intermediate = titleOffset()
+        assertTrue("Title should move down during the transition", intermediate > 0f)
+        compose.mainClock.advanceTimeBy(400)
+        val finalOffset = titleOffset()
+        assertTrue("Title should continue moving until below navigation", finalOffset > intermediate)
+        compose.onNodeWithText("Volver").performClick()
+        compose.mainClock.advanceTimeBy(100)
+        val returning = titleOffset()
+        assertTrue(returning > 0f && returning < finalOffset)
+        compose.mainClock.advanceTimeBy(400)
+        assertEquals(0f, titleOffset(), 1f)
+    }
+
+    @Test
     fun appointmentFieldsAndActionsRemainReachableAtTwoHundredPercent() {
         compose.setContent {
             Theme(2f) {
@@ -188,6 +236,7 @@ class AccessibilityLayoutTest {
                     isDeleting = false,
                     onDismiss = {},
                     onNewClient = {},
+                    onEditClient = {},
                     onResult = {},
                     onDelete = {},
                 )

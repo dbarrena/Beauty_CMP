@@ -16,8 +16,11 @@ import com.lasso.lassoapp.model.CalendarBlock
 import com.lasso.lassoapp.model.CalendarBlockWriteRequest
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.MessageResponse
+import com.lasso.lassoapp.model.Client
+import com.lasso.lassoapp.model.ClientWriteRequest
 import com.lasso.lassoapp.screens.calendar.CalendarScreenViewModel
 import com.lasso.lassoapp.screens.calendar.CalendarViewMode
+import com.lasso.lassoapp.screens.calendar.CalendarRangeDirection
 import com.lasso.lassoapp.screens.calendar.appointmentDayRange
 import java.lang.reflect.Proxy
 import kotlinx.coroutines.CompletableDeferred
@@ -79,6 +82,8 @@ class CalendarRangeLoadingTest {
         val blocks = mutableListOf<BlockRequest>()
         val deletedBlocks = mutableListOf<Int>()
         var deleteBlockResponse = CompletableDeferred<MessageResponse>()
+        val clientEdits = mutableListOf<Pair<Int, ClientWriteRequest>>()
+        var clientEditResponse = CompletableDeferred<Client>()
         @Suppress("UNCHECKED_CAST")
         val api = Proxy.newProxyInstance(
             LassoApi::class.java.classLoader,
@@ -111,6 +116,16 @@ class CalendarRangeLoadingTest {
                     val waitForResponse: suspend () -> MessageResponse = { deleteBlockResponse.await() }
                     waitForResponse.startCoroutine(args[1] as Continuation<MessageResponse>)
                     COROUTINE_SUSPENDED
+                }
+                "editClient" -> {
+                    clientEdits += (args[0] as Int) to (args[1] as ClientWriteRequest)
+                    val waitForResponse: suspend () -> Client = { clientEditResponse.await() }
+                    waitForResponse.startCoroutine(args[2] as Continuation<Client>)
+                    COROUTINE_SUSPENDED
+                }
+                "registerClient" -> {
+                    val body = args[0] as ClientWriteRequest
+                    Client(8, body.name, body.phone, body.email, body.notes, partnerId = 7)
                 }
                 "getEmployees" -> listOf(
                     Employee(1, "Ana", "ana@example.com", role = "empleado", partnerId = 7, updatedAt = null),
@@ -151,6 +166,76 @@ class CalendarRangeLoadingTest {
             store.clear()
             Dispatchers.resetMain()
         }
+    }
+
+    @Test
+    fun successfulLoadsAdvanceFocusRevisionEvenWhenAppointmentsAreUnchanged() = calendarTest { api, model ->
+        val revision = model.state.value.calendarLoadRevision
+        assertTrue(revision > 0)
+        model.retry()
+        runCurrent()
+        assertEquals(revision, model.state.value.calendarLoadRevision)
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(revision + 1, model.state.value.calendarLoadRevision)
+        model.retry()
+        runCurrent()
+        api.requests.last().response.completeExceptionally(IllegalStateException("Sin conexión"))
+        runCurrent()
+        assertEquals(revision + 1, model.state.value.calendarLoadRevision)
+    }
+
+    @Test
+    fun clientEditsReplaceExistingOptionsAndKeepTheAppointmentOpen() = calendarTest { api, model ->
+        model.showNewAppointmentDialog()
+        model.showNewClientDialog()
+        model.saveClient(ClientWriteRequest(name = "Original", phone = "5551234567"))
+        runCurrent()
+        val original = model.state.value.createdClient!!
+
+        model.showEditClientDialog(original)
+        val request = ClientWriteRequest(name = "Actualizado", email = "cliente@example.com")
+        model.saveClient(request)
+        runCurrent()
+        model.hideNewClientDialog()
+        assertTrue(model.state.value.isNewClientDialogDisplayed)
+        assertTrue(model.state.value.isSavingClient)
+        assertEquals(listOf(original.id to request), api.clientEdits)
+
+        val updated = original.copy(name = request.name, email = request.email, phone = null)
+        api.clientEditResponse.complete(updated)
+        runCurrent()
+        assertEquals(listOf(updated), model.state.value.clients)
+        assertEquals(updated, model.state.value.createdClient)
+        assertEquals(null, model.state.value.editingClient)
+        assertFalse(model.state.value.isNewClientDialogDisplayed)
+        assertTrue(model.state.value.isAppointmentDialogDisplayed)
+    }
+
+    @Test
+    fun failedClientEditPreservesOriginalAndAllowsRetry() = calendarTest { api, model ->
+        val original = Client(4, "Original", partnerId = 7)
+        model.showEditClientDialog(original)
+        val request = ClientWriteRequest(name = "Actualizado")
+        model.saveClient(request)
+        runCurrent()
+        api.clientEditResponse.completeExceptionally(IllegalStateException("Sin conexión"))
+        runCurrent()
+        assertEquals(original, model.state.value.editingClient)
+        assertEquals("Sin conexión", model.state.value.clientSaveError)
+        assertTrue(model.state.value.isNewClientDialogDisplayed)
+        assertFalse(model.state.value.isSavingClient)
+
+        api.clientEditResponse = CompletableDeferred()
+        model.saveClient(request)
+        runCurrent()
+        val updated = original.copy(name = request.name)
+        api.clientEditResponse.complete(updated)
+        runCurrent()
+        assertEquals(updated, model.state.value.createdClient)
+        assertFalse(model.state.value.isNewClientDialogDisplayed)
+        model.showNewClientDialog()
+        assertEquals(null, model.state.value.editingClient)
     }
 
     @Test
@@ -474,8 +559,14 @@ class CalendarRangeLoadingTest {
         previous.succeed()
         runCurrent()
         assertEquals(LocalDate(2026, 11, 3), model.state.value.selectedDate)
+        assertEquals(CalendarRangeDirection.Previous, model.state.value.calendarLoadDirection)
         assertFalse(model.state.value.isLoadingPreviousRange)
         assertFalse(model.state.value.isLoading)
+        model.retry()
+        runCurrent()
+        api.requests.last().succeed()
+        runCurrent()
+        assertEquals(null, model.state.value.calendarLoadDirection)
     }
 
     @Test

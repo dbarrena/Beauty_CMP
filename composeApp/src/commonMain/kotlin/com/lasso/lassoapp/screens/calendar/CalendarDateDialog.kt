@@ -3,6 +3,7 @@ package com.lasso.lassoapp.screens.calendar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -62,15 +63,16 @@ internal fun CalendarDateDialog(
             modifier = Modifier.fillMaxWidth().padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Calendario",
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth().align(Alignment.Center).padding(horizontal = 48.dp),
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF353D3C),
                 )
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterEnd)) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Cerrar",

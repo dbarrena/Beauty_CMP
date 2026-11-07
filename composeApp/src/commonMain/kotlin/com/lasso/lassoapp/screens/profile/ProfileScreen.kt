@@ -131,24 +131,22 @@ internal fun ProfileScreenContent(
                 }
                 if (isAdmin) {
                     BranchActionButton("Agregar sucursal", !state.isSaving && !state.isLoading,
-                        { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add,
-                        containerColor = LassoSecondaryLight.copy(alpha = 0.45f).compositeOver(Color.White),
-                        contentColor = Color.Black)
+                        { onOpenDialog(ProfileDialog.Branch) }, icon = Icons.Default.Add)
                 }
                 state.branches.forEach { branch ->
                     Card(
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = LassoSecondaryLight.copy(alpha = 0.45f).compositeOver(Color.White),
+                            containerColor = LassoPrimary.copy(alpha = 0.08f).compositeOver(Color.White),
                         ),
-                        border = BorderStroke(1.dp, LassoOutlineHairline),
+                        border = BorderStroke(1.dp, LassoPrimary),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Box(Modifier.size(48.dp).background(LassoSecondary.copy(alpha = 0.14f), RoundedCornerShape(14.dp)),
+                                Box(Modifier.size(48.dp).background(LassoPrimary.copy(alpha = 0.14f), RoundedCornerShape(14.dp)),
                                     contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Outlined.Storefront, null, Modifier.size(24.dp), tint = LassoSecondary)
+                                    Icon(Icons.Outlined.Storefront, null, Modifier.size(24.dp), tint = LassoPrimary)
                                 }
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(branch.partnerName.ifBlank { "Sucursal ${branch.partnerId}" },
@@ -180,13 +178,13 @@ private fun BranchActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    containerColor: Color = Color.White,
-    contentColor: Color = Color.Black,
-    fontWeight: FontWeight = FontWeight.Normal,
+    containerColor: Color = LassoPrimary,
+    contentColor: Color = Color.White,
+    fontWeight: FontWeight = FontWeight.Bold,
 ) {
     OutlinedButton(
         onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
-        shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoSecondary),
+        shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, LassoPrimary),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         colors = ButtonDefaults.outlinedButtonColors(containerColor = containerColor, contentColor = contentColor),
     ) {

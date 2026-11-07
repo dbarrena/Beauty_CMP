@@ -52,6 +52,7 @@ fun AppointmentDialog(
     optionsError: String? = null,
     onDismiss: () -> Unit,
     onNewClient: () -> Unit,
+    onEditClient: (Client) -> Unit,
     onResult: (AppointmentWriteRequest) -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -119,6 +120,7 @@ fun AppointmentDialog(
                 onSearchClick = { showClientSearch = true },
                 onClientRemoved = formState::clearClient,
                 onNewClient = onNewClient,
+                onEditClient = onEditClient,
                 showWhatsAppAction = appointment != null,
             )
 

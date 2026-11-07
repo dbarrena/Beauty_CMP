@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -92,14 +93,14 @@ fun ClientDialog(
                 ClientField(
                     value = name,
                     onValueChange = { if (it.length <= 255) name = it },
-                    label = "Nombre *",
+                    label = "Nombre",
                     enabled = !isLoading,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 ClientField(
                     value = phone,
                     onValueChange = { if (it.length <= 20) phone = it },
-                    label = "Teléfono",
+                    label = "Teléfono (opcional)",
                     enabled = !isLoading,
                     keyboardType = KeyboardType.Phone,
                 )
@@ -107,7 +108,7 @@ fun ClientDialog(
                 ClientField(
                     value = email,
                     onValueChange = { if (it.length <= 255) email = it },
-                    label = "Email",
+                    label = "Email (opcional)",
                     enabled = !isLoading,
                     keyboardType = KeyboardType.Email,
                 )
@@ -115,7 +116,7 @@ fun ClientDialog(
                 ClientField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = "Notas",
+                    label = "Notas (opcional)",
                     enabled = !isLoading,
                     singleLine = false,
                 )
@@ -218,7 +219,7 @@ private fun ClientField(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth().height(if (singleLine) 48.dp else 110.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (singleLine) 56.dp else 110.dp),
             enabled = enabled,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = LassoSurfaceVariant,
