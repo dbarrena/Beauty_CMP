@@ -31,6 +31,7 @@ data class EmployeeAppointmentSchedule(
     val name: String,
     val appointments: List<CalendarAppointment> = emptyList(),
     @SerialName("calendar_color") val calendarColor: String? = null,
+    val blockedHours: List<CalendarBlock> = emptyList(),
 )
 
 @Serializable

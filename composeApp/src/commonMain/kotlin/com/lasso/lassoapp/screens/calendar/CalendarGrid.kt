@@ -2,15 +2,26 @@ package com.lasso.lassoapp.screens.calendar
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.ParentDataModifier
@@ -22,7 +33,7 @@ import com.lasso.lassoapp.model.minutesBetween
 import kotlin.math.roundToInt
 
 @Composable
-fun CalendarEvents(
+internal fun CalendarEvents(
     hourHeight: Dp,
     verticalScrollState: ScrollState,
     events: List<Event>,
@@ -30,9 +41,20 @@ fun CalendarEvents(
     onEmptySlotClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
     arrangeOverlaps: Boolean = false,
+    dragEnabled: Boolean = false,
+    onDragChanged: (CalendarAppointmentDrag?) -> Unit = {},
+    onAppointmentMoved: (Event, Int) -> Unit = { _, _ -> },
 ) {
     val visibleHours = 14 // de 7 a 20 inclusive
     val hourStart = 7
+    val haptic = LocalHapticFeedback.current
+    var drag by remember { mutableStateOf<CalendarAppointmentDrag?>(null) }
+    var dragPixels by remember { mutableFloatStateOf(0f) }
+    val currentOnDragChanged by rememberUpdatedState(onDragChanged)
+    val currentOnAppointmentMoved by rememberUpdatedState(onAppointmentMoved)
+    DisposableEffect(Unit) {
+        onDispose { if (drag != null) currentOnDragChanged(null) }
+    }
     val placements = remember(events, arrangeOverlaps) {
         if (arrangeOverlaps) placeCalendarEvents(events)
         else events.sortedBy(Event::start).map { CalendarEventPlacement(it, 0, 1) }
@@ -89,10 +111,50 @@ fun CalendarEvents(
         content = {
             placements.forEach { placement ->
                 val event = placement.event
-                Box(modifier = Modifier.eventData(placement)) {
+                val activeDrag = drag?.takeIf { it.event.appointmentId == event.appointmentId }
+                val dragModifier = if (dragEnabled && event.canDragAppointment()) Modifier.pointerInput(event, hourHeight) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = {
+                            dragPixels = 0f
+                            drag = CalendarAppointmentDrag(event, event.start.hour * 60 + event.start.minute)
+                            currentOnDragChanged(drag)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                        onDrag = { change, amount ->
+                            change.consume()
+                            dragPixels += amount.y
+                            val start = snappedAppointmentStart(event.start.hour * 60 + event.start.minute,
+                                minutesBetween(event.start, event.end).toInt(), dragPixels, hourHeight.toPx())
+                            drag = CalendarAppointmentDrag(event, start)
+                            currentOnDragChanged(drag)
+                        },
+                        onDragEnd = {
+                            val finished = drag
+                            drag = null
+                            currentOnDragChanged(null)
+                            if (finished != null && finished.startMinutes != event.start.hour * 60 + event.start.minute) {
+                                currentOnAppointmentMoved(event, finished.startMinutes)
+                            }
+                        },
+                        onDragCancel = {
+                            drag = null
+                            currentOnDragChanged(null)
+                        },
+                    )
+                } else Modifier
+                Box(modifier = Modifier.eventData(placement)
+                    .zIndex(if (activeDrag != null) 2f else if (event.calendarBlockId != null) 0f else 1f).then(dragModifier)) {
+                    if (activeDrag != null) {
+                        CalendarEventItem(event = event, isPlaceholder = true)
+                    }
                     CalendarEventItem(
-                        event = event,
-                        onEdit = { onEditAppointment(event) },
+                        event = activeDrag?.preview ?: event,
+                        onEdit = { if (activeDrag == null) onEditAppointment(event) },
+                        isDragging = activeDrag != null,
+                        modifier = Modifier.graphicsLayer {
+                            translationY = if (activeDrag == null) 0f else
+                                (activeDrag.startMinutes - (event.start.hour * 60 + event.start.minute)) / 60f * hourHeight.toPx()
+                        },
                     )
                 }
             }

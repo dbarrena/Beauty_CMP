@@ -15,21 +15,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -58,6 +51,7 @@ import com.lasso.lassoapp.model.CalendarAppointment
 import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
+import com.lasso.lassoapp.screens.calendar.dialog.CalendarBlockDialog
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
@@ -74,9 +68,18 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<CalendarScreenViewModel>()
     val state by viewModel.state.collectAsState()
     val isThreeDayView = state.viewMode == CalendarViewMode.ThreeDays
+    val initialShimmer = if (state.isLoading && !state.hasLoadedCalendar) rememberCalendarShimmer() else null
     var selectedEmployeeId by remember { mutableStateOf<Int?>(null) }
     var outgoingRange by remember { mutableStateOf<CalendarRangeSnapshot?>(null) }
+    var appointmentDrag by remember { mutableStateOf<CalendarAppointmentDrag?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.calendarBlockNotice) {
+        state.calendarBlockNotice?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearCalendarBlockNotice()
+        }
+    }
 
     LaunchedEffect(state.error) {
         state.error?.let {
@@ -96,19 +99,10 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
         containerColor = Color(0xFFF8F8FA),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.showNewAppointmentDialog() },
-                containerColor = Color(0xFF00D1AD),
-                contentColor = Color.White,
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-                modifier = Modifier.size(56.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar cita",
-                )
-            }
+            CalendarAddActions(
+                onAddAppointment = { viewModel.showNewAppointmentDialog() },
+                onAddCalendarBlock = { viewModel.showCalendarBlockDialog() },
+            )
         },
     ) { innerPadding ->
         Column(
@@ -133,7 +127,9 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 )
             }
 
-            if (state.employeeSchedules.isNotEmpty()) {
+            if (initialShimmer != null) {
+                CalendarLoadingPills(initialShimmer, Modifier.padding(top = 16.dp))
+            } else if (state.employeeSchedules.isNotEmpty()) {
                 EmployeeFilterPills(
                     employees = state.employeeSchedules,
                     selectedEmployeeId = selectedEmployeeId,
@@ -232,6 +228,8 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 Spacer(modifier = Modifier.height(headerHeight))
                                 CalendarHourSidebar(
                                     hourHeight = hourHeight,
+                                    draggedStartMinutes = appointmentDrag?.startMinutes,
+                                    draggedColor = appointmentDrag?.event?.color ?: LassoPrimary,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(start = 8.dp)
@@ -245,12 +243,12 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                             CalendarRangeScroller(
                                 modifier = Modifier.fillMaxSize(),
                                 scrollState = activeScrollState,
-                                enabled = true,
+                                enabled = initialShimmer == null && appointmentDrag == null && !state.isSavingAppointment,
                                 dayCount = state.viewMode.dayCount,
                                 isLoading = state.isLoading || isRangeTransition,
                                 isLoadingNextRange = state.isLoadingNextRange,
                                 isLoadingPreviousRange = state.isLoadingPreviousRange,
-                                userScrollEnabled = !isRangeTransition,
+                                userScrollEnabled = initialShimmer == null && !isRangeTransition && appointmentDrag == null,
                                 onNextRange = {
                                     if (!state.isLoading && !isRangeTransition) {
                                         outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
@@ -266,7 +264,16 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                     }
                                 },
                             ) {
-                                if (isThreeDayView) {
+                                if (initialShimmer != null) {
+                                    CalendarLoadingColumns(
+                                        brush = initialShimmer,
+                                        columnWidth = if (isThreeDayView) maxOf(240.dp, availableCalendarWidth / 2.2f)
+                                            else employeeColumnWidth(availableCalendarWidth, 2, null),
+                                        headerHeight = headerHeight,
+                                        hourHeight = hourHeight,
+                                        verticalScrollState = verticalScrollState,
+                                    )
+                                } else if (isThreeDayView) {
                                     if (isRangeTransition && !isBackwardTransition) {
                                         CalendarDayColumns(
                                             dates = previousRange.dates,
@@ -283,14 +290,21 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         dates = List(3) { state.selectedDate.plus(it, DateTimeUnit.DAY) },
                                         events = state.events,
                                         availableWidth = availableCalendarWidth,
+                                        dragEnabled = !isRangeTransition && !state.isLoading && !state.isSavingAppointment && !state.isDeleting,
+                                        onDragChanged = { appointmentDrag = it },
+                                        onAppointmentMoved = viewModel::moveAppointment,
                                         hourHeight = hourHeight,
                                         headerHeight = headerHeight,
                                         verticalScrollState = verticalScrollState,
                                         onEditAppointment = { event ->
+                                            if (event.calendarBlockId != null) {
+                                                viewModel.showCalendarBlockDialog(event.calendarBlockId)
+                                            } else {
                                             val employee = state.employeeSchedules.firstOrNull { it.id == event.employeeId }
                                             val appointment = employee?.appointments?.firstOrNull { it.id == event.appointmentId }
                                             if (appointment != null) {
                                                 viewModel.showEditAppointmentDialog(appointment, employee.id)
+                                            }
                                             }
                                         },
                                         onEmptySlotClick = { date, startMinutes ->
@@ -321,7 +335,11 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                     CalendarEmployeeColumns(displayedEmployees, state.events,
                                         columnWidth, hourHeight, headerHeight, verticalScrollState,
                                         selectedEmployeeId == null,
+                                        dragEnabled = !isRangeTransition && !state.isLoading && !state.isSavingAppointment && !state.isDeleting,
+                                        onDragChanged = { appointmentDrag = it },
+                                        onAppointmentMoved = viewModel::moveAppointment,
                                         onEditAppointment = viewModel::showEditAppointmentDialog,
+                                        onOpenCalendarBlock = { viewModel.showCalendarBlockDialog(it) },
                                         onEmptySlotClick = { employeeId, startMinutes ->
                                             viewModel.showNewAppointmentDialog(employeeId, state.selectedDate, startMinutes)
                                         })
@@ -348,6 +366,24 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
         )
     }
 
+
+    if (state.isCalendarBlockDialogDisplayed) {
+        CalendarBlockDialog(
+            initialDate = state.selectedDate,
+            initialEmployeeId = selectedEmployeeId,
+            employees = state.calendarBlockEmployees,
+            isLoadingEmployees = state.isLoadingCalendarBlockEmployees,
+            isSaving = state.isSavingCalendarBlock,
+            error = state.calendarBlockError,
+            onDismiss = viewModel::hideCalendarBlockDialog,
+            onRetryEmployees = viewModel::loadCalendarBlockEmployees,
+            onSave = viewModel::createCalendarBlock,
+            block = state.selectedCalendarBlock,
+            isDeleting = state.isDeletingCalendarBlock,
+            onDelete = viewModel::deleteCalendarBlock,
+            employeeName = state.employeeSchedules.firstOrNull { it.id == state.selectedCalendarBlock?.employeeId }?.name,
+        )
+    }
 
     if (state.isAppointmentDialogDisplayed) {
         AppointmentDialog(
@@ -393,6 +429,10 @@ private fun CalendarEmployeeColumns(
     showEmployeeName: Boolean,
     onEditAppointment: (CalendarAppointment, Int) -> Unit = { _, _ -> },
     onEmptySlotClick: (Int, Int) -> Unit = { _, _ -> },
+    dragEnabled: Boolean = false,
+    onDragChanged: (CalendarAppointmentDrag?) -> Unit = {},
+    onAppointmentMoved: (Event, Int) -> Unit = { _, _ -> },
+    onOpenCalendarBlock: (Int) -> Unit = {},
 ) {
     if (employees.isEmpty()) Box(Modifier.width(columnWidth))
     employees.forEach { employee ->
@@ -404,12 +444,17 @@ private fun CalendarEmployeeColumns(
                 verticalScrollState = verticalScrollState,
                 events = events.filter { it.employeeId == employee.id },
                 onEditAppointment = { event ->
+                    if (event.calendarBlockId != null) onOpenCalendarBlock(event.calendarBlockId) else {
                     employee.appointments.firstOrNull { it.id == event.appointmentId }?.let {
                         onEditAppointment(it, employee.id)
+                    }
                     }
                 },
                 onEmptySlotClick = { onEmptySlotClick(employee.id, it) },
                 modifier = Modifier.fillMaxSize(),
+                dragEnabled = dragEnabled,
+                onDragChanged = onDragChanged,
+                onAppointmentMoved = onAppointmentMoved,
             )
         }
     }

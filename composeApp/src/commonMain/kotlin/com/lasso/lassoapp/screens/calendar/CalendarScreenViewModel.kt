@@ -7,6 +7,9 @@ import com.lasso.lassoapp.data.local.session.SessionRepository
 import com.lasso.lassoapp.model.AppointmentCalendarResponse
 import com.lasso.lassoapp.model.AppointmentWriteRequest
 import com.lasso.lassoapp.model.CalendarAppointment
+import com.lasso.lassoapp.model.CalendarBlockWriteRequest
+import com.lasso.lassoapp.model.CalendarBlock
+import com.lasso.lassoapp.model.validationError
 import com.lasso.lassoapp.model.Client
 import com.lasso.lassoapp.model.ClientWriteRequest
 import com.lasso.lassoapp.model.Employee
@@ -27,6 +30,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.toInstant
 import kotlin.time.Clock
 
 class CalendarScreenViewModel(
@@ -71,7 +75,7 @@ class CalendarScreenViewModel(
 
     private fun loadAdjacentRange(direction: CalendarRangeDirection) {
         val current = _state.value
-        if (current.isLoading) return
+        if (current.isLoading || current.isSavingAppointment || current.isDeleting) return
         loadEvents(current.selectedDate.plus(direction.dayOffset(current.viewMode.dayCount), DateTimeUnit.DAY), rangeDirection = direction)
     }
 
@@ -94,6 +98,88 @@ class CalendarScreenViewModel(
     fun hideAppointmentDialog() {
         if (_state.value.isSavingAppointment || _state.value.isDeleting) return
         resetState()
+    }
+
+    fun showCalendarBlockDialog(blockId: Int? = null) {
+        if (_state.value.isCalendarBlockDialogDisplayed || _state.value.isSavingCalendarBlock) return
+        val block = blockId?.let { id -> _state.value.employeeSchedules.flatMap { it.blockedHours }.firstOrNull { it.id == id } }
+        if (blockId != null && block == null) return
+        _state.value = _state.value.copy(isCalendarBlockDialogDisplayed = true, calendarBlockError = null, selectedCalendarBlock = block)
+        loadCalendarBlockEmployees()
+    }
+
+    fun hideCalendarBlockDialog() {
+        if (_state.value.isSavingCalendarBlock || _state.value.isDeletingCalendarBlock) return
+        _state.value = _state.value.copy(isCalendarBlockDialogDisplayed = false, calendarBlockError = null, selectedCalendarBlock = null)
+    }
+
+    fun loadCalendarBlockEmployees() {
+        if (_state.value.isLoadingCalendarBlockEmployees || _state.value.isSavingCalendarBlock) return
+        _state.value = _state.value.copy(isLoadingCalendarBlockEmployees = true, calendarBlockError = null)
+        viewModelScope.launch {
+            try {
+                val session = sessionRepository.getSession() ?: error("No se encontró una sesión activa.")
+                val employees = lassoApi.getEmployees().filter { session.isAdmin || it.id == session.employeeId }
+                _state.value = _state.value.copy(isLoadingCalendarBlockEmployees = false,
+                    calendarBlockEmployees = employees.sortedBy(Employee::name))
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _state.value = _state.value.copy(isLoadingCalendarBlockEmployees = false,
+                    calendarBlockEmployees = emptyList(), calendarBlockError = exception.message ?: "No se pudieron cargar los empleados.")
+            }
+        }
+    }
+
+    fun createCalendarBlock(request: CalendarBlockWriteRequest) {
+        val current = _state.value
+        if (!current.isCalendarBlockDialogDisplayed || current.isSavingCalendarBlock || current.isDeletingCalendarBlock ||
+            current.isLoadingCalendarBlockEmployees || current.selectedCalendarBlock != null) return
+        val error = request.validationError() ?: if (current.calendarBlockEmployees.none { it.id == request.employeeId })
+            "Selecciona un empleado disponible." else null
+        if (error != null) {
+            _state.value = current.copy(calendarBlockError = error)
+            return
+        }
+        _state.value = current.copy(isSavingCalendarBlock = true, calendarBlockError = null)
+        viewModelScope.launch {
+            try {
+                lassoApi.createCalendarBlock(request)
+                _state.value = _state.value.copy(isSavingCalendarBlock = false,
+                    isCalendarBlockDialogDisplayed = false, calendarBlockNotice = "Bloqueo de calendario agregado.")
+                loadEvents(_state.value.selectedDate)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _state.value = _state.value.copy(isSavingCalendarBlock = false,
+                    calendarBlockError = exception.message ?: "No se pudo agregar el bloqueo de calendario.")
+            }
+        }
+    }
+
+    fun clearCalendarBlockNotice() {
+        _state.value = _state.value.copy(calendarBlockNotice = null)
+    }
+
+    fun deleteCalendarBlock() {
+        val current = _state.value
+        val block = current.selectedCalendarBlock ?: return
+        if (!current.isCalendarBlockDialogDisplayed || current.isSavingCalendarBlock || current.isDeletingCalendarBlock) return
+        _state.value = current.copy(isDeletingCalendarBlock = true, calendarBlockError = null)
+        viewModelScope.launch {
+            try {
+                lassoApi.deleteCalendarBlock(block.id)
+                _state.value = _state.value.copy(isDeletingCalendarBlock = false,
+                    isCalendarBlockDialogDisplayed = false, selectedCalendarBlock = null,
+                    calendarBlockNotice = "Bloqueo de calendario eliminado.")
+                loadEvents(_state.value.selectedDate)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                _state.value = _state.value.copy(isDeletingCalendarBlock = false,
+                    calendarBlockError = exception.message ?: "No se pudo eliminar el bloqueo de calendario.")
+            }
+        }
     }
 
     fun showEditAppointmentDialog(appointment: CalendarAppointment, employeeId: Int) {
@@ -175,6 +261,55 @@ class CalendarScreenViewModel(
         }
     }
 
+    fun moveAppointment(event: Event, startMinutes: Int) {
+        val current = _state.value
+        if (current.isSavingAppointment || current.isDeleting || current.isLoading || !event.canDragAppointment()) return
+        val schedule = current.employeeSchedules.firstOrNull { it.id == event.employeeId } ?: return
+        val appointment = schedule.appointments.firstOrNull { it.id == event.appointmentId } ?: return
+        val original = current.events.firstOrNull { it.appointmentId == appointment.id } ?: return
+        val duration = ((appointment.endsAt - appointment.startsAt) / 60_000).toInt()
+        if (duration !in 1..840 || startMinutes % 15 != 0 ||
+            startMinutes < 7 * 60 || startMinutes + duration > 21 * 60) return
+        val moved = original.atStartMinutes(startMinutes, timeZone)
+        val startsAt = moved.start.toInstant(timeZone).toEpochMilliseconds()
+        val endsAt = startsAt + appointment.endsAt - appointment.startsAt
+        if (startsAt == appointment.startsAt) return
+        val request = AppointmentWriteRequest(
+            employeeId = schedule.id,
+            clientId = appointment.client?.id,
+            serviceIds = appointment.services.map { it.id },
+            startsAt = startsAt,
+            endsAt = endsAt,
+            notes = appointment.notes,
+        )
+        _state.value = current.copy(isSavingAppointment = true, error = null)
+        updateAppointmentTimes(schedule.id, appointment.id, startsAt, endsAt)
+        viewModelScope.launch {
+            try {
+                lassoApi.editAppointment(appointment.id, request)
+                _state.value = _state.value.copy(isSavingAppointment = false)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                updateAppointmentTimes(schedule.id, appointment.id, appointment.startsAt, appointment.endsAt)
+                _state.value = _state.value.copy(isSavingAppointment = false,
+                    error = exception.message ?: "No se pudo cambiar el horario de la cita")
+            }
+        }
+    }
+
+    private fun updateAppointmentTimes(employeeId: Int, appointmentId: Int, startsAt: Long, endsAt: Long) {
+        val schedules = _state.value.employeeSchedules.map { employee ->
+            if (employee.id != employeeId) employee else employee.copy(appointments = employee.appointments.map {
+                if (it.id == appointmentId) it.copy(startsAt = startsAt, endsAt = endsAt) else it
+            })
+        }
+        _state.value = _state.value.copy(employeeSchedules = schedules,
+            events = appointmentDayRange(_state.value.selectedDate, timeZone, _state.value.viewMode.dayCount).let {
+                AppointmentCalendarResponse(it.first, it.second, schedules).toEvents(timeZone)
+            })
+    }
+
     fun editAppointment(id: Int, request: AppointmentWriteRequest) {
         if (_state.value.isSavingAppointment) return
         viewModelScope.launch {
@@ -253,6 +388,7 @@ class CalendarScreenViewModel(
                     isLoadingNextRange = false,
                     isLoadingPreviousRange = false,
                     selectedDate = date,
+                    hasLoadedCalendar = true,
                     employeeSchedules = response.employees,
                     events = response.toEvents(timeZone),
                     error = null,
@@ -301,6 +437,15 @@ class CalendarScreenViewModel(
 
 data class CalendarScreenState(
     val isLoading: Boolean = false,
+    val hasLoadedCalendar: Boolean = false,
+    val isCalendarBlockDialogDisplayed: Boolean = false,
+    val isSavingCalendarBlock: Boolean = false,
+    val isDeletingCalendarBlock: Boolean = false,
+    val selectedCalendarBlock: CalendarBlock? = null,
+    val isLoadingCalendarBlockEmployees: Boolean = false,
+    val calendarBlockEmployees: List<Employee> = emptyList(),
+    val calendarBlockError: String? = null,
+    val calendarBlockNotice: String? = null,
     val isLoadingNextRange: Boolean = false,
     val isLoadingPreviousRange: Boolean = false,
     val viewMode: CalendarViewMode = CalendarViewMode.Day,
@@ -354,6 +499,6 @@ fun AppointmentCalendarResponse.toEvents(timeZone: TimeZone): List<Event> {
                     .joinToString(", ").takeIf { it.isNotBlank() },
                 employeeId = employee.id,
             )
-        }
+        } + employee.blockEvents(startEpoch, endEpoch, timeZone)
     }.sortedBy(Event::start)
 }

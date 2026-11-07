@@ -35,8 +35,11 @@ internal fun CalendarDayColumns(
     verticalScrollState: ScrollState,
     onEditAppointment: (Event) -> Unit,
     onEmptySlotClick: (LocalDate, Int) -> Unit,
+    dragEnabled: Boolean = false,
+    onDragChanged: (CalendarAppointmentDrag?) -> Unit = {},
+    onAppointmentMoved: (Event, Int) -> Unit = { _, _ -> },
 ) {
-    val eventsByDate = remember(events) { events.groupBy { it.start.date } }
+    val eventsByDate = remember(events) { events.filter { it.calendarBlockId == null }.groupBy { it.start.date } }
     val columnWidth = remember(dates, events, availableWidth) {
         calendarDayColumnWidth(dates, events, availableWidth)
     }
@@ -67,7 +70,7 @@ internal fun CalendarDayColumns(
                     maxLines = 2,
                 )
                 Text(
-                    text = if (dayEvents.size == 1) "1 cita" else "${dayEvents.size} citas",
+                    text = dayEvents.count { it.calendarBlockId == null }.let { if (it == 1) "1 cita" else "$it citas" },
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF7E8585),
                 )
@@ -80,13 +83,16 @@ internal fun CalendarDayColumns(
                 onEmptySlotClick = { startMinutes -> onEmptySlotClick(date, startMinutes) },
                 modifier = Modifier.fillMaxSize(),
                 arrangeOverlaps = true,
+                dragEnabled = dragEnabled,
+                onDragChanged = onDragChanged,
+                onAppointmentMoved = onAppointmentMoved,
             )
         }
     }
 }
 
 internal fun calendarDayColumnWidth(dates: List<LocalDate>, events: List<Event>, availableWidth: Dp): Dp {
-    val eventsByDate = events.groupBy { it.start.date }
+    val eventsByDate = events.filter { it.calendarBlockId == null }.groupBy { it.start.date }
     val maxLanes = dates.maxOf { date ->
         placeCalendarEvents(eventsByDate[date].orEmpty()).maxOfOrNull { it.laneCount } ?: 1
     }

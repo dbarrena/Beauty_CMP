@@ -37,6 +37,7 @@ internal fun AppointmentTimeRangeField(
     enabled: Boolean,
     onStartSelected: (Int) -> Unit,
     onEndSelected: (Int) -> Unit,
+    timeOptions: List<Int> = APPOINTMENT_TIME_OPTIONS,
 ) {
     val minWidth =
         maxOf(
@@ -49,28 +50,25 @@ internal fun AppointmentTimeRangeField(
         first = { fieldModifier ->
             Column(fieldModifier) {
                 AppointmentFieldLabel("Hora inicio")
-                AppointmentTimePickerField(startMinutes, enabled, onStartSelected)
+                AppointmentTimePickerField(startMinutes, enabled, onStartSelected, timeOptions)
             }
         },
         second = { fieldModifier ->
             Column(fieldModifier) {
                 AppointmentFieldLabel("Hora fin")
-                AppointmentTimePickerField(endMinutes, enabled, onEndSelected)
+                AppointmentTimePickerField(endMinutes, enabled, onEndSelected, timeOptions)
             }
         },
     )
 }
 
 @Composable
-private fun AppointmentTimePickerField(minutes: Int, enabled: Boolean, onSelected: (Int) -> Unit) {
+private fun AppointmentTimePickerField(minutes: Int, enabled: Boolean, onSelected: (Int) -> Unit, options: List<Int>) {
     var expanded by remember { mutableStateOf(false) }
     val menuScrollState = rememberScrollState()
     val itemHeightPx = with(LocalDensity.current) { 48.dp.roundToPx() }
     val selectedIndex =
-        ((minutes - FIRST_APPOINTMENT_MINUTES) / TIME_INTERVAL_MINUTES).coerceIn(
-            0,
-            APPOINTMENT_TIME_OPTIONS.lastIndex,
-        )
+        options.indexOfFirst { it >= minutes }.let { if (it < 0) options.lastIndex else it }.coerceAtLeast(0)
 
     LaunchedEffect(expanded, selectedIndex) {
         if (expanded) {
@@ -94,7 +92,7 @@ private fun AppointmentTimePickerField(minutes: Int, enabled: Boolean, onSelecte
             onDismissRequest = { expanded = false },
             scrollState = menuScrollState,
         ) {
-            APPOINTMENT_TIME_OPTIONS.forEach { option ->
+            options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(formatAppointmentTime(option)) },
                     onClick = {

@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,14 +19,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalTime
+import com.lasso.lassoapp.ui.theme.LassoPrimary
 
 @Composable
 fun CalendarHourSidebar(
     hourHeight: Dp,
     modifier: Modifier = Modifier,
     label: @Composable (time: LocalTime) -> Unit = { BasicSidebarLabel(time = it) },
+    draggedStartMinutes: Int? = null,
+    draggedColor: Color = LassoPrimary,
 ) {
-    Column(modifier = modifier) {
+    Box(modifier = modifier) {
+      Column {
         for (i in 7..20) {
             val time = LocalTime(hour = i, minute = 0)
             Box(
@@ -35,6 +42,22 @@ fun CalendarHourSidebar(
                 label(time)
             }
         }
+      }
+      if (draggedStartMinutes != null) {
+          val tagOffset = maxOf(0.dp, hourHeight * ((draggedStartMinutes - 7 * 60) / 60f) - 12.dp)
+          Box(
+              Modifier.offset(y = tagOffset).fillMaxWidth().height(24.dp)
+                  .background(draggedColor, RoundedCornerShape(6.dp)),
+              contentAlignment = Alignment.Center,
+          ) {
+              Text(
+                  "${(draggedStartMinutes / 60).toString().padStart(2, '0')}:${(draggedStartMinutes % 60).toString().padStart(2, '0')}",
+                  color = Color.White,
+                  style = MaterialTheme.typography.labelSmall,
+                  fontWeight = FontWeight.Bold,
+              )
+          }
+      }
     }
 }
 

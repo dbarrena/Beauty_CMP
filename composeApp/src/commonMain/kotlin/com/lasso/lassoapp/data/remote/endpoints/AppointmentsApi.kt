@@ -4,6 +4,8 @@ import com.lasso.lassoapp.data.remote.LASSO_API_URL
 import com.lasso.lassoapp.data.remote.bodyOrThrow
 import com.lasso.lassoapp.model.AppointmentCalendarResponse
 import com.lasso.lassoapp.model.AppointmentWriteRequest
+import com.lasso.lassoapp.model.CalendarBlock
+import com.lasso.lassoapp.model.CalendarBlockWriteRequest
 import com.lasso.lassoapp.model.MessageResponse
 import com.lasso.lassoapp.model.SavedAppointment
 import com.lasso.lassoapp.model.normalized
@@ -20,9 +22,20 @@ interface AppointmentsApi {
     suspend fun createAppointment(request: AppointmentWriteRequest): SavedAppointment
     suspend fun editAppointment(id: Int, request: AppointmentWriteRequest): SavedAppointment
     suspend fun deleteAppointment(id: Int): MessageResponse
+    suspend fun createCalendarBlock(request: CalendarBlockWriteRequest): CalendarBlock
+    suspend fun deleteCalendarBlock(id: Int): MessageResponse
 }
 
 internal class KtorAppointmentsApi(private val client: HttpClient) : AppointmentsApi {
+    override suspend fun deleteCalendarBlock(id: Int): MessageResponse =
+        client.delete(LASSO_API_URL + "appointments/blocked-hours/$id").bodyOrThrow()
+
+    override suspend fun createCalendarBlock(request: CalendarBlockWriteRequest): CalendarBlock =
+        client.post(LASSO_API_URL + "appointments/blocked-hours") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
+
     override suspend fun getAppointmentCalendar(
         startEpoch: Long,
         endEpoch: Long,

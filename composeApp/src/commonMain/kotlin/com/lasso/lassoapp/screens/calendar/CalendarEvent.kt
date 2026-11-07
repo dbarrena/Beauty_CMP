@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -23,19 +25,28 @@ import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.formatEventTime
 import com.lasso.lassoapp.model.minutesBetween
+import com.lasso.lassoapp.ui.theme.LassoLightGray
 
 @Composable
 fun CalendarEventItem(
     event: Event,
     onEdit: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPlaceholder: Boolean = false,
+    isDragging: Boolean = false,
 ) {
     val duration = minutesBetween(event.start, event.end)
     val isShort = duration <= 30
+    val isCalendarBlock = event.calendarBlockId != null
+    val background = if (isCalendarBlock) LassoLightGray else event.color.copy(alpha = 0.15f).compositeOver(Color.White)
 
     Card(
         onClick = onEdit,
+        enabled = !isPlaceholder,
         modifier = modifier
+            .then(if (isCalendarBlock) Modifier.semantics {
+                contentDescription = "Bloqueo de calendario, ${event.start.formatEventTime()} - ${event.end.formatEventTime()}"
+            } else Modifier)
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(
@@ -43,11 +54,14 @@ fun CalendarEventItem(
                 vertical = if (isShort) 2.dp else 4.dp
             ),
         shape = RoundedCornerShape(if (isShort) 12.dp else 18.dp),
-        border = BorderStroke(2.dp, event.color),
-        colors = CardDefaults.cardColors(containerColor = event.color.copy(alpha = 0.15f).compositeOver(Color.White)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        border = BorderStroke(2.dp, event.color.copy(alpha = if (isPlaceholder) 0.25f else 1f)),
+        colors = CardDefaults.cardColors(
+            containerColor = background,
+            disabledContainerColor = background.copy(alpha = 0.5f),
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 0.dp)
     ) {
-        Column(
+        if (!isPlaceholder && !isCalendarBlock) Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(

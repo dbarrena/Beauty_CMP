@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,11 +29,13 @@ import kotlinx.datetime.LocalDate
 
 @Composable
 internal fun AppointmentDateField(
-    date: LocalDate,
+    date: LocalDate?,
     enabled: Boolean,
     onClick: () -> Unit,
+    label: String = "Fecha",
+    onClear: (() -> Unit)? = null,
 ) {
-    AppointmentFieldLabel("Fecha")
+    AppointmentFieldLabel(label)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,10 +50,16 @@ internal fun AppointmentDateField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(date.formatDdMmYyyy(), color = LassoTextPrimary, fontSize = 16.sp, modifier = Modifier.weight(1f))
+            Text(date?.formatDdMmYyyy() ?: "Seleccionar fecha", color = if (date == null) LassoTextMuted else LassoTextPrimary,
+                fontSize = 16.sp, modifier = Modifier.weight(1f))
+            if (date != null && onClear != null) {
+                IconButton(onClick = onClear, enabled = enabled, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Quitar ${label.lowercase()}", tint = LassoTextMuted)
+                }
+            }
             Icon(
                 Icons.Default.CalendarMonth,
-                contentDescription = "Seleccionar fecha",
+                contentDescription = "Seleccionar ${label.lowercase()}",
                 tint = LassoTextMuted,
                 modifier = Modifier.size(22.dp),
             )
