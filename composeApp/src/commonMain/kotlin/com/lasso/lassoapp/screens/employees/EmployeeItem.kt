@@ -19,13 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.Employee
-import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.ui.theme.calendarColorOrPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import lassoapp.composeapp.generated.resources.Res
@@ -57,11 +56,7 @@ fun EmployeeItem(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(LassoPrimary, Color(0xFF00B999))
-                        )
-                    ),
+                    .background(calendarColorOrPrimary(employee.calendarColor)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

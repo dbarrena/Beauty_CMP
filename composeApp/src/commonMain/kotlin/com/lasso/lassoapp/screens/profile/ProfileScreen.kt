@@ -51,6 +51,10 @@ internal fun ProfileScreenContent(
     onRetry: () -> Unit,
     onSwitchBranch: (Int) -> Unit = {},
 ) {
+    if (state.isLoading) {
+        ProfileLoadingPlaceholders(state)
+        return
+    }
     Column(
         Modifier.fillMaxSize().background(LassoPageBackground)
             .verticalScroll(rememberScrollState()).padding(16.dp),
@@ -59,11 +63,6 @@ internal fun ProfileScreenContent(
         Column {
             Text("Perfil", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = LassoTextPrimary)
             Text("Información y configuración", style = MaterialTheme.typography.bodyMedium, color = LassoTextMuted)
-        }
-        if (state.isLoading) {
-            Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = LassoPrimary)
-            }
         }
         state.employee?.let { employee ->
             Card(

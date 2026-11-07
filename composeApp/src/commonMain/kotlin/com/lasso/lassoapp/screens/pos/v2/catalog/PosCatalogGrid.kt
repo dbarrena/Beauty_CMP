@@ -16,12 +16,10 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -34,6 +32,7 @@ import com.lasso.lassoapp.model.LassoItem
 import com.lasso.lassoapp.screens.pos.v2.toPosMoneyString
 import com.lasso.lassoapp.screens.utils.contentPlacement
 import com.lasso.lassoapp.screens.utils.rememberMeasuredContent
+import com.lasso.lassoapp.screens.utils.rememberLoadingShimmer
 
 @Composable
 fun PosCatalogGrid(
@@ -44,6 +43,7 @@ fun PosCatalogGrid(
     header: (@Composable () -> Unit)? = null,
     state: LazyGridState = rememberLazyGridState(),
 ) {
+    val shimmer = if (isLoading) rememberLoadingShimmer() else null
     val measurer = rememberTextMeasurer()
     val priceStyle =
         MaterialTheme.typography.titleLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -104,14 +104,9 @@ fun PosCatalogGrid(
                     }
             }
             when {
-                isLoading ->
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            Modifier.fillMaxSize().padding(24.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                shimmer != null ->
+                    items(count = 8, key = { "catalog-loading-$it" }, contentType = { "loading" }) {
+                        PosCatalogLoadingCard(brush = shimmer)
                     }
                 items.isEmpty() ->
                     item(span = { GridItemSpan(maxLineSpan) }) {

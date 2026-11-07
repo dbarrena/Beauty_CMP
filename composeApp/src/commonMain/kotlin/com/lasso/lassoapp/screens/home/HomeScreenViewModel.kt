@@ -127,7 +127,7 @@ data class HomeDailySalesBar(
 )
 
 data class HomeScreenState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val partnerName: String = "",
     val employeeName: String = "",
     val isAdmin: Boolean = false,

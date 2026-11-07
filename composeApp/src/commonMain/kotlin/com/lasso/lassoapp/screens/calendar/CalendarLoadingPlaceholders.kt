@@ -1,11 +1,5 @@
 package com.lasso.lassoapp.screens.calendar
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,34 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lasso.lassoapp.ui.theme.LassoLightGray
-import com.lasso.lassoapp.ui.theme.LassoSurfaceVariant
-
-@Composable
-internal fun rememberCalendarShimmer(): Brush {
-    val transition = rememberInfiniteTransition(label = "Calendar loading shimmer")
-    val progress by transition.animateFloat(
-        initialValue = -1f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(tween(1200, easing = LinearEasing), RepeatMode.Restart),
-        label = "Calendar shimmer position",
-    )
-    val travel = with(LocalDensity.current) { 400.dp.toPx() }
-    return Brush.linearGradient(
-        colors = listOf(LassoLightGray, LassoSurfaceVariant, LassoLightGray),
-        start = Offset(progress * travel, 0f),
-        end = Offset(progress * travel + travel * 0.5f, travel * 0.25f),
-    )
-}
 
 @Composable
 internal fun CalendarLoadingPills(brush: Brush, modifier: Modifier = Modifier) {

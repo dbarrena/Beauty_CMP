@@ -14,7 +14,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.home.HomeScreenViewModel
-import com.lasso.lassoapp.screens.utils.FullScreenLoading
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -33,7 +32,7 @@ fun HomeScreenV2(
         color = MaterialTheme.colorScheme.background,
     ) {
         if (state.value.isLoading) {
-            FullScreenLoading()
+            HomeLoadingPlaceholders(isAdmin = state.value.isAdmin)
         } else {
             Column(
                 modifier =

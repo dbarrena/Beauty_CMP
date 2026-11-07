@@ -53,6 +53,7 @@ import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.calendar.dialog.AppointmentDialog
 import com.lasso.lassoapp.screens.calendar.dialog.CalendarBlockDialog
 import com.lasso.lassoapp.screens.clients.dialog.ClientDialog
+import com.lasso.lassoapp.screens.utils.rememberLoadingShimmer
 import com.lasso.lassoapp.ui.theme.LassoPrimary
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import com.lasso.lassoapp.ui.theme.calendarColorOrPrimary
@@ -68,7 +69,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<CalendarScreenViewModel>()
     val state by viewModel.state.collectAsState()
     val isThreeDayView = state.viewMode == CalendarViewMode.ThreeDays
-    val initialShimmer = if (state.isLoading && !state.hasLoadedCalendar) rememberCalendarShimmer() else null
+    val initialShimmer = if (state.isLoading && !state.hasLoadedCalendar) rememberLoadingShimmer() else null
     var selectedEmployeeId by remember { mutableStateOf<Int?>(null) }
     var outgoingRange by remember { mutableStateOf<CalendarRangeSnapshot?>(null) }
     var appointmentDrag by remember { mutableStateOf<CalendarAppointmentDrag?>(null) }
