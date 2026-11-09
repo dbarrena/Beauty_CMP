@@ -16,6 +16,27 @@ $env:JAVA_HOME = 'C:\Users\Diego\.jdks\ms-17.0.15' # or your installed JDK 17
 .\gradlew.bat :composeApp:run
 ```
 
+On macOS, run from the repository root:
+
+```sh
+./gradlew :composeApp:run
+```
+
+This builds and launches the native `Lasso.app` bundle so the Dock icon and hover
+name both identify Lasso. The first launch takes longer while Gradle prepares the
+bundled runtime; subsequent launches reuse it when unchanged.
+
+To build a macOS installer on a Mac:
+
+```sh
+./gradlew :composeApp:packageDmg
+```
+
+Find the `.dmg` in `composeApp/build/compose/binaries/main/dmg`. Open it, drag
+`Lasso.app` into Applications, and launch Lasso from Applications. The app includes
+its Java runtime, so installed users do not need Gradle or a separate JDK. Build
+on the same Mac architecture as the target machines (Apple Silicon or Intel).
+
 Run shared calendar and desktop mouse interaction tests:
 
 ```powershell

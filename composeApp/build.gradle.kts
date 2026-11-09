@@ -138,14 +138,37 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "com.lasso.lassoapp.desktop.MainKt"
+        if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) {
+            // The macOS application menu name must be set before the JVM initializes AWT.
+            jvmArgs += "-Xdock:name=Lasso"
+        }
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "Lasso"
             packageVersion = "1.5.6"
+            // Compose also uses this icon for the Dock when launching the Gradle run task.
+            macOS { iconFile.set(project.file("desktopIcons/lasso.icns")) }
             windows { iconFile.set(project.file("desktopIcons/lasso.ico")) }
             modules("java.sql", "jdk.unsupported", "jdk.crypto.ec")
         }
+    }
+}
+
+if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) {
+    val openMacApp = tasks.register<Exec>("openMacApp") {
+        dependsOn("createDistributable")
+        // Use Launch Services rather than executing Contents/MacOS/Lasso directly.
+        commandLine(
+            "/usr/bin/open", "-n", "-W",
+            layout.buildDirectory.dir("compose/binaries/main/app/Lasso.app").get().asFile.absolutePath,
+        )
+    }
+    tasks.matching { it.name == "run" }.configureEach {
+        // Dock tooltips can retain "java" for a bare JVM despite -Xdock:name.
+        // Launch the native Lasso.app bundle so macOS uses its application identity.
+        dependsOn(openMacApp)
+        enabled = false
     }
 }

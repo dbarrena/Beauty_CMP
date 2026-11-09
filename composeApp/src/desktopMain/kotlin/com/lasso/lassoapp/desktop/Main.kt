@@ -2,6 +2,7 @@ package com.lasso.lassoapp.desktop
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +14,11 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.lasso.lassoapp.di.initKoin
 import java.awt.Dimension
+import java.awt.Taskbar
+import javax.imageio.ImageIO
 import lassoapp.composeapp.generated.resources.Res
 import lassoapp.composeapp.generated.resources.lasso_app_icon
+import lassoapp.composeapp.generated.resources.lasso_macos_app_icon
 import org.jetbrains.compose.resources.painterResource
 import com.lasso.lassoapp.ui.theme.LassoPageBackground
 
@@ -27,11 +31,21 @@ fun main() {
     }
     initKoin()
     application {
+        LaunchedEffect(Unit) {
+            if (isMac && Taskbar.isTaskbarSupported()) {
+                val taskbar = Taskbar.getTaskbar()
+                if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                    Res.readBytes("drawable/lasso_macos_app_icon.png").inputStream().use { stream ->
+                        taskbar.iconImage = ImageIO.read(stream)
+                    }
+                }
+            }
+        }
         val windowState = rememberWindowState(width = 1440.dp, height = 900.dp)
         Window(
             onCloseRequest = ::exitApplication,
             title = "Lasso",
-            icon = painterResource(Res.drawable.lasso_app_icon),
+            icon = painterResource(if (isMac) Res.drawable.lasso_macos_app_icon else Res.drawable.lasso_app_icon),
             state = windowState,
         ) {
             window.minimumSize = Dimension(1000, 680)
