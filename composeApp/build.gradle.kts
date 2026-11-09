@@ -107,8 +107,8 @@ android {
         applicationId = "com.lasso.lassoapp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.5.6"
+        versionCode = 18
+        versionName = "1.5.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
@@ -147,7 +147,7 @@ compose.desktop {
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "Lasso"
-            packageVersion = "1.5.6"
+            packageVersion = "1.5.7"
             // Compose also uses this icon for the Dock when launching the Gradle run task.
             macOS { iconFile.set(project.file("desktopIcons/lasso.icns")) }
             windows { iconFile.set(project.file("desktopIcons/lasso.ico")) }

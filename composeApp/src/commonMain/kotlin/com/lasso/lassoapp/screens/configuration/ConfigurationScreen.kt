@@ -225,7 +225,7 @@ fun ConfigurationScreenContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "LASSO v1.5.6 (17)",
+                    text = "LASSO v1.5.7 (18)",
                     style = MaterialTheme.typography.bodySmall,
                     color = LassoTextMuted
                 )
