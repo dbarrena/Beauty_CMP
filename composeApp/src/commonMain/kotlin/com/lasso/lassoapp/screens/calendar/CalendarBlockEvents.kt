@@ -32,7 +32,7 @@ internal fun EmployeeAppointmentSchedule.blockEvents(startEpoch: Long, endEpoch:
                     val end = minOf(LocalDateTime(if (overnight) origin.plus(1, DateTimeUnit.DAY) else origin, endTime),
                         LocalDateTime(day, LocalTime(21, 0)))
                     if (end > start) {
-                        val event = Event(name = "Bloqueo de calendario", color = LassoGray,
+                        val event = Event(name = block.title?.trim()?.takeIf { it.isNotEmpty() } ?: "Bloqueo de calendario", color = LassoGray,
                             start = start, end = end, employeeId = id, calendarBlockId = block.id)
                         val previous = segments.lastOrNull()
                         if (previous != null && previous.end == start && previous.start.date == day) {

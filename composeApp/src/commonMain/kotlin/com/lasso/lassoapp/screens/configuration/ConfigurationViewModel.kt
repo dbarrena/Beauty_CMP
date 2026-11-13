@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 class ConfigurationViewModel(private val lassoApi: LassoApi, private val sessionRepository: SessionRepository) : ViewModel() {
     private val _state = MutableStateFlow(ConfigurationScreenState())
@@ -16,6 +17,14 @@ class ConfigurationViewModel(private val lassoApi: LassoApi, private val session
 
     init {
         getSession()
+        viewModelScope.launch {
+            val isMaster = try { lassoApi.getMasterAccess().isMaster }
+            catch (error: Exception) {
+                if (error is CancellationException) throw error
+                false
+            }
+            _state.value = _state.value.copy(isMaster = isMaster)
+        }
     }
 
     private fun getSession() {
@@ -35,6 +44,7 @@ class ConfigurationViewModel(private val lassoApi: LassoApi, private val session
     }
 
     data class ConfigurationScreenState(
+        val isMaster: Boolean = false,
         val session: Session? = null,
         val logoutEventCompleted: Boolean = false
     )

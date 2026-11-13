@@ -21,6 +21,7 @@ import com.lasso.lassoapp.data.remote.endpoints.SalesApi
 import io.ktor.client.HttpClient
 
 interface LassoApi :
+    com.lasso.lassoapp.data.remote.endpoints.AdminApi,
     AuthApi,
     ClientsApi,
     AppointmentsApi,
@@ -33,6 +34,7 @@ interface LassoApi :
 
 class KtorLassoApi(client: HttpClient) :
     LassoApi,
+    com.lasso.lassoapp.data.remote.endpoints.AdminApi by com.lasso.lassoapp.data.remote.endpoints.KtorAdminApi(client),
     AuthApi by KtorAuthApi(client),
     ClientsApi by KtorClientsApi(client),
     AppointmentsApi by KtorAppointmentsApi(client),

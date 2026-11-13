@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
@@ -14,13 +15,40 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.calendar.CalendarEvents
+import com.lasso.lassoapp.screens.calendar.CalendarEventItem
 import kotlinx.datetime.*
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.*
+import java.io.File
 
 class DesktopCalendarTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun appointmentNotesAppearBelowHoursAndFitCalendarCards() {
+        val start = LocalDateTime(2026, 11, 12, 10, 0)
+        compose.setContent {
+            MaterialTheme {
+                Column(Modifier.width(300.dp)) {
+                    listOf(60, 30, 15).forEach { minutes ->
+                        Box(Modifier.fillMaxWidth().height((minutes * 80f / 60f).dp).testTag("card-$minutes")) {
+                            CalendarEventItem(Event(1, "Mariana", Color(0xFF7C57AA), start,
+                                LocalDateTime(2026, 11, 12, if (minutes == 60) 11 else 10, minutes % 60),
+                                description = "Corte, Peinado", notes = "Nota para $minutes minutos"), compactShortEvents = true)
+                        }
+                    }
+                }
+            }
+        }
+        listOf(60, 30, 15).forEach { minutes ->
+            val note = compose.onNodeWithText("Nota para $minutes minutos", useUnmergedTree = true)
+            note.assertIsDisplayed()
+            assertTrue(note.fetchSemanticsNode().boundsInRoot.bottom <= compose.onNodeWithTag("card-$minutes").fetchSemanticsNode().boundsInRoot.bottom)
+        }
+        val bitmap = compose.onRoot().captureToImage().asSkiaBitmap()
+        val directory = File("build/calendar-screenshots").apply { mkdirs() }
+        org.jetbrains.skia.Image.makeFromBitmap(bitmap).encodeToData()?.use { File(directory, "appointment-notes.png").writeBytes(it.bytes) }
+    }
 
     @Test fun monthPickerCrossesYearBoundaryAndUsesMondayFirst() {
         val dates = monthGridDates(LocalDate(2027, 1, 15))

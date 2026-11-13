@@ -132,9 +132,19 @@ class CalendarScreenViewModel(
     }
 
     fun createCalendarBlock(request: CalendarBlockWriteRequest) {
+        if (_state.value.selectedCalendarBlock != null) return
+        saveCalendarBlock(request, null)
+    }
+
+    fun editCalendarBlock(request: CalendarBlockWriteRequest) {
+        val block = _state.value.selectedCalendarBlock ?: return
+        saveCalendarBlock(request, block.id)
+    }
+
+    private fun saveCalendarBlock(request: CalendarBlockWriteRequest, blockId: Int?) {
         val current = _state.value
         if (!current.isCalendarBlockDialogDisplayed || current.isSavingCalendarBlock || current.isDeletingCalendarBlock ||
-            current.isLoadingCalendarBlockEmployees || current.selectedCalendarBlock != null) return
+            current.isLoadingCalendarBlockEmployees) return
         val error = request.validationError() ?: if (current.calendarBlockEmployees.none { it.id == request.employeeId })
             "Selecciona un empleado disponible." else null
         if (error != null) {
@@ -144,15 +154,16 @@ class CalendarScreenViewModel(
         _state.value = current.copy(isSavingCalendarBlock = true, calendarBlockError = null)
         viewModelScope.launch {
             try {
-                lassoApi.createCalendarBlock(request)
+                if (blockId == null) lassoApi.createCalendarBlock(request) else lassoApi.editCalendarBlock(blockId, request)
                 _state.value = _state.value.copy(isSavingCalendarBlock = false,
-                    isCalendarBlockDialogDisplayed = false, calendarBlockNotice = "Bloqueo de calendario agregado.")
+                    isCalendarBlockDialogDisplayed = false, selectedCalendarBlock = null,
+                    calendarBlockNotice = if (blockId == null) "Bloqueo de calendario agregado." else "Bloqueo de calendario actualizado.")
                 loadEvents(_state.value.selectedDate)
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
                 _state.value = _state.value.copy(isSavingCalendarBlock = false,
-                    calendarBlockError = exception.message ?: "No se pudo agregar el bloqueo de calendario.")
+                    calendarBlockError = exception.message ?: "No se pudo guardar el bloqueo de calendario.")
             }
         }
     }
@@ -519,9 +530,10 @@ fun AppointmentCalendarResponse.toEvents(timeZone: TimeZone): List<Event> {
                 color = calendarColorOrPrimary(employee.calendarColor),
                 start = Instant.fromEpochMilliseconds(appointment.startsAt).toLocalDateTime(timeZone),
                 end = Instant.fromEpochMilliseconds(appointment.endsAt).toLocalDateTime(timeZone),
-                description = appointment.services.map { it.name }.filter { it.isNotBlank() }
+                description = appointment.services.map { it.name.trim() }.filter { it.isNotBlank() }
                     .joinToString(", ").takeIf { it.isNotBlank() },
                 employeeId = employee.id,
+                notes = appointment.notes?.trim()?.takeIf { it.isNotEmpty() },
             )
         } + employee.blockEvents(startEpoch, endEpoch, timeZone)
     }.sortedBy(Event::start)

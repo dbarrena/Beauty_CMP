@@ -14,6 +14,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CalendarEmployeeColorTest {
+    @Test fun calendarEventsCarryNonBlankNotesAlongsideEmployeeColors() {
+        val appointments = listOf(CalendarAppointment(1, startsAt = 100, endsAt = 200, notes = "  Sin esmalte  "),
+            CalendarAppointment(2, startsAt = 300, endsAt = 400, notes = "   "))
+        val events = AppointmentCalendarResponse(0, 500,
+            listOf(EmployeeAppointmentSchedule(8, "Ana", appointments, "#A1B2C3"))).toEvents(TimeZone.UTC)
+        assertEquals("Sin esmalte", events.first().notes)
+        assertEquals(null, events.last().notes)
+        assertEquals(Color(0xFFA1B2C3), events.first().color)
+    }
     @Test
     fun calendarResponseDecodesEmployeeColorsAndDefaultsMissingColorToNull() {
         val response = Json.decodeFromString<AppointmentCalendarResponse>(

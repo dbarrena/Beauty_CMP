@@ -25,7 +25,6 @@ import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.model.room.Session
 import com.lasso.lassoapp.screens.calendar.*
 import com.lasso.lassoapp.ui.theme.*
-import com.lasso.lassoapp.utils.formatFullDateSpanish
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
@@ -76,9 +75,11 @@ internal fun DesktopCalendarScreen(session: Session, onLogout: suspend () -> Uni
                 Spacer(Modifier.width(32.dp))
                 OutlinedButton(onClick = { viewModel.onDateSelected(today) }, enabled = !busy,
                     shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, LassoDivider)) { Text("Hoy", color = LassoTextPrimary) }
-                IconButton(onClick = viewModel::loadPreviousRange, enabled = !busy) { Icon(Icons.Default.ChevronLeft, "Rango anterior") }
-                IconButton(onClick = viewModel::loadNextRange, enabled = !busy) { Icon(Icons.Default.ChevronRight, "Rango siguiente") }
-                Text(state.selectedDate.formatFullDateSpanish(), style = MaterialTheme.typography.titleMedium,
+                CalendarDateNavigationButton(CalendarRangeDirection.Previous, !busy,
+                    state.isLoadingPreviousRange, viewModel::loadPreviousRange)
+                CalendarDateNavigationButton(CalendarRangeDirection.Next, !busy,
+                    state.isLoadingNextRange, viewModel::loadNextRange)
+                Text(calendarDateHeaderLabel(state.selectedDate, state.viewMode), style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f).padding(horizontal = 12.dp))
                 var modeOpen by remember { mutableStateOf(false) }

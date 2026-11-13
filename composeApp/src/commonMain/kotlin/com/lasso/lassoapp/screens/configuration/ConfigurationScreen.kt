@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -60,7 +61,8 @@ fun ConfigurationScreen(
     ConfigurationScreenContent(
         onLogout = { viewModel.logout() },
         onConfigurationNavigation = onConfigurationNavigation,
-        isAdmin = state.value.session?.isAdmin ?: false
+        isAdmin = state.value.session?.isAdmin ?: false,
+        isMaster = state.value.isMaster,
     )
 }
 
@@ -68,7 +70,8 @@ fun ConfigurationScreen(
 fun ConfigurationScreenContent(
     onLogout: () -> Unit,
     onConfigurationNavigation: (ConfigurationScreenRoutes) -> Unit,
-    isAdmin: Boolean
+    isAdmin: Boolean,
+    isMaster: Boolean = false,
 ) {
     val scrollState = rememberScrollState()
 
@@ -109,6 +112,17 @@ fun ConfigurationScreenContent(
                     iconTint = LassoPrimary,
                     onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.PROFILE) }
                 )
+                if (isMaster) {
+                    ConfigurationTile(
+                        title = "Administracion Lasso",
+                        subtitle = "Partners, membresías, empleados y permisos",
+                        icon = Icons.Default.AdminPanelSettings,
+                        containerColor = LassoPrimary.copy(alpha = 0.1f),
+                        iconTint = LassoPrimary,
+                        onClick = { onConfigurationNavigation(ConfigurationScreenRoutes.ADMIN) },
+                    )
+                }
+
                 if (isAdmin) {
                     // Disabled until reportes is ready
                     /*ConfigurationTile(
@@ -365,6 +379,7 @@ fun LogoutTile(
 }
 
 enum class ConfigurationScreenRoutes {
+    ADMIN,
     PROFILE,
     PRODUCT_CATALOG,
     CASH_CLOSURE,

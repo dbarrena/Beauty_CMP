@@ -13,6 +13,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -23,10 +24,17 @@ interface AppointmentsApi {
     suspend fun editAppointment(id: Int, request: AppointmentWriteRequest): SavedAppointment
     suspend fun deleteAppointment(id: Int): MessageResponse
     suspend fun createCalendarBlock(request: CalendarBlockWriteRequest): CalendarBlock
+    suspend fun editCalendarBlock(id: Int, request: CalendarBlockWriteRequest): CalendarBlock
     suspend fun deleteCalendarBlock(id: Int): MessageResponse
 }
 
 internal class KtorAppointmentsApi(private val client: HttpClient) : AppointmentsApi {
+    override suspend fun editCalendarBlock(id: Int, request: CalendarBlockWriteRequest): CalendarBlock =
+        client.patch(LASSO_API_URL + "appointments/blocked-hours/$id") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.bodyOrThrow()
+
     override suspend fun deleteCalendarBlock(id: Int): MessageResponse =
         client.delete(LASSO_API_URL + "appointments/blocked-hours/$id").bodyOrThrow()
 

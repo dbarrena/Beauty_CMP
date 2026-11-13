@@ -22,6 +22,11 @@ class CalendarBlockEventsTest {
         assertEquals(listOf(7, 8, 9), events.map { it.start.day })
         assertTrue(events.all { it.start.hour == 10 && it.end.hour == 11 && it.calendarBlockId == 5 && it.appointmentId == null })
     }
+    @Test fun namesArePreservedOnRepeatingBlocksAndUnnamedBlocksHaveFallback() {
+        assertTrue(events(block.copy(title = "Comida")).all { it.name == "Comida" })
+        assertTrue(events(block).all { it.name == "Bloqueo de calendario" })
+        assertTrue(events(block.copy(title = "   ")).all { it.name == "Bloqueo de calendario" })
+    }
 
     @Test
     fun optionalBoundsAreIndependentAndInclusive() {

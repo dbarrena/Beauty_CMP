@@ -13,7 +13,27 @@ data class Home(
     val todayEarnings: String? = null,
     val weekEarnings: String? = null,
     val todayTransactionCount: Int? = null,
+    val numberOfAppointments: Int = 0,
+    val appointments: List<HomeAppointment> = emptyList(),
     @SerialName("dailyEarnings") val last7DaysEarnings: List<DailyEarning> = emptyList(),
+)
+
+@Serializable
+data class HomeAppointment(
+    val id: Int,
+    val client: AppointmentClientSummary? = null,
+    val employee: HomeAppointmentEmployee,
+    val services: List<AppointmentServiceSummary> = emptyList(),
+    val startsAt: Long,
+    val endsAt: Long,
+    val notes: String? = null,
+)
+
+@Serializable
+data class HomeAppointmentEmployee(
+    val id: Int,
+    val name: String,
+    @SerialName("calendar_color") val calendarColor: String? = null,
 )
 
 @Serializable

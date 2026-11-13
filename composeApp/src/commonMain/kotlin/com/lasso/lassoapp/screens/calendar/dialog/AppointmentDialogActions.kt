@@ -35,6 +35,7 @@ internal fun AppointmentDialogActions(
     isDeleting: Boolean,
     onSave: () -> Unit,
     onDelete: () -> Unit,
+    deleteContentDescription: String = "Eliminar cita",
 ) {
     val isBusy = isSaving || isDeleting
     Row(
@@ -79,7 +80,7 @@ internal fun AppointmentDialogActions(
                 } else {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar cita",
+                        contentDescription = deleteContentDescription,
                         modifier = Modifier.size(24.dp),
                     )
                 }

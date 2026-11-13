@@ -21,6 +21,29 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class CalendarBlockTest {
+    @Test fun renamingFullDayBlockPreservesItsExactTimestamps() {
+        val start = Instant.parse("2026-11-12T10:00:23Z").toEpochMilliseconds()
+        val block = CalendarBlock(5, 1, start, start + 86_400_000, title = "Descanso")
+        val form = CalendarBlockFormState(LocalDate(2026, 11, 12), 1, block, TimeZone.UTC)
+        form.title = "Vacaciones"
+        val request = form.toRequest()
+        assertEquals(block.startTime, request.startTime)
+        assertEquals(block.endTime, request.endTime)
+        assertNull(request.validationError())
+    }
+    @Test fun blockNameIsRestoredTrimmedAndCanBeCleared() {
+        val block = CalendarBlock(5, 1, 100, 200, title = "Comida")
+        val form = CalendarBlockFormState(LocalDate(2026, 11, 7), 1, block)
+        assertEquals("Comida", form.title)
+        form.title = "  Reunión del equipo  "
+        assertEquals("Reunión del equipo", form.toRequest().title)
+        form.title = "   "
+        val request = form.toRequest()
+        assertNull(request.title)
+        assertEquals(JsonNull, Json.parseToJsonElement(Json.encodeToString(request)).jsonObject["title"])
+        assertEquals("Comida", Json.decodeFromString<CalendarBlock>(Json.encodeToString(block)).title)
+        assertNotNull(request.copy(title = " ").validationError())
+    }
     @Test
     fun formBuildsEpochMillisecondsAndLeavesDateBoundsEmpty() {
         val form = CalendarBlockFormState(LocalDate(2026, 11, 7), 1)

@@ -52,9 +52,7 @@ import com.lasso.lassoapp.model.EmployeeAppointmentSchedule
 import com.lasso.lassoapp.model.Event
 import com.lasso.lassoapp.screens.utils.rememberLoadingShimmer
 import com.lasso.lassoapp.ui.theme.LassoPrimary
-import com.lasso.lassoapp.ui.theme.LassoTextPrimary
 import com.lasso.lassoapp.ui.theme.calendarColorOrPrimary
-import com.lasso.lassoapp.utils.formatFullDateSpanish
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
@@ -71,6 +69,18 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
     var outgoingRange by remember { mutableStateOf<CalendarRangeSnapshot?>(null) }
     var appointmentDrag by remember { mutableStateOf<CalendarAppointmentDrag?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val navigationEnabled = !state.isLoading && outgoingRange == null && appointmentDrag == null &&
+        !state.isSavingAppointment && !state.isDeleting
+    val navigateRange: (CalendarRangeDirection, Boolean) -> Unit = { direction, fromDrag ->
+        if (navigationEnabled) {
+            outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
+                direction, state.viewMode, state.employeeSchedules, fromDrag)
+            when (direction) {
+                CalendarRangeDirection.Previous -> viewModel.loadPreviousRange()
+                CalendarRangeDirection.Next -> viewModel.loadNextRange()
+            }
+        }
+    }
 
     LaunchedEffect(state.calendarBlockNotice) {
         state.calendarBlockNotice?.let {
@@ -114,16 +124,19 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            if (!isThreeDayView) {
-                Text(
-                    text = state.selectedDate.formatFullDateSpanish(),
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 16.dp, end = 16.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = LassoTextPrimary,
-                    textAlign = TextAlign.Center,
-                )
-            }
+            CalendarDateHeader(
+                date = state.selectedDate,
+                viewMode = state.viewMode,
+                enabled = navigationEnabled,
+                loadingDirection = when {
+                    state.isLoadingPreviousRange -> CalendarRangeDirection.Previous
+                    state.isLoadingNextRange -> CalendarRangeDirection.Next
+                    else -> outgoingRange?.takeIf { it.viewMode == state.viewMode }?.direction
+                },
+                onPrevious = { navigateRange(CalendarRangeDirection.Previous, false) },
+                onNext = { navigateRange(CalendarRangeDirection.Next, false) },
+                modifier = Modifier.padding(top = 4.dp),
+            )
 
             if (initialShimmer != null) {
                 CalendarLoadingPills(initialShimmer, Modifier.padding(top = 16.dp))
@@ -261,23 +274,11 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 enabled = initialShimmer == null && appointmentDrag == null && !state.isSavingAppointment,
                                 dayCount = state.viewMode.dayCount,
                                 isLoading = state.isLoading || isRangeTransition,
-                                isLoadingNextRange = state.isLoadingNextRange,
-                                isLoadingPreviousRange = state.isLoadingPreviousRange,
+                                isLoadingNextRange = state.isLoadingNextRange && previousRange?.fromDrag == true,
+                                isLoadingPreviousRange = state.isLoadingPreviousRange && previousRange?.fromDrag == true,
                                 userScrollEnabled = initialShimmer == null && !isRangeTransition && appointmentDrag == null,
-                                onNextRange = {
-                                    if (!state.isLoading && !isRangeTransition) {
-                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
-                                            CalendarRangeDirection.Next, state.viewMode, state.employeeSchedules)
-                                        viewModel.loadNextRange()
-                                    }
-                                },
-                                onPreviousRange = {
-                                    if (!state.isLoading && !isRangeTransition) {
-                                        outgoingRange = CalendarRangeSnapshot(state.selectedDate, state.events,
-                                            CalendarRangeDirection.Previous, state.viewMode, state.employeeSchedules)
-                                        viewModel.loadPreviousRange()
-                                    }
-                                },
+                                onNextRange = { navigateRange(CalendarRangeDirection.Next, true) },
+                                onPreviousRange = { navigateRange(CalendarRangeDirection.Previous, true) },
                             ) {
                                 if (initialShimmer != null) {
                                     CalendarLoadingColumns(
@@ -524,6 +525,7 @@ private data class CalendarRangeSnapshot(
     val direction: CalendarRangeDirection,
     val viewMode: CalendarViewMode,
     val employees: List<EmployeeAppointmentSchedule>,
+    val fromDrag: Boolean,
 ) {
     val dates: List<LocalDate> get() = List(3) { startDate.plus(it, DateTimeUnit.DAY) }
 }

@@ -102,6 +102,9 @@ object SalesByProductCategoriesDestination
 object EmployeesDestination
 
 @Serializable
+object AdminDestination
+
+@Serializable
 object ClientsDestination
 
 @Serializable
@@ -138,6 +141,7 @@ fun App() {
             currentDestination?.hasRoute<ProductCatalogDestination>() == true -> "Productos y Servicios"
             currentDestination?.hasRoute<SalesByProductCategoriesDestination>() == true -> "Ventas por Categoria"
             currentDestination?.hasRoute<EmployeesDestination>() == true -> "Empleados"
+            currentDestination?.hasRoute<AdminDestination>() == true -> "Administracion Lasso"
             currentDestination?.hasRoute<ClientsDestination>() == true -> "Clientes"
             currentDestination?.hasRoute<CommissionsDestination>() == true -> "Comisiones"
             currentDestination?.hasRoute<ProfileDestination>() == true -> "Perfil"
@@ -296,6 +300,7 @@ fun App() {
                             }
                         ) { destination ->
                             when (destination) {
+                                ConfigurationScreenRoutes.ADMIN -> navController.navigate(AdminDestination)
                                 ConfigurationScreenRoutes.PROFILE -> {
                                     navController.navigate(ProfileDestination)
                                 }
@@ -366,6 +371,9 @@ fun App() {
                     }
                     composable<EmployeesDestination> {
                         com.lasso.lassoapp.screens.employees.EmployeesScreen()
+                    }
+                    composable<AdminDestination> {
+                        com.lasso.lassoapp.screens.admin.AdminScreen()
                     }
                     composable<ClientsDestination> {
                         ClientsScreen()

@@ -119,6 +119,6 @@ internal fun formatAppointmentTime(minutes: Int): String {
 
 private const val FIRST_APPOINTMENT_MINUTES = 7 * 60
 private const val LAST_APPOINTMENT_MINUTES = 20 * 60
-private const val TIME_INTERVAL_MINUTES = 30
+private const val TIME_INTERVAL_MINUTES = 15
 private val APPOINTMENT_TIME_OPTIONS =
     (FIRST_APPOINTMENT_MINUTES..LAST_APPOINTMENT_MINUTES step TIME_INTERVAL_MINUTES).toList()

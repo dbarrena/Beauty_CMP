@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -29,9 +31,15 @@ class HomeScreenViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state: StateFlow<HomeScreenState> = _state.asStateFlow()
+    private var refreshJob: Job? = null
 
     init {
-        viewModelScope.launch {
+        refresh()
+    }
+
+    fun refresh() {
+        if (refreshJob?.isActive == true) return
+        refreshJob = viewModelScope.launch {
             sessionRepository.getSession()?.let { session ->
                 _state.value =
                     _state.value.copy(
@@ -41,14 +49,15 @@ class HomeScreenViewModel(
                     )
             }
 
-            _state.value = _state.value.copy(isLoading = true)
+            _state.value = _state.value.copy(isLoading = _state.value.home == null, error = null)
 
             try {
                 val tz = TimeZone.currentSystemDefault()
                 val today = Clock.System.todayIn(tz)
 
                 val startDayEpoch = today.toEpochMilliseconds(tz)
-                val endDayEpoch = today.plus(1, DateTimeUnit.DAY).toEpochMilliseconds(tz)
+                // The home endpoint includes the end boundary; exclude tomorrow's midnight.
+                val endDayEpoch = today.plus(1, DateTimeUnit.DAY).toEpochMilliseconds(tz) - 1
 
                 val startMonth = today.atStartOfMonth()
                 val startMonthEpoch = startMonth.toEpochMilliseconds(tz)
@@ -77,7 +86,7 @@ class HomeScreenViewModel(
                         todayEarningsFormatted = home?.todayEarnings ?: "$0.00",
                         todayTransactionCount = home?.todayTransactionCount ?: 0,
                         weekEarningsFormatted = home?.weekEarnings ?: "$0.00",
-                        appointmentsToday = 0,
+                        appointmentsToday = home?.numberOfAppointments ?: 0,
                         appointmentsPending = 0,
                         lastSevenDays = home?.last7DaysEarnings?.map {
                             HomeDailySalesBar(
@@ -91,6 +100,8 @@ class HomeScreenViewModel(
                             )
                         } ?: emptyList(),
                     )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _state.value =
                     _state.value.copy(

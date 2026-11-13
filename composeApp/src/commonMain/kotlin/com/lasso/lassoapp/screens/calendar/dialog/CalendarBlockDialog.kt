@@ -1,27 +1,17 @@
 package com.lasso.lassoapp.screens.calendar.dialog
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,21 +19,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lasso.lassoapp.model.CalendarBlockWriteRequest
 import com.lasso.lassoapp.model.CalendarBlock
 import com.lasso.lassoapp.model.Employee
 import com.lasso.lassoapp.model.validationError
 import com.lasso.lassoapp.screens.calendar.CalendarPickerDialog
 import com.lasso.lassoapp.screens.utils.LassoDialogFrame
-import com.lasso.lassoapp.ui.theme.LassoPrimary
+import com.lasso.lassoapp.screens.utils.DialogContentScaffold
 import com.lasso.lassoapp.ui.theme.LassoTextMuted
 import com.lasso.lassoapp.ui.theme.LassoTextPrimary
-import com.lasso.lassoapp.ui.theme.LassoError
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -63,7 +52,7 @@ internal fun CalendarBlockDialog(
     employeeName: String? = null,
 ) {
     val form = remember(block?.id) { CalendarBlockFormState(initialDate, initialEmployeeId, block) }
-    val isReadOnly = block != null
+    val isEditing = block != null
     val isBusy = isSaving || isDeleting
     var pickingStartDate by remember { mutableStateOf<Boolean?>(null) }
     val scroll = rememberScrollState()
@@ -79,25 +68,56 @@ internal fun CalendarBlockDialog(
     LaunchedEffect(error) {
         if (error != null) scroll.animateScrollTo(scroll.maxValue)
     }
-    LassoDialogFrame(onDismiss = { if (!isBusy) onDismiss() }, expanded = !isReadOnly) {
-        Column(if (isReadOnly) Modifier.fillMaxWidth() else Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp)) {
-                Text("Bloqueo de calendario", modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp).align(Alignment.Center),
-                    style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold, color = LassoTextPrimary)
-                IconButton(onClick = onDismiss, enabled = !isBusy, modifier = Modifier.align(Alignment.TopEnd)) {
-                    Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = LassoTextMuted)
+    LassoDialogFrame(onDismiss = { if (!isBusy) onDismiss() }, shape = RoundedCornerShape(16.dp),
+        color = Color.White, expanded = true) {
+        DialogContentScaffold(
+            onClose = onDismiss,
+            closeEnabled = !isBusy,
+            scroll = scroll,
+            modifier = Modifier.fillMaxSize(),
+            header = {
+                Text("Bloqueo de calendario", modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
+                    textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = LassoTextPrimary)
+            },
+            actions = {
+                Column {
+                    AppointmentDialogActions(
+                        isEditing = isEditing,
+                        isValid = canSave,
+                        isSaving = isSaving,
+                        isDeleting = isDeleting,
+                        onSave = { onSave(form.toRequest()) },
+                        onDelete = onDelete,
+                        deleteContentDescription = "Eliminar bloqueo",
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onDismiss, enabled = !isBusy,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("Cancelar", color = LassoTextMuted, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    }
                 }
-            }
-            Column(Modifier.weight(1f, fill = !isReadOnly).verticalScroll(scroll)
-                .padding(horizontal = 24.dp).padding(top = 24.dp, bottom = 16.dp)) {
+            },
+        ) {
+                Spacer(Modifier.height(12.dp))
+                AppointmentFieldLabel("Nombre del bloqueo (opcional)")
+                OutlinedTextField(
+                    value = form.title,
+                    onValueChange = { form.title = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Ej. Comida, descanso o reunión") },
+                    enabled = !isBusy,
+                    singleLine = true,
+                    shape = RoundedCornerShape(16.dp),
+                )
+                AppointmentFormSpacer()
                 AppointmentFieldLabel("Empleado")
                 AppointmentPickerField(
-                    value = selectedEmployee?.name ?: if (isReadOnly) employeeName else null,
+                    value = selectedEmployee?.name ?: employeeName,
                     placeholder = if (isLoadingEmployees) "Cargando empleados…" else "Seleccionar empleado",
                     options = employees,
                     optionLabel = Employee::name,
-                    enabled = !isReadOnly && !isBusy && !isLoadingEmployees,
+                    enabled = !isBusy && !isLoadingEmployees,
                     onSelected = { form.employeeId = it.id },
                 )
                 if (!isLoadingEmployees && employees.isEmpty()) {
@@ -108,46 +128,22 @@ internal fun CalendarBlockDialog(
                 AppointmentTimeRangeField(
                     startMinutes = form.startMinutes,
                     endMinutes = form.endMinutes,
-                    enabled = !isReadOnly && !isBusy,
+                    enabled = !isBusy,
                     onStartSelected = form::selectStartMinutes,
                     onEndSelected = form::selectEndMinutes,
                     timeOptions = CALENDAR_BLOCK_TIME_OPTIONS,
                 )
-                if (!isReadOnly || form.startDate != null) {
-                    AppointmentFormSpacer()
-                    AppointmentDateField(form.startDate, !isReadOnly && !isBusy, { pickingStartDate = true },
-                        label = "Fecha inicio (opcional)", onClear = { form.selectStartDate(null) })
-                }
-                if (!isReadOnly || form.endDate != null) {
-                    AppointmentFormSpacer()
-                    AppointmentDateField(form.endDate, !isReadOnly && !isBusy, { pickingStartDate = false },
-                        label = "Fecha fin (opcional)", onClear = { form.selectEndDate(null) })
-                }
-                if (!isReadOnly) {
-                    Spacer(Modifier.height(12.dp))
-                    Text("Sin fechas, el bloqueo se aplica todos los días.", style = MaterialTheme.typography.bodySmall, color = LassoTextMuted)
-                }
-                (error ?: if (!isReadOnly) validationError else null)?.let {
+                AppointmentFormSpacer()
+                AppointmentDateField(form.startDate, !isBusy, { pickingStartDate = true },
+                    label = "Fecha inicio (opcional)", onClear = { form.selectStartDate(null) })
+                AppointmentFormSpacer()
+                AppointmentDateField(form.endDate, !isBusy, { pickingStartDate = false },
+                    label = "Fecha fin (opcional)", onClear = { form.selectEndDate(null) })
+                Spacer(Modifier.height(12.dp))
+                Text("Sin fechas, el bloqueo se aplica todos los días.", style = MaterialTheme.typography.bodySmall, color = LassoTextMuted)
+                (error ?: validationError)?.let {
                     Spacer(Modifier.height(12.dp))
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                }
-            }
-                Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 12.dp, bottom = 24.dp)) {
-                    Button(
-                        onClick = { if (isReadOnly) onDelete() else onSave(form.toRequest()) },
-                        enabled = if (isReadOnly) !isBusy else canSave,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = if (isReadOnly) LassoError else LassoPrimary, contentColor = Color.White),
-                    ) {
-                        if (isBusy) CircularProgressIndicator(Modifier.size(22.dp), color = Color.White, strokeWidth = 2.dp)
-                        else Text(if (isReadOnly) "Eliminar bloqueo" else "Agregar bloqueo", fontWeight = FontWeight.SemiBold)
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    TextButton(onClick = onDismiss, enabled = !isBusy,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Text("Cancelar", color = LassoTextMuted)
-                    }
                 }
         }
     }

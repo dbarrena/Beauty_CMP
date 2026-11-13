@@ -29,7 +29,10 @@ internal fun CalendarDialogs(state: CalendarScreenState, viewModel: CalendarScre
             error = state.calendarBlockError,
             onDismiss = viewModel::hideCalendarBlockDialog,
             onRetryEmployees = viewModel::loadCalendarBlockEmployees,
-            onSave = viewModel::createCalendarBlock,
+            onSave = { request ->
+                if (state.selectedCalendarBlock == null) viewModel.createCalendarBlock(request)
+                else viewModel.editCalendarBlock(request)
+            },
             block = state.selectedCalendarBlock,
             isDeleting = state.isDeletingCalendarBlock,
             onDelete = viewModel::deleteCalendarBlock,

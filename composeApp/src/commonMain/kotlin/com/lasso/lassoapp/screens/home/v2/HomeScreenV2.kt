@@ -11,9 +11,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lasso.lassoapp.screens.home.HomeScreenViewModel
+import com.lasso.lassoapp.model.HomeAppointment
+import com.lasso.lassoapp.model.CalendarAppointment
+import com.lasso.lassoapp.screens.calendar.CalendarScreenViewModel
+import com.lasso.lassoapp.screens.calendar.CalendarDialogs
+import kotlinx.coroutines.flow.first
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -26,6 +36,7 @@ fun HomeScreenV2(
 ) {
     val viewModel = koinViewModel<HomeScreenViewModel>()
     val state = viewModel.state.collectAsState()
+    var selectedAppointment by remember { mutableStateOf<HomeAppointment?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -68,10 +79,34 @@ fun HomeScreenV2(
                     Spacer(Modifier.height(24.dp))
                     HomeWeeklySalesChart(lastSevenDays = state.value.lastSevenDays)
                 }*/
-                // Disabled until Agenda is ready
-                /*Spacer(Modifier.height(24.dp))
-                HomeAgendaSection(onVerTodo = onNavigateToCalendar)*/
+                Spacer(Modifier.height(12.dp))
+                HomeAgendaSection(
+                    appointments = state.value.home?.appointments.orEmpty(),
+                    onVerTodo = onNavigateToCalendar,
+                    onAppointmentClick = { selectedAppointment = it },
+                )
             }
         }
     }
+    selectedAppointment?.let { appointment ->
+        HomeAgendaAppointmentEditor(appointment) {
+            selectedAppointment = null
+            viewModel.refresh()
+        }
+    }
+}
+
+@Composable
+private fun HomeAgendaAppointmentEditor(appointment: HomeAppointment, onClose: () -> Unit) {
+    val viewModel = koinViewModel<CalendarScreenViewModel>(key = "home-agenda-appointment")
+    val state by viewModel.state.collectAsState()
+    LaunchedEffect(appointment.id) {
+        viewModel.showEditAppointmentDialog(CalendarAppointment(
+            id = appointment.id, client = appointment.client, services = appointment.services,
+            startsAt = appointment.startsAt, endsAt = appointment.endsAt, notes = appointment.notes,
+        ), employeeId = appointment.employee.id)
+        viewModel.state.first { !it.isAppointmentDialogDisplayed }
+        onClose()
+    }
+    CalendarDialogs(state, viewModel, selectedEmployeeId = appointment.employee.id)
 }

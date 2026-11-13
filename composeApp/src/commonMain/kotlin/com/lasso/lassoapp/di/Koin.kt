@@ -1,6 +1,7 @@
 package com.lasso.lassoapp.di
 
 import com.lasso.lassoapp.AppViewModel
+import com.lasso.lassoapp.screens.admin.AdminViewModel
 import com.lasso.lassoapp.config.LassoDatabase
 import com.lasso.lassoapp.data.local.dao.SessionDao
 import com.lasso.lassoapp.data.local.session.SessionRepository
@@ -62,6 +63,7 @@ val dataModule = module {
 }
 
 val viewModelModule = module {
+    factory { AdminViewModel(get<LassoApi>()) }
     factoryOf(::PosViewModel)
     factoryOf(::ProductServiceDialogViewModel)
     factoryOf(::SalesScreenViewModelV2)

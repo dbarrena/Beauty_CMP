@@ -72,7 +72,7 @@ class CalendarRangeLoadingTest {
     private class BlockRequest(val body: CalendarBlockWriteRequest) {
         val response = CompletableDeferred<CalendarBlock>()
         fun succeed() = response.complete(CalendarBlock(50, body.employeeId, body.startTime, body.endTime,
-            body.startDate, body.endDate, 7))
+            body.startDate, body.endDate, 7, title = body.title))
     }
 
     /** JVM proxy keeps unrelated Lasso endpoints out of this calendar-only fake. */
@@ -80,6 +80,7 @@ class CalendarRangeLoadingTest {
         val requests = mutableListOf<Request>()
         val moves = mutableListOf<MoveRequest>()
         val blocks = mutableListOf<BlockRequest>()
+        val blockEdits = mutableListOf<Pair<Int, BlockRequest>>()
         val deletedBlocks = mutableListOf<Int>()
         var deleteBlockResponse = CompletableDeferred<MessageResponse>()
         val clientEdits = mutableListOf<Pair<Int, ClientWriteRequest>>()
@@ -109,6 +110,13 @@ class CalendarRangeLoadingTest {
                     blocks += request
                     val waitForResponse: suspend () -> CalendarBlock = { request.response.await() }
                     waitForResponse.startCoroutine(args[1] as Continuation<CalendarBlock>)
+                    COROUTINE_SUSPENDED
+                }
+                "editCalendarBlock" -> {
+                    val request = BlockRequest(args[1] as CalendarBlockWriteRequest)
+                    blockEdits += (args[0] as Int) to request
+                    val waitForResponse: suspend () -> CalendarBlock = { request.response.await() }
+                    waitForResponse.startCoroutine(args[2] as Continuation<CalendarBlock>)
                     COROUTINE_SUSPENDED
                 }
                 "deleteCalendarBlock" -> {
@@ -238,8 +246,40 @@ class CalendarRangeLoadingTest {
         assertEquals(null, model.state.value.editingClient)
     }
 
+    @Test fun savedBlockNameCanBeEditedWithDuplicateAndDismissProtection() = calendarTest { api, model ->
+        val block = CalendarBlock(50, 1, 100, 200, title = "Comida")
+        model.retry()
+        runCurrent()
+        api.requests.last().succeed(listOf(block))
+        runCurrent()
+        model.showCalendarBlockDialog(50)
+        runCurrent()
+        val input = CalendarBlockWriteRequest(1, 100, 200, title = "Reunión")
+        model.editCalendarBlock(input)
+        model.editCalendarBlock(input)
+        model.hideCalendarBlockDialog()
+        runCurrent()
+        assertEquals(1, api.blockEdits.size)
+        assertEquals(50, api.blockEdits.single().first)
+        assertEquals(input, api.blockEdits.single().second.body)
+        assertTrue(model.state.value.isCalendarBlockDialogDisplayed)
+        api.blockEdits.single().second.response.completeExceptionally(IllegalStateException("Sin conexión"))
+        runCurrent()
+        assertEquals("Sin conexión", model.state.value.calendarBlockError)
+        assertEquals(block, model.state.value.selectedCalendarBlock)
+        model.editCalendarBlock(input)
+        runCurrent()
+        api.blockEdits.last().second.succeed()
+        runCurrent()
+        assertFalse(model.state.value.isCalendarBlockDialogDisplayed)
+        assertEquals("Bloqueo de calendario actualizado.", model.state.value.calendarBlockNotice)
+        api.requests.last().succeed(listOf(block.copy(title = input.title)))
+        runCurrent()
+        assertTrue(model.state.value.events.filter { it.calendarBlockId == 50 }.all { it.name == "Reunión" })
+    }
+
     @Test
-    fun savedBlockCanOnlyBeDeletedAndCannotBeSubmittedAsAnEdit() = calendarTest { api, model ->
+    fun savedBlockCannotBeDuplicatedThroughCreateAndCanBeDeleted() = calendarTest { api, model ->
         val block = CalendarBlock(50, 1, 100, 200)
         model.retry()
         runCurrent()
@@ -269,7 +309,7 @@ class CalendarRangeLoadingTest {
     }
 
     @Test
-    fun failedBlockDeletePreservesReadOnlyDetailsAndCanBeRetried() = calendarTest { api, model ->
+    fun failedBlockDeletePreservesDetailsAndCanBeRetried() = calendarTest { api, model ->
         val block = CalendarBlock(50, 1, 100, 200)
         model.retry()
         runCurrent()

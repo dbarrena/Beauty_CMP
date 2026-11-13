@@ -92,8 +92,7 @@ fun EditEmployeeDialog(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -106,120 +105,127 @@ fun EditEmployeeDialog(
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
 
-                    // Nombre Field
-                    EmployeeField(
-                        label = "Nombre",
-                        value = name,
-                        onValueChange = { name = it },
-                        enabled = !isLoading
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Email Field
-                    EmployeeField(
-                        label = "Email",
-                        value = email,
-                        onValueChange = { email = it },
-                        enabled = !isLoading
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Role Field
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Cargo",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Medium,
-                                color = LassoTextPrimary,
-                                fontSize = 14.sp
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .background(LassoSurfaceVariant, RoundedCornerShape(14.dp))
-                                .clickable(enabled = !isLoading) { showRoleMenu = true }
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = role.replaceFirstChar { it.uppercase() },
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    tint = LassoTextMuted
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showRoleMenu,
-                                onDismissRequest = { showRoleMenu = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Administrador") },
-                                    onClick = {
-                                        role = "administrador"
-                                        showRoleMenu = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Empleado") },
-                                    onClick = {
-                                        role = "empleado"
-                                        showRoleMenu = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Commissions
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState())
                     ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            EmployeeField(
-                                label = "Comisión Prod. (%)",
-                                value = productCommission,
-                                onValueChange = { productCommission = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isLoading
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            EmployeeField(
-                                label = "Comisión Serv. (%)",
-                                value = serviceCommission,
-                                onValueChange = { serviceCommission = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isLoading
-                            )
-                        }
-                    }
+                        // Nombre Field
+                        EmployeeField(
+                            label = "Nombre",
+                            value = name,
+                            onValueChange = { name = it },
+                            enabled = !isLoading
+                        )
 
-                    Spacer(modifier = Modifier.height(24.dp))
-                    EmployeeConfigurationFields(
-                        calendarColor = calendarColor,
-                        onCalendarColorChange = { calendarColor = it },
-                        isDisplayedOnCalendar = isDisplayedOnCalendar,
-                        onDisplayedOnCalendarChange = { isDisplayedOnCalendar = it },
-                        canSeeSales = canSeeSales,
-                        onCanSeeSalesChange = { canSeeSales = it },
-                        enabled = !isLoading
-                    )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Email Field
+                        EmployeeField(
+                            label = "Email",
+                            value = email,
+                            onValueChange = { email = it },
+                            enabled = !isLoading
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Role Field
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Cargo",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    color = LassoTextPrimary,
+                                    fontSize = 14.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .background(LassoSurfaceVariant, RoundedCornerShape(14.dp))
+                                    .clickable(enabled = !isLoading) { showRoleMenu = true }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = role.replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        tint = LassoTextMuted
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showRoleMenu,
+                                    onDismissRequest = { showRoleMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Administrador") },
+                                        onClick = {
+                                            role = "administrador"
+                                            showRoleMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Empleado") },
+                                        onClick = {
+                                            role = "empleado"
+                                            showRoleMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Commissions
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                EmployeeField(
+                                    label = "Comisión Prod. (%)",
+                                    value = productCommission,
+                                    onValueChange = { productCommission = it },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    enabled = !isLoading
+                                )
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                EmployeeField(
+                                    label = "Comisión Serv. (%)",
+                                    value = serviceCommission,
+                                    onValueChange = { serviceCommission = it },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    enabled = !isLoading
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        EmployeeConfigurationFields(
+                            calendarColor = calendarColor,
+                            onCalendarColorChange = { calendarColor = it },
+                            isDisplayedOnCalendar = isDisplayedOnCalendar,
+                            onDisplayedOnCalendarChange = { isDisplayedOnCalendar = it },
+                            canSeeSales = canSeeSales,
+                            onCanSeeSalesChange = { canSeeSales = it },
+                            enabled = !isLoading
+                        )
+                    }
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Row(
